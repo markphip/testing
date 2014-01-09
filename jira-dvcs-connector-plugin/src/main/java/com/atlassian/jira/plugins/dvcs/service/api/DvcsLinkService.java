@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service.api;
 import com.atlassian.annotations.PublicApi;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 
+import java.util.Date;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -41,4 +42,6 @@ public interface DvcsLinkService
      * @return a list of {@link Organization}
      */
     List<Organization> getDvcsLinks(boolean loadRepositories, @Nonnull String applicationType);
+
+    Date getNextSyncTime();
 }

@@ -29,6 +29,8 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
     private final RepositoryService repositoryService;
     private final MessagingService messagingService;
 
+    private long nextSchedule = 0l;
+
     public DvcsScheduler(PluginScheduler pluginScheduler, OrganizationService organizationService, RepositoryService repositoryService, MessagingService messagingService)
     {
         this.pluginScheduler = pluginScheduler;
@@ -51,9 +53,11 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
         Map<String, Object> data = Maps.newHashMap();
         data.put("organizationService", organizationService);
         data.put("repositoryService", repositoryService);
+        data.put("dvcsScheduler", this);
 
-        long randomStartTimeWithinInterval = new Date().getTime() + (long) (new Random().nextDouble() * interval);
+        long randomStartTimeWithinInterval = System.currentTimeMillis() + (long) (new Random().nextDouble() * interval);
         Date startTime = new Date(randomStartTimeWithinInterval);
+        nextSchedule = randomStartTimeWithinInterval;
 
         log.info("DvcsScheduler start planned at " + startTime + ", interval=" + interval);
         pluginScheduler.scheduleJob(JOB_NAME, // unique name of the job
@@ -61,6 +65,16 @@ public class DvcsScheduler implements LifecycleAware, DisposableBean
                 data, // data that needs to be passed to the job
                 startTime, // the time the job is to start
                 interval); // interval between repeats, in milliseconds
+    }
+
+    public long getNextSchedule()
+    {
+        return nextSchedule;
+    }
+
+    public void updateNextSchedule()
+    {
+        this.nextSchedule = System.currentTimeMillis() + interval;
     }
 
     @Override

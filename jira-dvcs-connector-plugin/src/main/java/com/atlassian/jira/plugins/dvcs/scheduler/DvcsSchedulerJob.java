@@ -20,11 +20,14 @@ public class DvcsSchedulerJob implements PluginJob
     @Override
     public void execute(Map<String, Object> jobDataMap)
     {
+
         log.debug("Running DvcsSchedulerJob ");
 
         OrganizationService organizationService = (OrganizationService) jobDataMap.get("organizationService");
         RepositoryService repositoryService = (RepositoryService) jobDataMap.get("repositoryService");
+        DvcsScheduler dvcsScheduler = (DvcsScheduler) jobDataMap.get("dvcsScheduler");
         syncOrganizations(organizationService, repositoryService);
+        dvcsScheduler.updateNextSchedule();
         cleanOrphanRepositories(organizationService, repositoryService);
     }
 
