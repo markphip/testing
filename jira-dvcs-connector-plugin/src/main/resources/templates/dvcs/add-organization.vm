@@ -1,3 +1,10 @@
+#if($action)
+    #index()
+#else
+    #printRepos($org)
+#end
+
+#macro (index)
 <html>
   <head>
     <title>
@@ -79,6 +86,7 @@
     
   </body>
 </html>
+#end
 
 ############################################################################
 ## macros needs to be here as : 
@@ -112,7 +120,10 @@
         <![if ! IE]>
         <h4 class="aui $org.getDvcsType()Logo">
         <![endif]>
-        <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a>
+        <a href="$org.organizationUrl">$textutils.htmlEncode($org.name)</a> 
+         #if ($action.isSynchronizingOrganization($org.id))
+          <span id="adding-org-loader-$org.id" data-org-id="$org.id" class="adding-org-loader aui-icon aui-icon-wait" style="padding-left:20px">&nbsp;</span>
+         #end
         #if($org.getDvcsType() == "githube") <a href="https://enterprise.github.com/" target="_blank"><span title="GitHubEnterprise" class="dvcs-account-enterprise"> &nbsp; </span></a> #end
         #if($org.isIntegratedAccount())  - Configured by <a href="http://www.atlassian.com/software/ondemand" target="_blank"><span title="OnDemand" class="dvcs-account-ondemand"> &nbsp; </span></a> #end
         </h4>  
@@ -158,9 +169,24 @@
 		
         <div class="dvcs-dclear"></div>
     </div>
-           
-       #if (!$org.getRepositories().isEmpty())
+
+    ## repos table
+    <div id="dvcs-repos-wrapper-$org.id">
+       #if (!$action.isSynchronizingOrganization($org.id))
+        #printRepos($org)
+      #end
+    </div>
         
+    <div class="vert-space">&nbsp;</div>
+    <div class="vert-space">&nbsp;</div>
+        
+  </div>
+#end
+#end
+
+
+#macro (printRepos $org)
+   #if (!$org.getRepositories().isEmpty())
        <table id="dvcs-repos-table-$org.id" class="aui dvcs-repos-table">
         <thead>
             <tr>
@@ -199,18 +225,18 @@
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>
                     <input class="radio" id="repo_autolink_check$repo.id" type="checkbox" $!repoAutolink
-						onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
+                        onclick="javascript: autoLinkIssuesRepo($repo.id, 'repo_autolink_check$repo.id');" />
                     <span style="display:none; width: 16px; height: 16px;" id="repo_autolink_check${repo.id}working" class="syncicon running">&nbsp;</span>
 
                 </td>
                 
                 <td class="dvcs-org-reponame">
                     <a href="$repo.repositoryUrl">$textutils.htmlEncode($repo.name)</a>
-					<span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
+                    <span id="error_status_icon_$repo.id" class="repository-error-icon #if($repo.sync && !$repo.sync.hasAdminPermission())admin-permission aui-icon aui-icon-warning#end">&nbsp;</span>
 
 
                     <span id="error_smrtcmmt_icon_$repo.id" class="#if($repo.sync && !$repo.sync.smartCommitErrors.isEmpty())error_smrtcmmt aui-icon aui-icon-error#end">&nbsp;</span>
-				</td>
+                </td>
                 
                 <td class="action" headers="action" style="text-align: right; white-space: nowrap;">
                 
@@ -237,8 +263,6 @@
                     <div id="dvcs-action-container3-$repo.id" class="$!dvcsNoDisplayClass">
                         <span style="padding-left: 1px;">&nbsp;</span>
 
-
-
                         <input class="radio" id="repo_smartcommits$repo.id" type="checkbox" $!smartcommitsEnabled $!localSmartcommitsDisabled
                          onclick="javascript: enableRepoSmartcommits($repo.id, 'repo_smartcommits$repo.id');" />
 
@@ -259,12 +283,4 @@
             No repositories.
         </span>
     #end
-    
-    <div class="vert-space">&nbsp;</div>
-    <div class="vert-space">&nbsp;</div>
-        
-  </div>
-#end
-
-
 #end

@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import org.apache.commons.collections.CollectionUtils;
 
+import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -25,8 +25,8 @@ public class OrganizationServiceImpl implements OrganizationService
 
     private final RepositoryService repositoryService;
 
-    public OrganizationServiceImpl(OrganizationDao organizationDao, DvcsCommunicatorProvider dvcsCommunicatorProvider,
-            RepositoryService repositoryService)
+    public OrganizationServiceImpl(final OrganizationDao organizationDao, final DvcsCommunicatorProvider dvcsCommunicatorProvider,
+            final RepositoryService repositoryService)
     {
         this.organizationDao = organizationDao;
         this.dvcsCommunicatorProvider = dvcsCommunicatorProvider;
@@ -34,27 +34,27 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public AccountInfo getAccountInfo(String hostUrl, String accountName)
+    public AccountInfo getAccountInfo(final String hostUrl, final String accountName)
     {
         return getAccountInfo(hostUrl, accountName, null);
     }
-    
+
     @Override
-    public AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType)
+    public AccountInfo getAccountInfo(final String hostUrl, final String accountName, final String dvcsType)
     {
         return dvcsCommunicatorProvider.getAccountInfo(hostUrl, accountName, dvcsType);
     }
 
     @Override
-    public List<Organization> getAll(boolean loadRepositories)
+    public List<Organization> getAll(final boolean loadRepositories)
     {
-        List<Organization> organizations = organizationDao.getAll();
+        final List<Organization> organizations = organizationDao.getAll();
 
         if (loadRepositories)
         {
-            for (Organization organization : organizations)
+            for (final Organization organization : organizations)
             {
-                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
                 organization.setRepositories(repositories);
             }
         }
@@ -62,15 +62,15 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAll(boolean loadRepositories, String type)
+    public List<Organization> getAll(final boolean loadRepositories, final String type)
     {
-        List<Organization> organizations = organizationDao.getAllByType(type);
+        final List<Organization> organizations = organizationDao.getAllByType(type);
 
         if (loadRepositories)
         {
-            for (Organization organization : organizations)
+            for (final Organization organization : organizations)
             {
-                List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
+                final List<Repository> repositories = repositoryService.getAllByOrganization(organization.getId());
                 organization.setRepositories(repositories);
             }
         }
@@ -88,21 +88,30 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public Organization get(int organizationId, boolean loadRepositories)
+    public Organization get(final int organizationId, final boolean loadRepositories)
     {
-        Organization organization = organizationDao.get(organizationId);
+        final Organization organization = organizationDao.get(organizationId);
 
         if (loadRepositories && organization != null)
         {
-            List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
+            final List<Repository> repositories = repositoryService.getAllByOrganization(organizationId);
             organization.setRepositories(repositories);
         }
 
         return organization;
     }
 
-    @Override
-    public Organization save(Organization organization)
+    public Organization saveAsync(final Organization organization)
+    {
+        return doSave(organization, true);
+    }
+
+    public Organization save(final Organization organization)
+    {
+        return doSave(organization, false);
+    }
+
+    public Organization doSave(final Organization organization, final boolean async)
     {
         Organization org = organizationDao.getByHostAndName(organization.getHostUrl(), organization.getName());
         if (org != null)
@@ -118,24 +127,31 @@ public class OrganizationServiceImpl implements OrganizationService
         org = organizationDao.save(organization);
 
         // sync repository list
-        repositoryService.syncRepositoryList(org, false);
+        if (async)
+        {
+            repositoryService.syncRepositoryList(org, false);
+        }
+        else
+        {
+            repositoryService.syncRepositoryListAsync(org, false);
+        }
 
         return org;
     }
 
     @Override
-    public void remove(int organizationId)
+    public void remove(final int organizationId)
     {
-        List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
+        final List<Repository> repositoriesToDelete = repositoryService.getAllByOrganization(organizationId, true);
         organizationDao.remove(organizationId);
         repositoryService.removeRepositories(repositoriesToDelete);
         repositoryService.removeOrphanRepositoriesAsync(repositoriesToDelete);
     }
 
     @Override
-    public void updateCredentials(int organizationId, Credential credential)
+    public void updateCredentials(final int organizationId, final Credential credential)
     {
-        Organization organization = organizationDao.get(organizationId);
+        final Organization organization = organizationDao.get(organizationId);
         if (organization != null)
         {
             organization.setCredential(credential);
@@ -144,9 +160,9 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public void updateCredentialsAccessToken(int organizationId, String accessToken)
+    public void updateCredentialsAccessToken(final int organizationId, final String accessToken)
     {
-        Organization organization = organizationDao.get(organizationId);
+        final Organization organization = organizationDao.get(organizationId);
         if (organization != null)
         {
             organization.getCredential().setAccessToken(accessToken);
@@ -155,9 +171,9 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public void enableAutolinkNewRepos(int orgId, boolean autolink)
+    public void enableAutolinkNewRepos(final int orgId, final boolean autolink)
     {
-        Organization organization = organizationDao.get(orgId);
+        final Organization organization = organizationDao.get(orgId);
         if (organization != null)
         {
             organization.setAutolinkNewRepos(autolink);
@@ -166,9 +182,9 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public void enableSmartcommitsOnNewRepos(int id, boolean enabled)
+    public void enableSmartcommitsOnNewRepos(final int id, final boolean enabled)
     {
-        Organization organization = organizationDao.get(id);
+        final Organization organization = organizationDao.get(id);
         if (organization != null)
         {
             organization.setSmartcommitsOnNewRepos(enabled);
@@ -184,19 +200,20 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public List<Organization> getAllByIds(Collection<Integer> ids)
+    public List<Organization> getAllByIds(final Collection<Integer> ids)
     {
         if (CollectionUtils.isNotEmpty(ids))
         {
             return organizationDao.getAllByIds(ids);
-        } else
+        }
+        else
         {
             return Collections.emptyList();
         }
     }
 
     @Override
-    public void setDefaultGroupsSlugs(int orgId, Collection<String> groupsSlugs)
+    public void setDefaultGroupsSlugs(final int orgId, final Collection<String> groupsSlugs)
     {
         organizationDao.setDefaultGroupsSlugs(orgId, groupsSlugs);
     }
@@ -208,25 +225,25 @@ public class OrganizationServiceImpl implements OrganizationService
     }
 
     @Override
-    public Organization getByHostAndName(String hostUrl, String name)
+    public Organization getByHostAndName(final String hostUrl, final String name)
     {
         return organizationDao.getByHostAndName(hostUrl, name);
     }
 
     @Override
-    public DvcsUser getTokenOwner(int organizationId)
+    public DvcsUser getTokenOwner(final int organizationId)
     {
-        Organization organization = get(organizationId, false);
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-        DvcsUser currentUser = communicator.getTokenOwner(organization);
+        final Organization organization = get(organizationId, false);
+        final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
+        final DvcsUser currentUser = communicator.getTokenOwner(organization);
         return currentUser;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Group> getGroupsForOrganization(Organization organization)
+    public List<Group> getGroupsForOrganization(final Organization organization)
     {
         return dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType()).getGroupsForOrganization(organization);
     }

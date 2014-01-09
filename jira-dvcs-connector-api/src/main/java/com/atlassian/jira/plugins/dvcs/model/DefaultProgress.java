@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -13,11 +13,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultProgress implements Progress
 {
-
     @XmlAttribute
     private boolean finished = false;
 
@@ -66,7 +67,7 @@ public class DefaultProgress implements Progress
 
     @Override
     // TODO remove synchroErrorCount
-    public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount)
+    public void inProgress(final int changesetCount, final int jiraCount, final int synchroErrorCount)
     {
         this.changesetCount = changesetCount;
         this.jiraCount = jiraCount;
@@ -74,7 +75,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
+    public void inPullRequestProgress(final int pullRequestActivityCount, final int jiraCount)
     {
         this.pullRequestActivityCount = pullRequestActivityCount;
         this.jiraCount = jiraCount;
@@ -123,7 +124,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void setError(String error)
+    public void setError(final String error)
     {
         this.error = error;
     }
@@ -156,7 +157,7 @@ public class DefaultProgress implements Progress
         return startTime;
     }
 
-    public void setStartTime(long startTime)
+    public void setStartTime(final long startTime)
     {
         this.startTime = startTime;
     }
@@ -167,33 +168,33 @@ public class DefaultProgress implements Progress
         return finishTime;
     }
 
-    public void setFinishTime(long finishTime)
+    public void setFinishTime(final long finishTime)
     {
         this.finishTime = finishTime;
     }
 
     @Override
-    public void setFinished(boolean finished)
+    public void setFinished(final boolean finished)
     {
         this.finished = finished;
     }
 
-    public void setChangesetCount(int changesetCount)
+    public void setChangesetCount(final int changesetCount)
     {
         this.changesetCount = changesetCount;
     }
 
-    public void setJiraCount(int jiraCount)
+    public void setJiraCount(final int jiraCount)
     {
         this.jiraCount = jiraCount;
     }
 
-    public void setPullRequestActivityCount(int pullRequestActivityCount)
+    public void setPullRequestActivityCount(final int pullRequestActivityCount)
     {
         this.pullRequestActivityCount = pullRequestActivityCount;
     }
 
-    public void setSynchroErrorCount(int synchroErrorCount)
+    public void setSynchroErrorCount(final int synchroErrorCount)
     {
         this.synchroErrorCount = synchroErrorCount;
     }
@@ -205,7 +206,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void setSmartCommitErrors(List<SmartCommitError> smartCommitErrors)
+    public void setSmartCommitErrors(final List<SmartCommitError> smartCommitErrors)
     {
         this.smartCommitErrors = smartCommitErrors;
     }
@@ -217,7 +218,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void setShouldStop(boolean shouldStop)
+    public void setShouldStop(final boolean shouldStop)
     {
         this.shouldStop = shouldStop;
     }
@@ -229,7 +230,7 @@ public class DefaultProgress implements Progress
     }
 
     @Override
-    public void setAdminPermission(boolean hasAdminPermission)
+    public void setAdminPermission(final boolean hasAdminPermission)
     {
         this.hasAdminPermission = hasAdminPermission;
     }
@@ -239,7 +240,7 @@ public class DefaultProgress implements Progress
         return auditLogId;
     }
 
-    public void setAuditLogId(int auditLogId)
+    public void setAuditLogId(final int auditLogId)
     {
         this.auditLogId = auditLogId;
     }

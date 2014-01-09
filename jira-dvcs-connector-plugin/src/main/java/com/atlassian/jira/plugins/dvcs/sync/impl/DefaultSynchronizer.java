@@ -8,22 +8,22 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Resource;
 
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
-import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.DefaultOrganizationProgress;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
+import com.atlassian.jira.plugins.dvcs.model.OrganizationProgress;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
@@ -31,18 +31,10 @@ import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.CachingDvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeActivityMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsg;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeActivityMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.google.common.base.Throwables;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -82,14 +74,17 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private FeatureManager featureManager;
 
     /**
-     * Injected {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService} dependency.
+     * Injected
+     * {@link com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService}
+     * dependency.
      */
     @Resource
     private GitHubEventService gitHubEventService;
 
-
     // map of ALL Synchronisation Progresses - running and finished ones
     private final ConcurrentMap<Integer, Progress> progressMap = new MapMaker().makeMap();
+
+    private final OrganizationProgress orgProgress = new DefaultOrganizationProgress();
 
     public DefaultSynchronizer()
     {
@@ -97,7 +92,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
-    public void doSync(Repository repo, EnumSet<SynchronizationFlag> flags)
+    public void doSync(final Repository repo, final EnumSet<SynchronizationFlag> flags)
     {
         if (featureManager.isEnabled(DISABLE_SYNCHRONIZATION_FEATURE))
         {
@@ -119,9 +114,9 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 progress = startProgress(repo);
             }
 
-            boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
-            boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
-            boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
+            final boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
+            final boolean changesetsSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
+            final boolean pullRequestSync = flags.contains(SynchronizationFlag.SYNC_PULL_REQUESTS);
 
             int auditId = 0;
             try
@@ -132,13 +127,18 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
 
                 if (!softSync)
                 {
-                    //TODO This will deleted both changeset and PR messages, we should distinguish between them
-                    // Stopping synchronization to delete failed messages for repository
+                    // TODO This will deleted both changeset and PR messages, we
+                    // should distinguish between them
+                    // Stopping synchronization to delete failed messages for
+                    // repository
                     stopSynchronization(repo);
                     if (changesetsSync)
                     {
-                        // we are doing full sync, lets delete all existing changesets
-                        // also required as GHCommunicator.getChangesets() returns only changesets not already stored in database
+                        // we are doing full sync, lets delete all existing
+                        // changesets
+                        // also required as GHCommunicator.getChangesets()
+                        // returns only changesets not already stored in
+                        // database
                         changesetService.removeAllInRepository(repo.getId());
                         branchService.removeAllBranchHeadsInRepository(repo.getId());
                         branchService.removeAllBranchesInRepository(repo.getId());
@@ -158,7 +158,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 try
                 {
                     messagingService.retry(messagingService.getTagForSynchronization(repo));
-                } catch (Exception e)
+                }
+                catch (final Exception e)
                 {
                     log.warn("Could not resume failed messages.", e);
                 }
@@ -168,39 +169,41 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
 
-                CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider
-                        .getCommunicator(repo.getDvcsType());
+                final CachingDvcsCommunicator communicator = (CachingDvcsCommunicator) communicatorProvider.getCommunicator(repo
+                        .getDvcsType());
 
                 communicator.startSynchronisation(repo, flags, auditId);
-            } catch (Throwable t)
+            }
+            catch (final Throwable t)
             {
                 log.error(t.getMessage(), t);
                 progress.setError("Error during sync. See server logs.");
                 syncAudit.setException(auditId, t, false);
                 Throwables.propagateIfInstanceOf(t, Error.class);
-            } finally
+            }
+            finally
             {
                 messagingService.tryEndProgress(repo, progress, null, auditId);
             }
         }
     }
 
-    private Progress startProgress(Repository repository)
+    private Progress startProgress(final Repository repository)
     {
-        DefaultProgress progress = new DefaultProgress();
+        final DefaultProgress progress = new DefaultProgress();
         progress.start();
         putProgress(repository, progress);
         return progress;
     }
 
-    protected String getSyncType(boolean softSync)
+    protected String getSyncType(final boolean softSync)
     {
         return softSync ? SyncAuditLogMapping.SYNC_TYPE_SOFT : SyncAuditLogMapping.SYNC_TYPE_FULL;
     }
 
-    private boolean skipSync(Repository repository, EnumSet<SynchronizationFlag> flags)
+    private boolean skipSync(final Repository repository, final EnumSet<SynchronizationFlag> flags)
     {
-        Progress progress = getProgress(repository.getId());
+        final Progress progress = getProgress(repository.getId());
 
         if (progress == null || progress.isFinished())
         {
@@ -211,11 +214,12 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         {
             log.info("Postponing post webhook synchronization. It will start after the running synchronization finishes.");
 
-            EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
+            final EnumSet<SynchronizationFlag> currentFlags = progress.getRunAgainFlags();
             if (currentFlags == null)
             {
                 progress.setRunAgainFlags(flags);
-            } else
+            }
+            else
             {
                 currentFlags.addAll(flags);
             }
@@ -223,26 +227,26 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return true;
     }
 
-    private void updateBranches(Repository repo, List<Branch> newBranches)
+    private void updateBranches(final Repository repo, final List<Branch> newBranches)
     {
         branchService.updateBranches(repo, newBranches);
     }
 
-    private void updateBranchHeads(Repository repo, List<Branch> newBranches, List<BranchHead> oldHeads)
+    private void updateBranchHeads(final Repository repo, final List<Branch> newBranches, final List<BranchHead> oldHeads)
     {
         branchService.updateBranchHeads(repo, newBranches, oldHeads);
     }
 
-    private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
+    private List<String> extractBranchHeadsFromBranches(final List<Branch> branches)
     {
         if (branches == null)
         {
             return null;
         }
-        List<String> result = new ArrayList<String>();
-        for (Branch branch : branches)
+        final List<String> result = new ArrayList<String>();
+        for (final Branch branch : branches)
         {
-            for (BranchHead branchHead : branch.getHeads())
+            for (final BranchHead branchHead : branch.getHeads())
             {
                 result.add(branchHead.getHead());
             }
@@ -250,14 +254,14 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         return result;
     }
 
-    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
+    private List<String> extractBranchHeads(final List<BranchHead> branchHeads)
     {
         if (branchHeads == null)
         {
             return null;
         }
-        List<String> result = new ArrayList<String>();
-        for (BranchHead branchHead : branchHeads)
+        final List<String> result = new ArrayList<String>();
+        for (final BranchHead branchHead : branchHeads)
         {
             result.add(branchHead.getHead());
         }
@@ -265,36 +269,39 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     }
 
     @Override
-    public void stopSynchronization(Repository repository)
+    public void stopSynchronization(final Repository repository)
     {
         messagingService.cancel(messagingService.getTagForSynchronization(repository));
     }
 
     @Override
-    public void pauseSynchronization(Repository repository, boolean pause)
+    public void pauseSynchronization(final Repository repository, final boolean pause)
     {
-        if (pause) {
+        if (pause)
+        {
             messagingService.pause(messagingService.getTagForSynchronization(repository));
-        } else {
+        }
+        else
+        {
             messagingService.resume(messagingService.getTagForSynchronization(repository));
         }
 
     }
 
     @Override
-    public Progress getProgress(int repositoryId)
+    public Progress getProgress(final int repositoryId)
     {
         return progressMap.get(repositoryId);
     }
 
     @Override
-    public void putProgress(Repository repository, Progress progress)
+    public void putProgress(final Repository repository, final Progress progress)
     {
         progressMap.put(repository.getId(), progress);
     }
 
     @Override
-    public void removeProgress(Repository repository)
+    public void removeProgress(final Repository repository)
     {
         progressMap.remove(repository.getId());
     }
@@ -307,5 +314,11 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     @Override
     public void afterPropertiesSet() throws Exception
     {
+    }
+
+    @Override
+    public OrganizationProgress getOrganizationProgress()
+    {
+        return orgProgress;
     }
 }

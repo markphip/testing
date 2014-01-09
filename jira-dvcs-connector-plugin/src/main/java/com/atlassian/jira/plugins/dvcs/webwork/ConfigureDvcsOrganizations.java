@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationManager;
 import com.atlassian.jira.plugins.dvcs.service.InvalidOrganizationsManagerImpl;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -39,15 +40,18 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final PluginFeatureDetector featuresDetector;
     private final InvalidOrganizationManager invalidOrganizationsManager;
     private final OAuthStore oAuthStore;
+    private final Synchronizer synchronizer;
 
-    public ConfigureDvcsOrganizations(EventPublisher eventPublisher, OrganizationService organizationService, FeatureManager featureManager,
-            PluginFeatureDetector featuresDetector, PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore)
+    public ConfigureDvcsOrganizations(final EventPublisher eventPublisher, final OrganizationService organizationService,
+            final FeatureManager featureManager, final PluginFeatureDetector featuresDetector,
+            final PluginSettingsFactory pluginSettingsFactory, final OAuthStore oAuthStore, final Synchronizer synchronizer)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
         this.featureManager = featureManager;
         this.featuresDetector = featuresDetector;
         this.oAuthStore = oAuthStore;
+        this.synchronizer = synchronizer;
         this.invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
     }
 
@@ -70,40 +74,48 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return doExecute();
     }
 
+    public String doRepoTable() throws Exception
+    {
+        return INPUT;
+    }
+
     public Organization[] loadOrganizations()
     {
-        List<Organization> allOrganizations = organizationService.getAll(true);
+        final List<Organization> allOrganizations = organizationService.getAll(true);
         sort(allOrganizations);
         return allOrganizations.toArray(new Organization[] {});
     }
 
-    public boolean isInvalidOrganization(Organization organization)
+    public boolean isInvalidOrganization(final Organization organization)
     {
         return !invalidOrganizationsManager.isOrganizationValid(organization.getId());
     }
 
     /**
-     * Custom sorting of organizations - integrated accounts are displayed on top.
-     *
+     * Custom sorting of organizations - integrated accounts are displayed on
+     * top.
+     * 
      * @param allOrganizations
      */
-    private void sort(List<Organization> allOrganizations)
+    private void sort(final List<Organization> allOrganizations)
     {
         Collections.sort(allOrganizations, new Comparator<Organization>()
         {
             @Override
-            public int compare(Organization org1, Organization org2)
+            public int compare(final Organization org1, final Organization org2)
             {
                 // integrated accounts has precedence
                 if (org1.isIntegratedAccount() && !org2.isIntegratedAccount())
                 {
                     return -1;
 
-                } else if (!org1.isIntegratedAccount() && org2.isIntegratedAccount())
+                }
+                else if (!org1.isIntegratedAccount() && org2.isIntegratedAccount())
                 {
                     return +1;
 
-                } else
+                }
+                else
                 {
                     // by default compares via name
                     return org1.getName().toLowerCase().compareTo(org2.getName().toLowerCase());
@@ -118,7 +130,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return postCommitRepositoryType;
     }
 
-    public void setPostCommitRepositoryType(String postCommitRepositoryType)
+    public void setPostCommitRepositoryType(final String postCommitRepositoryType)
     {
         this.postCommitRepositoryType = postCommitRepositoryType;
     }
@@ -133,7 +145,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return featuresDetector.isUserInvitationsEnabled();
     }
 
-    public boolean isIntegratedAccount(Organization org)
+    public boolean isIntegratedAccount(final Organization org)
     {
         return org.isIntegratedAccount();
     }
@@ -153,8 +165,14 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return StringUtils.defaultIfEmpty(source, DEFAULT_SOURCE);
     }
 
-    public void setSource(String source)
+    public void setSource(final String source)
     {
         this.source = source;
     }
+
+    public boolean isSynchronizingOrganization(final int orgId)
+    {
+        return synchronizer.getOrganizationProgress().getAddingOrgs().contains(orgId);
+    }
+
 }

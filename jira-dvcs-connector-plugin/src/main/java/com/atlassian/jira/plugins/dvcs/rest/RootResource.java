@@ -1,5 +1,34 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
+import java.net.URI;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -15,36 +44,12 @@ import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.plugins.rest.common.Status;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import com.google.common.collect.Sets;
 
 /**
  * The Class RootResource.
@@ -70,24 +75,28 @@ public class RootResource
 
     private final AccountsConfigService ondemandAccountConfig;
 
+    private final Synchronizer synchronizer;
+
     /**
      * The Constructor.
-     *
+     * 
      * @param organizationService
      *            the organization service
      * @param repositoryService
      * @param pullRequestService
      */
-    public RootResource(OrganizationService organizationService, RepositoryService repositoryService, AccountsConfigService ondemandAccountConfig)
+    public RootResource(final OrganizationService organizationService, final RepositoryService repositoryService,
+            final AccountsConfigService ondemandAccountConfig, final Synchronizer synchronizer)
     {
         this.organizationService = organizationService;
         this.repositoryService = repositoryService;
         this.ondemandAccountConfig = ondemandAccountConfig;
+        this.synchronizer = synchronizer;
     }
 
     /**
      * Gets the repository.
-     *
+     * 
      * @param id
      *            the id
      * @return the repository
@@ -96,13 +105,14 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/repository/{id}")
     @AdminOnly
-    public Response getRepository(@PathParam("id") int id)
+    public Response getRepository(@PathParam("id") final int id)
     {
-        Repository repository = repositoryService.get(id);
+        final Repository repository = repositoryService.get(id);
         if (repository != null)
         {
             return Response.ok(repository).build();
-        } else
+        }
+        else
         {
             return Response.noContent().build();
         }
@@ -110,7 +120,7 @@ public class RootResource
 
     /**
      * Gets the all repositories.
-     *
+     * 
      * @return the all repositories
      */
     @GET
@@ -119,13 +129,14 @@ public class RootResource
     @AdminOnly
     public Response getAllRepositories()
     {
-        List<Repository> activeRepositories = repositoryService.getAllRepositories();
-        return Response.ok(new RepositoryList(activeRepositories)).build();
+        final List<Repository> activeRepositories = repositoryService.getAllRepositories();
+        final Set<Integer> addingOrgs = Sets.newHashSet(synchronizer.getOrganizationProgress().getAddingOrgs());
+        return Response.ok(new RepositoryList(activeRepositories, addingOrgs)).build();
     }
 
     /**
      * Start repository sync.
-     *
+     * 
      * @param id
      *            the id
      * @param payload
@@ -137,7 +148,7 @@ public class RootResource
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/sync")
-    public Response startRepositorySync(@PathParam("id") int id, @FormParam("payload") String payload)
+    public Response startRepositorySync(@PathParam("id") final int id, @FormParam("payload") final String payload)
     {
         log.info("Postcommit hook started synchronization for repository [{}].", id);
         log.debug("Rest request to soft sync repository [{}] with payload [{}]", id, payload);
@@ -153,21 +164,21 @@ public class RootResource
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/sync")
-    public Response startRepositoryPRSync(@PathParam("id") int id, String source)
+    public Response startRepositoryPRSync(@PathParam("id") final int id, final String source)
     {
         log.info("Pull Request Postcommit hook started synchronization for repository [{}].", id);
         String key = null;
 
         try
         {
-            JSONObject jsoned = new JSONObject(source);
-            Iterator<String> keys = jsoned.keys();
+            final JSONObject jsoned = new JSONObject(source);
+            final Iterator<String> keys = jsoned.keys();
             if (keys.hasNext())
             {
                 key = keys.next();
             }
         }
-        catch (JSONException e)
+        catch (final JSONException e)
         {
             log.info("Could not parse json request.");
         }
@@ -182,7 +193,7 @@ public class RootResource
 
     /**
      * Start repository softsync.
-     *
+     * 
      * @param id
      *            the id
      * @return the response
@@ -191,7 +202,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/softsync")
     @AdminOnly
-    public Response startRepositorySoftSync(@PathParam("id") int id)
+    public Response startRepositorySoftSync(@PathParam("id") final int id)
     {
         log.debug("Rest request to softsync repository [{}] ", id);
 
@@ -201,15 +212,15 @@ public class RootResource
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+        final UriBuilder ub = uriInfo.getBaseUriBuilder();
+        final URI uri = ub.path("/repository/{id}").build(id);
 
         return Response.seeOther(uri).build();
     }
 
     /**
      * Start repository fullsync.
-     *
+     * 
      * @param id
      *            the id
      * @return the response
@@ -218,7 +229,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/fullsync")
     @AdminOnly
-    public Response startRepositoryFullSync(@PathParam("id") int id)
+    public Response startRepositoryFullSync(@PathParam("id") final int id)
     {
         log.debug("Rest request to fullsync repository [{}] ", id);
 
@@ -227,8 +238,8 @@ public class RootResource
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+        final UriBuilder ub = uriInfo.getBaseUriBuilder();
+        final URI uri = ub.path("/repository/{id}").build(id);
 
         return Response.seeOther(uri).build();
     }
@@ -237,7 +248,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/fullSyncChangesets")
     @AdminOnly
-    public Response startRepositoryChangesetsSynchronization(@PathParam("id") int id)
+    public Response startRepositoryChangesetsSynchronization(@PathParam("id") final int id)
     {
         log.debug("Rest request to changesets fullsync repository [{}] ", id);
 
@@ -246,8 +257,8 @@ public class RootResource
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+        final UriBuilder ub = uriInfo.getBaseUriBuilder();
+        final URI uri = ub.path("/repository/{id}").build(id);
 
         return Response.seeOther(uri).build();
     }
@@ -256,7 +267,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/repository/{id}/fullSyncPullRequests")
     @AdminOnly
-    public Response startRepositoryPullRequestsSynchronization(@PathParam("id") int id)
+    public Response startRepositoryPullRequestsSynchronization(@PathParam("id") final int id)
     {
         log.debug("Rest request to pull request fullsync repository [{}] ", id);
 
@@ -265,15 +276,15 @@ public class RootResource
         // ...
         // redirect to Repository resource - that will contain sync
         // message/status
-        UriBuilder ub = uriInfo.getBaseUriBuilder();
-        URI uri = ub.path("/repository/{id}").build(id);
+        final UriBuilder ub = uriInfo.getBaseUriBuilder();
+        final URI uri = ub.path("/repository/{id}").build(id);
 
         return Response.seeOther(uri).build();
     }
 
     /**
      * Account info.
-     *
+     * 
      * @param server
      *            the server
      * @param account
@@ -284,7 +295,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/accountInfo")
     @AdminOnly
-    public Response accountInfo(@QueryParam("server") String server, @QueryParam("account") String account)
+    public Response accountInfo(@QueryParam("server") final String server, @QueryParam("account") final String account)
     {
         if (StringUtils.isEmpty(server) || StringUtils.isEmpty(account))
         {
@@ -293,12 +304,13 @@ public class RootResource
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
+        final AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
 
         if (accountInfo != null)
         {
             return Response.ok(accountInfo).build();
-        } else
+        }
+        else
         {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -308,7 +320,7 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/organization/{id}/tokenOwner")
     @AdminOnly
-    public Response getTokenOwner(@PathParam("id") String organizationId)
+    public Response getTokenOwner(@PathParam("id") final String organizationId)
     {
         if (organizationId == null)
         {
@@ -319,7 +331,8 @@ public class RootResource
         {
             currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
             return Response.ok(currentUser).build();
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             log.warn("Error retrieving token owner: " + e.getMessage());
         }
@@ -331,18 +344,19 @@ public class RootResource
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
     @Path("/organization/{id}/syncRepoList")
     @AdminOnly
-    public Response syncRepoList(@PathParam("id") String organizationId)
+    public Response syncRepoList(@PathParam("id") final String organizationId)
     {
         if (organizationId == null)
         {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
+        final Organization organization = organizationService.get(Integer.parseInt(organizationId), false);
         try
         {
             repositoryService.syncRepositoryList(organization);
-        } catch (SourceControlException e)
+        }
+        catch (final SourceControlException e)
         {
             log.error("Could not refresh repository list", e);
         }
@@ -354,7 +368,7 @@ public class RootResource
     @Path("/org/{id}/autolink")
     @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableOrganizationAutolinkNewRepos(@PathParam("id") int id, SentData autolink)
+    public Response enableOrganizationAutolinkNewRepos(@PathParam("id") final int id, final SentData autolink)
     {
         organizationService.enableAutolinkNewRepos(id, Boolean.parseBoolean(autolink.getPayload()));
         return Response.noContent().build();
@@ -365,7 +379,7 @@ public class RootResource
     @Path("/org/{id}/globalsmarts")
     @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableSmartcommitsOnNewRepos(@PathParam("id") int id, SentData autoinvite)
+    public Response enableSmartcommitsOnNewRepos(@PathParam("id") final int id, final SentData autoinvite)
     {
         organizationService.enableSmartcommitsOnNewRepos(id, Boolean.parseBoolean(autoinvite.getPayload()));
         return Response.noContent().build();
@@ -376,9 +390,10 @@ public class RootResource
     @Path("/org/{id}/oauth")
     @Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
     @AdminOnly
-    public Response setOrganizationOAuth(@PathParam("id") int id, @FormParam("key") String key, @FormParam("secret") String secret)
+    public Response setOrganizationOAuth(@PathParam("id") final int id, @FormParam("key") final String key,
+            @FormParam("secret") final String secret)
     {
-        Organization organization = organizationService.get(id, false);
+        final Organization organization = organizationService.get(id, false);
         organizationService.updateCredentials(id, new Credential(key, secret, organization.getCredential().getAccessToken()));
         return Response.ok(organization).build();
     }
@@ -388,9 +403,9 @@ public class RootResource
     @Path("/repo/{id}/autolink")
     @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableRepositoryAutolink(@PathParam("id") int id, SentData autolink)
+    public Response enableRepositoryAutolink(@PathParam("id") final int id, final SentData autolink)
     {
-        RepositoryRegistration registration = repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
+        final RepositoryRegistration registration = repositoryService.enableRepository(id, Boolean.parseBoolean(autolink.getPayload()));
         return Response.ok(registration).build();
     }
 
@@ -399,7 +414,7 @@ public class RootResource
     @Path("/repo/{id}/smart")
     @Consumes({ MediaType.APPLICATION_JSON })
     @AdminOnly
-    public Response enableSmartcommits(@PathParam("id") int id, SentData enabled)
+    public Response enableSmartcommits(@PathParam("id") final int id, final SentData enabled)
     {
         // todo handle exceptions
         repositoryService.enableRepositorySmartcommits(id, Boolean.parseBoolean(enabled.getPayload()));
@@ -410,25 +425,25 @@ public class RootResource
     @Path("/organization/{id}/defaultgroups")
     @AdminOnly
     @Produces({ MediaType.APPLICATION_JSON })
-    public Response getDefaultGroups(@PathParam("id") int orgId)
+    public Response getDefaultGroups(@PathParam("id") final int orgId)
     {
-        Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<String, Object>();
 
-        Organization organization = organizationService.get(orgId, false);
+        final Organization organization = organizationService.get(orgId, false);
         try
         {
             // organization
-            Map<String, Object> organizationResult = new HashMap<String, Object>();
+            final Map<String, Object> organizationResult = new HashMap<String, Object>();
             result.put("organization", organizationResult);
             organizationResult.put("id", organization.getId());
             organizationResult.put("name", organization.getName());
 
             // groups
-            List<Map<String, Object>> groupsResult = new LinkedList<Map<String, Object>>();
+            final List<Map<String, Object>> groupsResult = new LinkedList<Map<String, Object>>();
             result.put("groups", groupsResult);
-            for (Group group : organizationService.getGroupsForOrganization(organization))
+            for (final Group group : organizationService.getGroupsForOrganization(organization))
             {
-                Map<String, Object> groupView = new HashMap<String, Object>();
+                final Map<String, Object> groupView = new HashMap<String, Object>();
                 groupView.put("slug", group.getSlug());
                 groupView.put("niceName", group.getNiceName());
                 groupView.put("selected", organization.getDefaultGroups().contains(group));
@@ -437,11 +452,13 @@ public class RootResource
 
             return Response.ok(result).build();
 
-        } catch (SourceControlException.Forbidden_403 e)
+        }
+        catch (final SourceControlException.Forbidden_403 e)
         {
             return Status.forbidden().message("Unable to access Bitbucket").response();
 
-        } catch (SourceControlException e)
+        }
+        catch (final SourceControlException e)
         {
             return Status
                     .error()
@@ -458,27 +475,27 @@ public class RootResource
     public Response getDefaultGroups()
     {
 
-        List<Map<String, Object>> organizations = new LinkedList<Map<String, Object>>();
+        final List<Map<String, Object>> organizations = new LinkedList<Map<String, Object>>();
         int groupsCount = 0;
 
-        List<Map<String, Object>> errors = new LinkedList<Map<String, Object>>();
+        final List<Map<String, Object>> errors = new LinkedList<Map<String, Object>>();
 
-        for (Organization organization : organizationService.getAll(false, "bitbucket"))
+        for (final Organization organization : organizationService.getAll(false, "bitbucket"))
         {
             try
             {
-                Map<String, Object> organizationView = new HashMap<String, Object>();
+                final Map<String, Object> organizationView = new HashMap<String, Object>();
 
                 organizationView.put("id", organization.getId());
                 organizationView.put("name", organization.getName());
                 organizationView.put("organizationUrl", organization.getOrganizationUrl());
 
-                List<Map<String, Object>> groups = new LinkedList<Map<String, Object>>();
-                for (Group group : organizationService.getGroupsForOrganization(organization))
+                final List<Map<String, Object>> groups = new LinkedList<Map<String, Object>>();
+                for (final Group group : organizationService.getGroupsForOrganization(organization))
                 {
                     groupsCount++;
 
-                    Map<String, Object> groupView = new HashMap<String, Object>();
+                    final Map<String, Object> groupView = new HashMap<String, Object>();
                     groupView.put("slug", group.getSlug());
                     groupView.put("niceName", group.getNiceName());
                     groupView.put("selected", organization.getDefaultGroups().contains(group));
@@ -490,18 +507,19 @@ public class RootResource
 
                 organizations.add(organizationView);
 
-            } catch (Exception e)
+            }
+            catch (final Exception e)
             {
                 log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
 
-                Map<String, Object> groupView = new HashMap<String, Object>();
+                final Map<String, Object> groupView = new HashMap<String, Object>();
                 groupView.put("url", organization.getOrganizationUrl());
                 groupView.put("name", organization.getName());
                 errors.add(groupView);
             }
         }
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        final Map<String, Object> result = new HashMap<String, Object>();
         result.put("organizations", organizations);
         result.put("groupsCount", groupsCount);
         result.put("errors", errors);
@@ -514,14 +532,15 @@ public class RootResource
     @Consumes({ MediaType.TEXT_PLAIN })
     @Produces({ MediaType.TEXT_PLAIN })
     @AdminOnly
-    public Response onOffLinkers(@PathParam("onoff") String onOff)
+    public Response onOffLinkers(@PathParam("onoff") final String onOff)
     {
         try
         {
-            boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
+            final boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
             repositoryService.onOffLinkers(onOffBoolean);
             return Response.ok("OK").build();
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             log.error("Failed to reload config.", e);
             return Response.serverError().build();
@@ -539,7 +558,8 @@ public class RootResource
         {
             ondemandAccountConfig.reloadAsync();
             return Response.ok("OK").build();
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             log.error("Failed to reload config.", e);
             return Response.serverError().build();
@@ -549,9 +569,9 @@ public class RootResource
     @DELETE
     @Path("/organization/{id}")
     @AdminOnly
-    public Response deleteOrganization(@PathParam("id") int id)
+    public Response deleteOrganization(@PathParam("id") final int id)
     {
-        Organization integratedAccount = organizationService.findIntegratedAccount();
+        final Organization integratedAccount = organizationService.findIntegratedAccount();
         if (integratedAccount != null && id == integratedAccount.getId())
         {
             return Status.error().message("Failed to delete integrated account.").response();
@@ -565,7 +585,8 @@ public class RootResource
         try
         {
             organizationService.remove(id);
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             log.error("Failed to remove account with id " + id, e);
             return Status.error().message("Failed to delete account.").response();

@@ -73,6 +73,18 @@ function softSync(repositoryId) {
 
 function retrieveSyncStatus() {
     AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/repositories", function (data) {
+        
+        AJS.$.each(AJS.$('.adding-org-loader'), function (a, loader) {
+           var $loader = AJS.$(loader);
+           var orgId = parseInt($loader.attr('data-org-id'), 10);
+           if (AJS.$.inArray(orgId, data.addingOrgs) == -1){
+                AJS.$.get(BASE_URL + '/rest/bitbucket/1.0/html/repositories/?oid=' + orgId, function(response){
+                    AJS.$('#adding-org-loader-' + orgId).remove();
+                    AJS.$('#dvcs-repos-wrapper-' + orgId).html(response);
+                });
+           }
+        });
+        
         AJS.$.each(data.repositories, function (a, repo) {
             updateSyncStatus(repo);
         });
@@ -93,7 +105,7 @@ function updateSyncStatus(repo) {
     var syncStatusHtml = "";
     var syncIcon;
     var syncRepoIcon;
-
+    
     if (repo.sync) {
 
     	if (repo.sync.finished) {
