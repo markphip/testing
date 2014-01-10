@@ -36,17 +36,15 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private String oauthClientId;
     private String oauthSecret;
 
-	// sent by GH on the way back
-	private String code;
+    // sent by GH on the way back
+    private String code;
 
     private final OrganizationService organizationService;
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
 
-    public AddGithubOrganization(ApplicationProperties applicationProperties,
-                                 EventPublisher eventPublisher,
-                                 OAuthStore oAuthStore,
-                                 OrganizationService organizationService)
+    public AddGithubOrganization(final ApplicationProperties applicationProperties, final EventPublisher eventPublisher,
+            final OAuthStore oAuthStore, final OrganizationService organizationService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
@@ -68,10 +66,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
 
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction!default",
-                url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+        final String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubOrganization!finish", url,
+                getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-        // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
+        // param "t" is holding information where to redirect from
+        // "wainting screen" (AddBitbucketOrganization, AddGithubOrganization
+        // ...)
         return SystemUtils.getRedirect(this, githubAuthorizeUrl + urlEncode("&t=2"), true);
     }
 
@@ -89,7 +89,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             addErrorMessage("Please provide both url and organization parameters.");
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
+        final AccountInfo accountInfo = organizationService.getAccountInfo("https://github.com", organization, GithubCommunicator.GITHUB);
         if (accountInfo == null)
         {
             addErrorMessage("Invalid user/team account.");
@@ -106,7 +106,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         try
         {
             return doAddOrganization(getGithubOAuthUtils().requestAccessToken(code));
-        } catch (SourceControlException sce)
+        }
+        catch (final SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
@@ -116,7 +117,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             addErrorMessage("Error obtain access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
@@ -124,22 +126,24 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         }
     }
 
-    private String doAddOrganization(String accessToken)
+    private String doAddOrganization(final String accessToken)
     {
         try
         {
-            Organization newOrganization = new Organization();
+            final Organization newOrganization = new Organization();
             newOrganization.setName(organization);
             newOrganization.setHostUrl(url);
             newOrganization.setDvcsType(GithubCommunicator.GITHUB);
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id),
-                    oAuthStore.getSecret(Host.GITHUB.id), accessToken));
+            newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id), oAuthStore.getSecret(Host.GITHUB.id),
+                    accessToken));
             newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
+            System.out
+                    .println("asuncccs...===============================================================================================================");
+            organizationService.saveAsync(newOrganization);
 
-            organizationService.save(newOrganization);
-
-        } catch (SourceControlException e)
+        }
+        catch (final SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
@@ -148,11 +152,10 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         }
 
         triggerAddSucceededEvent(EVENT_TYPE_GITHUB);
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
-                            getSourceAsUrlParam());
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) + getSourceAsUrlParam());
     }
 
-    public static String encode(String url)
+    public static String encode(final String url)
     {
         return CustomStringUtils.encode(url);
     }
@@ -162,7 +165,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return code;
     }
 
-    public void setCode(String code)
+    public void setCode(final String code)
     {
         this.code = code;
     }
@@ -172,7 +175,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return url;
     }
 
-    public void setUrl(String url)
+    public void setUrl(final String url)
     {
         this.url = url;
     }
@@ -182,7 +185,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return organization;
     }
 
-    public void setOrganization(String organization)
+    public void setOrganization(final String organization)
     {
         this.organization = organization;
     }
@@ -192,7 +195,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return oauthClientId;
     }
 
-    public void setOauthClientId(String oauthClientId)
+    public void setOauthClientId(final String oauthClientId)
     {
         this.oauthClientId = oauthClientId;
     }
@@ -202,12 +205,12 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         return oauthSecret;
     }
 
-    public void setOauthSecret(String oauthSecret)
+    public void setOauthSecret(final String oauthSecret)
     {
         this.oauthSecret = oauthSecret;
     }
 
-    private void triggerAddFailedEvent(String reason)
+    private void triggerAddFailedEvent(final String reason)
     {
         super.triggerAddFailedEvent(EVENT_TYPE_GITHUB, reason);
     }

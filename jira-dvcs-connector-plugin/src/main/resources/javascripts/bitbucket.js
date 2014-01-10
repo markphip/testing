@@ -80,7 +80,8 @@ function retrieveSyncStatus() {
            if (AJS.$.inArray(orgId, data.addingOrgs) == -1){
                 AJS.$.get(BASE_URL + '/rest/bitbucket/1.0/html/repositories/?oid=' + orgId, function(response){
                     AJS.$('#adding-org-loader-' + orgId).remove();
-                    AJS.$('#dvcs-repos-wrapper-' + orgId).html(response);
+                    AJS.$('#dvcs-repos-wrapper-' + orgId).hide().html(response).fadeIn(2500);
+                    AJS.$('#setting-dropdown-btn-' + orgId).removeAttr('disabled');
                 });
            }
         });

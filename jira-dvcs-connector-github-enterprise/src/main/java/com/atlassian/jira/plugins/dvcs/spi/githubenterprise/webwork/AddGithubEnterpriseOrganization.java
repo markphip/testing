@@ -47,17 +47,14 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
     private final OAuthStore oAuthStore;
     private final ApplicationProperties applicationProperties;
 
-    public AddGithubEnterpriseOrganization(ApplicationProperties applicationProperties,
-                                           EventPublisher eventPublisher,
-                                           OAuthStore oAuthStore,
-                                           OrganizationService organizationService)
+    public AddGithubEnterpriseOrganization(final ApplicationProperties applicationProperties, final EventPublisher eventPublisher,
+            final OAuthStore oAuthStore, final OrganizationService organizationService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.applicationProperties = applicationProperties;
     }
-
 
     @Override
     @RequiresXsrfCheck
@@ -73,15 +70,18 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     GithubOAuthUtils getGithubOAuthUtils()
     {
-        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE));
+        return new GithubOAuthUtils(applicationProperties.getBaseUrl(), oAuthStore.getClientId(GITHUB_ENTERPRISE),
+                oAuthStore.getSecret(GITHUB_ENTERPRISE));
     }
 
     private String redirectUserToGithub()
     {
-        String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddOrganizationProgressAction!default",
-                url, getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
+        final String githubAuthorizeUrl = getGithubOAuthUtils().createGithubRedirectUrl("AddGithubEnterpriseOrganization!finish", url,
+                getXsrfToken(), organization, getAutoLinking(), getAutoSmartCommits());
 
-        // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
+        // param "t" is holding information where to redirect from
+        // "wainting screen" (AddBitbucketOrganization, AddGithubOrganization
+        // ...)
         return SystemUtils.getRedirect(this, githubAuthorizeUrl + urlEncode("&t=3"), true);
     }
 
@@ -104,12 +104,13 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
         }
 
-//TODO validation of account is disabled because of private mode
-//        AccountInfo accountInfo = organizationService.getAccountInfo(url, organization);
-//        if (accountInfo == null)
-//        {
-//            addErrorMessage("Invalid user/team account.");
-//        }
+        // TODO validation of account is disabled because of private mode
+        // AccountInfo accountInfo = organizationService.getAccountInfo(url,
+        // organization);
+        // if (accountInfo == null)
+        // {
+        // addErrorMessage("Invalid user/team account.");
+        // }
         if (invalidInput())
         {
             triggerAddFailedEvent(FAILED_REASON_VALIDATION);
@@ -121,24 +122,27 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         try
         {
             return doAddOrganization(getGithubOAuthUtils().requestAccessToken(url, code));
-        } catch (InvalidResponseException ire)
+        }
+        catch (final InvalidResponseException ire)
         {
             addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_RESPONSE);
             return INPUT;
 
-        } catch (SourceControlException sce)
+        }
+        catch (final SourceControlException sce)
         {
             addErrorMessage(sce.getMessage());
             log.warn(sce.getMessage());
-            if ( sce.getCause() != null )
+            if (sce.getCause() != null)
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
             triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
             return INPUT;
 
-        } catch (Exception e)
+        }
+        catch (final Exception e)
         {
             addErrorMessage("Error obtaining access token.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
@@ -147,21 +151,23 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     }
 
-    private String doAddOrganization(String accessToken)
+    private String doAddOrganization(final String accessToken)
     {
         try
         {
-            Organization newOrganization = new Organization();
+            final Organization newOrganization = new Organization();
             newOrganization.setName(organization);
             newOrganization.setHostUrl(url);
             newOrganization.setDvcsType(GithubEnterpriseCommunicator.GITHUB_ENTERPRISE);
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
-            newOrganization.setCredential(new Credential(oAuthStore.getClientId(GITHUB_ENTERPRISE), oAuthStore.getSecret(GITHUB_ENTERPRISE), accessToken));
+            newOrganization.setCredential(new Credential(oAuthStore.getClientId(GITHUB_ENTERPRISE),
+                    oAuthStore.getSecret(GITHUB_ENTERPRISE), accessToken));
             newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
 
-            organizationService.save(newOrganization);
+            organizationService.saveAsync(newOrganization);
 
-        } catch (SourceControlException e)
+        }
+        catch (final SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
@@ -171,11 +177,10 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         }
 
         triggerAddSucceededEvent(EVENT_TYPE_GITHUB_ENTERPRISE);
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
-                            getSourceAsUrlParam());
+        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) + getSourceAsUrlParam());
     }
 
-    public static String encode(String url)
+    public static String encode(final String url)
     {
         return CustomStringUtils.encode(url);
     }
@@ -185,7 +190,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         return code;
     }
 
-    public void setCode(String code)
+    public void setCode(final String code)
     {
         this.code = code;
     }
@@ -195,7 +200,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         return organization;
     }
 
-    public void setOrganization(String organization)
+    public void setOrganization(final String organization)
     {
         this.organization = organization;
     }
@@ -205,7 +210,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         return oAuthStore.getClientId(GITHUB_ENTERPRISE);
     }
 
-    public void setOauthClientIdGhe(String oauthClientIdGhe)
+    public void setOauthClientIdGhe(final String oauthClientIdGhe)
     {
         this.oauthClientIdGhe = oauthClientIdGhe;
     }
@@ -215,7 +220,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         return oAuthStore.getSecret(GITHUB_ENTERPRISE);
     }
 
-    public void setOauthSecretGhe(String oauthSecretGhe)
+    public void setOauthSecretGhe(final String oauthSecretGhe)
     {
         this.oauthSecretGhe = oauthSecretGhe;
     }
@@ -225,12 +230,12 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         return url;
     }
 
-    public void setUrl(String url)
+    public void setUrl(final String url)
     {
         this.url = url;
     }
 
-    private void triggerAddFailedEvent(String reason)
+    private void triggerAddFailedEvent(final String reason)
     {
         super.triggerAddFailedEvent(EVENT_TYPE_GITHUB_ENTERPRISE, reason);
     }

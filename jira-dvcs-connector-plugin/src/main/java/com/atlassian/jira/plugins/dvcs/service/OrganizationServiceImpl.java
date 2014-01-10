@@ -129,11 +129,11 @@ public class OrganizationServiceImpl implements OrganizationService
         // sync repository list
         if (async)
         {
-            repositoryService.syncRepositoryList(org, false);
+            repositoryService.syncRepositoryListAsync(org, false);
         }
         else
         {
-            repositoryService.syncRepositoryListAsync(org, false);
+            repositoryService.syncRepositoryList(org, false);
         }
 
         return org;
