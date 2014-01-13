@@ -138,8 +138,6 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id), oAuthStore.getSecret(Host.GITHUB.id),
                     accessToken));
             newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
-            System.out
-                    .println("asuncccs...===============================================================================================================");
             organizationService.saveAsync(newOrganization);
 
         }
