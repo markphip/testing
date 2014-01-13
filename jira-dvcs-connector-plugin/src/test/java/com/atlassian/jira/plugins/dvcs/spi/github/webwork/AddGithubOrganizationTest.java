@@ -198,7 +198,7 @@ public class AddGithubOrganizationTest {
     public void testDoFinishAnalyticsErrorGeneric() throws Exception
     {
         addGithubOrganization.setSource(SAMPLE_SOURCE);
-        when(organizationService.save(any(Organization.class))).thenThrow(Exception.class);
+        when(organizationService.saveAsync(any(Organization.class))).thenThrow(Exception.class);
         String ret = addGithubOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
         verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB, OUTCOME_FAILED, FAILED_REASON_OAUTH_GENERIC));
@@ -211,7 +211,7 @@ public class AddGithubOrganizationTest {
     {
         addGithubOrganization.setSource(SAMPLE_SOURCE);
         reset(organizationService);
-        when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.class);
+        when(organizationService.saveAsync(any(Organization.class))).thenThrow(SourceControlException.class);
         String ret = addGithubOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
         verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB, OUTCOME_FAILED, FAILED_REASON_OAUTH_SOURCECONTROL));

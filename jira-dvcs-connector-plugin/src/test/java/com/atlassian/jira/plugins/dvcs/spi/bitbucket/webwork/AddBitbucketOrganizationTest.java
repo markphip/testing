@@ -219,7 +219,7 @@ public class AddBitbucketOrganizationTest
     public void testDoFinishAnalyticsErrorUnauth() throws Exception
     {
         addBitbucketOrganization.setSource(SAMPLE_SOURCE);
-        when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.UnauthorisedException.class);
+        when(organizationService.saveAsync(any(Organization.class))).thenThrow(SourceControlException.UnauthorisedException.class);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
         verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_OAUTH_UNAUTH));
@@ -232,7 +232,7 @@ public class AddBitbucketOrganizationTest
     {
         addBitbucketOrganization.setSource(SAMPLE_SOURCE);
         reset(organizationService);
-        when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.class);
+        when(organizationService.saveAsync(any(Organization.class))).thenThrow(SourceControlException.class);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
         verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_OAUTH_SOURCECONTROL));
