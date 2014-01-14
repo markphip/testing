@@ -76,7 +76,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     private static final int CHANGESET_LIMIT = Integer.getInteger("bitbucket.request.changeset.limit", 15);
 
-    private static final int MAX_CONCURRENT_DIFFSTAT_REQUESTS_LIMIT = Integer.getInteger("bitbucket.concurrent.diffstat.requests.limit", 10);
+    private static final int MAX_CONCURRENT_DIFFSTAT_REQUESTS_LIMIT = Integer.getInteger("bitbucket.concurrent.diffstat.requests.limit", 2);
     private static final int MAX_DIFFSTAT_REQUESTS_PER_HOUR_LIMIT = Integer.getInteger("bitbucket.diffstat.requests.per.hour.limit", 500);
 
     public static final String BITBUCKET = "bitbucket";
