@@ -16,6 +16,7 @@ public class RateLimiter
     private final long timeLength;
     private final TimeUnit timeUnit;
     private final Clock clock;
+    private final long maxConcurrency;
 
     public RateLimiter(long maxConcurrency,
                        long queryLimit,
@@ -27,6 +28,7 @@ public class RateLimiter
         this.queryLimit = queryLimit;
         this.timeLength = timeLength;
         this.timeUnit = timeUnit;
+        this.maxConcurrency = maxConcurrency;
         this.clock = clock;
         this.delayQueue = delayQueue;
 
@@ -52,7 +54,8 @@ public class RateLimiter
 
     private Delayed delayToNext()
     {
-        return new DelayedCall(clock.getCurrentDate().withDurationAdded(new Duration(timeUnit.toMillis(timeLength) / queryLimit), 1));
+        long durationMillis = (timeUnit.toMillis(timeLength) * maxConcurrency) / queryLimit;
+        return new DelayedCall(clock.getCurrentDate().withDurationAdded((new Duration(durationMillis)), 1));
     }
 
     private class DelayedCall implements Delayed

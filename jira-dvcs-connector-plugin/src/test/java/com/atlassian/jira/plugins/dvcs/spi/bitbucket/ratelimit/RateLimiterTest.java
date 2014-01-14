@@ -1,9 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.ratelimit;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.testng.annotations.BeforeTest;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,8 +14,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RateLimiterTest {
-    @Mock
-    Clock clock;
+    private Clock clock = new Clock();
 
     @Test
     public void testBasicRateLimiting()
@@ -27,7 +28,7 @@ public class RateLimiterTest {
         long startTime = System.currentTimeMillis();
         rateLimiter.aquire();
         rateLimiter.aquire();
-        assertThat("Rate limiting should prevent two within 10 milliseconds", System.currentTimeMillis() - startTime, is(greaterThan(10L)));
+        assertThat("Rate limiting should prevent two within 10 milliseconds", System.currentTimeMillis() - startTime, is(greaterThanOrEqualTo(10L)));
     }
 
     @Test
@@ -45,24 +46,29 @@ public class RateLimiterTest {
         rateLimiter.aquire();
         assertThat("Should get through three in under 100 millis", System.currentTimeMillis() - startTime, is(lessThan(100L)));
         rateLimiter.aquire();
-        assertThat("Last should be over 100 millis", System.currentTimeMillis() - startTime, is(greaterThan(100L)));
+        assertThat("Last should be over 100 millis", System.currentTimeMillis() - startTime, is(greaterThanOrEqualTo(100L)));
     }
 
     @Test
     public void testRollingWindow()
     {
-        RateLimiter rateLimiter = new RateLimiterBuilder().maxConcurrency(1)
+        RateLimiter rateLimiter = new RateLimiterBuilder().maxConcurrency(10)
                 .queryLimit(1)
                 .timeLength(10, TimeUnit.MILLISECONDS)
                 .withClock(clock)
                 .build();
+        // Drain the burst capacity
+        for (int i = 0; i < 10; i++)
+        {
+            rateLimiter.aquire();
+        }
 
+        // Now check the non-burst rate
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 30; i++)
         {
             rateLimiter.aquire();
         }
-        assertThat("30 should take longer than 300 milliseconds", System.currentTimeMillis() - startTime, is(greaterThan(300L)));
-
+        assertThat("30 should take longer than 300 milliseconds", System.currentTimeMillis() - startTime, is(greaterThanOrEqualTo(300L)));
     }
 }
