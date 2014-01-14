@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.atlassian.core.util.Clock;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -95,8 +94,6 @@ public class BitbucketCommunicatorTest
     private Plugin plugin;
     @Mock
     private PluginInformation pluginInformation;
-    @Mock
-    private Clock clock;
 
     private DvcsCommunicator communicator;
 
