@@ -54,8 +54,8 @@ public class RateLimiter
 
     private Delayed delayToNext()
     {
-        long durationMillis = (timeUnit.toMillis(timeLength) * maxConcurrency) / queryLimit;
-        return new DelayedCall(clock.getCurrentDate().withDurationAdded((new Duration(durationMillis)), 1));
+        int durationMillis = Long.valueOf((timeUnit.toMillis(timeLength) * maxConcurrency) / queryLimit).intValue();
+        return new DelayedCall(clock.getCurrentDate().plusMillis(durationMillis));
     }
 
     private class DelayedCall implements Delayed
