@@ -1,5 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
@@ -16,15 +27,6 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Resource;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -104,6 +106,10 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                     payload.getProgress().getJiraCount() + issues.size(), //
                     0 //
                     );
+            if (softSync)
+            {
+                payload.getProgress().getAffectedIssueKeys().addAll(issues);
+            }
         }
 
         if (StringUtils.isNotBlank(page.getNext()))

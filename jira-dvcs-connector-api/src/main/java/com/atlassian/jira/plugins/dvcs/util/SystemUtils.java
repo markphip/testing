@@ -24,6 +24,7 @@ public class SystemUtils
     private static final boolean URL_VALIDATOR_EXISTS;
     private static final boolean GET_ALL_ISSUE_KEYS_EXISTS;
     private static final boolean GET_ALL_PROJECT_KEYS_EXISTS;
+    private static final boolean DEVSTATUS_EXISTS;
 
     static
     {
@@ -31,12 +32,25 @@ public class SystemUtils
         URL_VALIDATOR_EXISTS = getUrlValidatorExists();
         GET_ALL_ISSUE_KEYS_EXISTS = getAllIssueKeysExists();
         GET_ALL_PROJECT_KEYS_EXISTS = getAllProjectKeysExists();
+        DEVSTATUS_EXISTS = getDevstatusExists();
     }
 
     private static boolean getRedirectExists()
     {
         // Detect whether getRedirect(String, boolean) is present
         return getMethodExists(JiraWebActionSupport.class, "getRedirect", String.class, boolean.class);
+    }
+
+    private static boolean getDevstatusExists()
+    {
+        try {
+            Class.forName("com.atlassian.jira.plugin.devstatus.api.provider.SummaryDataChangedEvent");
+            return true;
+        } catch (ClassNotFoundException e)
+        {
+            log.info("Devstatus plugin not installed.");
+            return false;
+        }
     }
 
     private static boolean getUrlValidatorExists()
@@ -141,5 +155,10 @@ public class SystemUtils
         {
             return Collections.singleton(project.getKey());
         }
+    }
+    
+    public static boolean isDevStatsEnabled()
+    {
+        return DEVSTATUS_EXISTS;
     }
 }

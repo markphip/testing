@@ -1,9 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 /**
  * Information about the current synchronisation progress
@@ -123,4 +124,7 @@ public interface Progress
     Long getStartTime();
 
     Long getFinishTime();
+    
+    Set<String> getAffectedIssueKeys();
+
 }

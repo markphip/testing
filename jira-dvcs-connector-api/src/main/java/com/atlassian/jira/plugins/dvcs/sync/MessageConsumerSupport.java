@@ -82,7 +82,10 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
                     payload.getProgress().getJiraCount() + issues.size(), //
                     0 //
                     );
-
+            if (softSync)
+            {
+                payload.getProgress().getAffectedIssueKeys().addAll(issues);
+            }
             for (String parentChangesetNode : changeset.getParents())
             {
                 if (changesetService.getByNode(repo.getId(), parentChangesetNode) == null) {

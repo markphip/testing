@@ -19,6 +19,10 @@
                 com.atlassian.jira.plugins.dvcs.smartcommits.handlers,
                 com.atlassian.jira.plugins.dvcs.ondemand
             </Export-Package>
+            <!-- 
+            com.atlassian.jira.plugin.devstatus.api.provider,*;resolution:=optional
+             -->
+            <Import-Package>com.atlassian.jira.plugin.devstatus.api.provider;resolution:=optional,*;resolution:=optional</Import-Package>
         </bundle-instructions>
     </plugin-info>
 

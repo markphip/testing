@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,6 +12,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -58,6 +60,9 @@ public class DefaultProgress implements Progress
 
     @XmlTransient
     private EnumSet<SynchronizationFlag> runAgain;
+
+    @XmlTransient
+    private Set<String> affectedIssueKeys = new HashSet<String>();
 
     public DefaultProgress()
     {
@@ -243,4 +248,10 @@ public class DefaultProgress implements Progress
     {
         this.auditLogId = auditLogId;
     }
+
+    public Set<String> getAffectedIssueKeys()
+    {
+        return affectedIssueKeys;
+    }
+
 }

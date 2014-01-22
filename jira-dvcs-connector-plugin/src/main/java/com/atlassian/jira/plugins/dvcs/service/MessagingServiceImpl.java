@@ -1,6 +1,29 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
@@ -22,30 +45,11 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProces
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 /**
  * A {@link MessagingService} implementation.
@@ -123,6 +127,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     @Resource
     private HttpClientProvider httpClientProvider;
 
+    @Resource
+    private EventPublisher eventPublisher;
+
     private final Object endProgressLock = new Object();
 
     /**
@@ -149,7 +156,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Contains all tags which are currently paused.
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
-
+    
+    private static final boolean DEVSTATUS_EXISTS = SystemUtils.isDevStatsEnabled();
+    
     /**
      * Initializes been.
      */
@@ -759,6 +768,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         progress.setRunAgainFlags(null);
                         synchronizer.doSync(repository, flags);
                     }
+                    fireDataChangedEvent(progress.getAffectedIssueKeys());
                 }
 
                 return true;
@@ -769,6 +779,16 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         }
 
         return false;
+    }
+    
+    private void fireDataChangedEvent(Set<String> affectedIssueKeys)
+    {
+        if (DEVSTATUS_EXISTS)
+        {
+            /*if (affectedIssueKeys != null && affectedIssueKeys.isEmpty()) {
+            eventPublisher.publish(new SummaryDataChangedEvent("todo", affectedIssueKeys));
+            }*/
+        }
     }
 
     @Override
