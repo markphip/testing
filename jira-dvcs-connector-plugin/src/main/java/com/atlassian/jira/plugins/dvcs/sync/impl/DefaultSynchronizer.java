@@ -1,6 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.sync.impl;
 
 import com.atlassian.jira.config.FeatureManager;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+
+import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
@@ -41,6 +53,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
     private final Logger log = LoggerFactory.getLogger(DefaultSynchronizer.class);
 
     private final String DISABLE_SYNCHRONIZATION_FEATURE = "dvcs.connector.synchronization.disabled";
+    private final String DISABLE_FULL_SYNCHRONIZATION_FEATURE = "dvcs.connector.full-synchronization.disabled";
+    private final String DISABLE_PR_SYNCHRONIZATION_FEATURE = "dvcs.connector.pr-synchronization.disabled";
 
     @Resource
     private MessagingService messagingService;
@@ -104,7 +118,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     return;
                 }
 
-                progress = startProgress(repo);
+                progress = startProgress(repo, flags);
             }
 
             boolean softSync =  flags.contains(SynchronizationFlag.SOFT_SYNC);
@@ -115,10 +129,10 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             try
             {
                 // audit
-                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(softSync), new Date(progress.getStartTime())).getID();
+                auditId = syncAudit.newSyncAuditLog(repo.getId(), getSyncType(flags), new Date(progress.getStartTime())).getID();
                 progress.setAuditLogId(auditId);
 
-                if (!softSync)
+                if (!softSync && !featureManager.isEnabled(DISABLE_FULL_SYNCHRONIZATION_FEATURE))
                 {
                     //TODO This will deleted both changeset and PR messages, we should distinguish between them
                     // Stopping synchronization to delete failed messages for repository
@@ -145,13 +159,13 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                 // first retry all failed messages
                 try
                 {
-                    messagingService.retry(messagingService.getTagForSynchronization(repo));
+                    messagingService.retry(messagingService.getTagForSynchronization(repo), auditId);
                 } catch (Exception e)
                 {
                     log.warn("Could not resume failed messages.", e);
                 }
 
-                if (!postponePrSyncHelper.isAfterPostponedTime())
+                if (!postponePrSyncHelper.isAfterPostponedTime() || featureManager.isEnabled(DISABLE_PR_SYNCHRONIZATION_FEATURE))
                 {
                     flags.remove(SynchronizationFlag.SYNC_PULL_REQUESTS);
                 }
@@ -173,17 +187,39 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         }
     }
 
-    private Progress startProgress(Repository repository)
+    private Progress startProgress(Repository repository, EnumSet<SynchronizationFlag> flags)
     {
         DefaultProgress progress = new DefaultProgress();
+        progress.setSoftsync(flags.contains(SynchronizationFlag.SOFT_SYNC));
         progress.start();
         putProgress(repository, progress);
         return progress;
     }
 
-    protected String getSyncType(boolean softSync)
+    protected String getSyncType(final EnumSet<SynchronizationFlag> flags)
     {
-        return softSync ? SyncAuditLogMapping.SYNC_TYPE_SOFT : SyncAuditLogMapping.SYNC_TYPE_FULL;
+        final StringBuilder bld = new StringBuilder();
+        for (final SynchronizationFlag flag : flags)
+        {
+            switch (flag)
+            {
+                case SOFT_SYNC:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_SOFT).append(" ");
+                    break;
+                case SYNC_CHANGESETS:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_CHANGESETS).append(" ");
+                    break;
+                case SYNC_PULL_REQUESTS:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_PULLREQUESTS).append(" ");
+                    break;
+                case WEBHOOK_SYNC:
+                    bld.append(SyncAuditLogMapping.SYNC_TYPE_WEBHOOKS).append(" ");
+                    break;
+                default: // Do nothing.
+                    break;
+            }
+        }
+        return bld.toString();
     }
 
     private boolean skipSync(Repository repository, EnumSet<SynchronizationFlag> flags)
@@ -209,47 +245,6 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
             }
         }
         return true;
-    }
-
-    private void updateBranches(Repository repo, List<Branch> newBranches)
-    {
-        branchService.updateBranches(repo, newBranches);
-    }
-
-    private void updateBranchHeads(Repository repo, List<Branch> newBranches, List<BranchHead> oldHeads)
-    {
-        branchService.updateBranchHeads(repo, newBranches, oldHeads);
-    }
-
-    private List<String> extractBranchHeadsFromBranches(List<Branch> branches)
-    {
-        if (branches == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (Branch branch : branches)
-        {
-            for (BranchHead branchHead : branch.getHeads())
-            {
-                result.add(branchHead.getHead());
-            }
-        }
-        return result;
-    }
-
-    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
-    {
-        if (branchHeads == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (BranchHead branchHead : branchHeads)
-        {
-            result.add(branchHead.getHead());
-        }
-        return result;
     }
 
     @Override

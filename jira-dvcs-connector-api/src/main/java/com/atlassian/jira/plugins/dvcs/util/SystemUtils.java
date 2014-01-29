@@ -81,7 +81,7 @@ public class SystemUtils
         return getMethodExists(ProjectManager.class, "getAllProjectKeys", Long.class);
     }
 
-    private static boolean getMethodExists(Class<?> clazz, String method, Class<?>... parameterTypes)
+    public static boolean getMethodExists(Class<?> clazz, String method, Class<?>... parameterTypes)
     {
         try
         {

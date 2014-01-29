@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +10,9 @@ import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
 import com.atlassian.jira.plugins.dvcs.service.LinkedIssueService;
@@ -61,11 +60,20 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
         Repository repo = payload.getRepository();
-        int pageNum = payload.getPage();
+        final Progress progress = payload.getProgress();
 
-        BitbucketChangesetPage page = communicator.getChangesetsForPage(pageNum, repo, payload.getInclude(), payload.getExclude());
+        progress.incrementRequestCount(new Date());
+        final long startFlightTime = System.currentTimeMillis();
+        final BitbucketChangesetPage page;
+        try
+        {
+            page = communicator.getNextPage(repo, payload.getInclude(), payload.getExclude(), payload.getPage());
+        }
+        finally
+        {
+            progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+        }
         process(message, payload, page);
-        //
     }
 
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
@@ -86,11 +94,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
             
-            if (CollectionUtils.isNotEmpty(issues))
-            {
-                cset = changesetService.getDetailChangesetFromDvcs(repo, cset);
-            }
-
             MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(cset, issues);
@@ -118,6 +121,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         }
     }
 
+    // TODO This code is duplicated between here and BitbucketChangesetIterator
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
@@ -138,22 +142,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                 new BitbucketSynchronizeChangesetMessage(originalMessage.getRepository(), //
                         originalMessage.getRefreshAfterSynchronizedAt(), //
                         originalMessage.getProgress(), //
-                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage.getPage() + 1, originalMessage
-                                .getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
-    }
-
-    private List<String> extractBranchHeads(List<BranchHead> branchHeads)
-    {
-        if (branchHeads == null)
-        {
-            return null;
-        }
-        List<String> result = new ArrayList<String>();
-        for (BranchHead branchHead : branchHeads)
-        {
-            result.add(branchHead.getHead());
-        }
-        return result;
+                        originalMessage.getInclude(), originalMessage.getExclude(), prevPage, originalMessage.getNodesToBranches(), originalMessage.isSoftSync(), originalMessage.getSyncAuditId()), softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, tags);
     }
 
     @Override
