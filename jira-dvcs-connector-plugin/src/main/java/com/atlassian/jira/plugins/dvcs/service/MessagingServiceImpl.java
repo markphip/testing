@@ -836,7 +836,10 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         flags.add(SynchronizationFlag.SOFT_SYNC);
                         synchronizer.doSync(repository, flags);
                     }
-                    fireDataChangedEvent(progress.getAffectedIssueKeys());
+                    if (progress.isSoftsync())
+                    {
+                        fireDataChangedEvent(progress.getAffectedIssueKeys());
+                    }
                 }
 
                 return true;

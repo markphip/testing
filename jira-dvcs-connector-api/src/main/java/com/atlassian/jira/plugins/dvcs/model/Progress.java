@@ -19,10 +19,10 @@ public interface Progress
      * Call this method to update the current status of the progress.
      *
      * @param changesetCount
-     * @param jiraCount
+     * @param issues
      * @param synchroErrorCount
      */
-    void inProgress(int changesetCount, int jiraCount, int synchroErrorCount);
+    void inProgress(int changesetCount, Set<String> issues, int synchroErrorCount);
 
     int getAuditLogId();
     void setAuditLogId(int id);
@@ -79,9 +79,9 @@ public interface Progress
      * Call this method to update the current status of the pull request progress.
      *
      * @param pullRequestActivityCount
-     * @param jiraCount
+     * @param issues
      */
-    void inPullRequestProgress(int pullRequestActivityCount, int jiraCount);
+    void inPullRequestProgress(int pullRequestActivityCount, Set<String> issues);
 
     /**
      * Indication whether the synchronisation has been finished

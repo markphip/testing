@@ -28,9 +28,9 @@ public interface RepositoryPullRequestDao
      *
      * @param pullRequestId
      *
-     * @return Number of found issues keys
+     * @return Set of found issues keys
      */
-    int updatePullRequestIssueKeys(Repository domain, int pullRequestId);
+    Set<String> updatePullRequestIssueKeys(Repository domain, int pullRequestId);
 
     void removeAll(Repository domain);
 

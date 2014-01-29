@@ -74,7 +74,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
 
             payload.getProgress().inProgress( //
                     payload.getProgress().getChangesetCount() + 1, //
-                    payload.getProgress().getJiraCount() + issues.size(), //
+                    issues, //
                     0 //
                     );
             if (softSync)

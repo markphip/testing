@@ -124,7 +124,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             markProcessed(payload, info, localPrId);
 
             progress.inPullRequestProgress(processedSize(payload),
-                    jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
+                    dao.updatePullRequestIssueKeys(repo, localPrId));
         }
         if (!isLastPage)
         {
