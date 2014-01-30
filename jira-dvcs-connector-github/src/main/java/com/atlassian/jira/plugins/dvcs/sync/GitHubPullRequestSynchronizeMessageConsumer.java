@@ -96,9 +96,7 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     public void onReceive(Message<GitHubPullRequestSynchronizeMessage> message, GitHubPullRequestSynchronizeMessage payload)
     {
         Repository repository = payload.getRepository();
-        boolean softSync = payload.isSoftSync();
         final Progress progress = payload.getProgress();
-        int jiraCount = progress.getJiraCount();
         int pullRequestCount = progress.getPullRequestActivityCount();
 
         PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
@@ -109,22 +107,15 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
 
         localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
 
-        Set<String> issueKeys = repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
-
-        progress.inPullRequestProgress(pullRequestCount + 1,
-                jiraCount + issueKeys.size());
-
-        if (softSync)
-        {
-            progress.getAffectedIssueKeys().addAll(issueKeys);
-        }
-
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
         processPullRequestReviewComments(repository, remotePullRequest, localPullRequest, participantIndex);
 
         pullRequestService.updatePullRequestParticipants(localPullRequest.getID(), repository.getId(), participantIndex);
+
+        Set<String> issueKeys = repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+        progress.inPullRequestProgress(pullRequestCount + 1, issueKeys);
     }
 
     /**
