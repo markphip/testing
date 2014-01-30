@@ -109,10 +109,6 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
                     issues, //
                     0 //
                     );
-            if (softSync)
-            {
-                payload.getProgress().getAffectedIssueKeys().addAll(issues);
-            }
         }
 
         if (StringUtils.isNotBlank(page.getNext()))
