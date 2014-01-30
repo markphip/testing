@@ -26,6 +26,7 @@ import org.springframework.beans.factory.DisposableBean;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugin.devstatus.api.provider.SummaryDataChangedEvent;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageQueueItemMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.MessageTagMapping;
@@ -841,7 +842,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         fireDataChangedEvent(progress.getAffectedIssueKeys());
                     }
                 }
-
                 return true;
             } finally
             {
@@ -856,9 +856,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     {
         if (DEVSTATUS_EXISTS)
         {
-            /*if (affectedIssueKeys != null && affectedIssueKeys.isEmpty()) {
-            eventPublisher.publish(new SummaryDataChangedEvent("todo", affectedIssueKeys));
-            }*/
+            if (affectedIssueKeys != null && !affectedIssueKeys.isEmpty()) {
+                eventPublisher.publish(new SummaryDataChangedEvent("dvcs.sync.affectedIssues", affectedIssueKeys));
+            }
         }
     }
 

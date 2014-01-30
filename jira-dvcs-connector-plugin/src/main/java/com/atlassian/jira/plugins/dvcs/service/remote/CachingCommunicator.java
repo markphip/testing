@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -182,9 +183,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
+    public void startSynchronisation(final Repository repo, final Progress progress, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
-        delegate.startSynchronisation(repo, flags, auditId);
+        delegate.startSynchronisation(repo, progress , flags, auditId);
     }
 
     @Override

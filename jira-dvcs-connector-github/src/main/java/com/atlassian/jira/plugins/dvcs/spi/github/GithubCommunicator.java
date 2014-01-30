@@ -21,6 +21,7 @@ import java.util.Set;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
@@ -557,7 +558,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public void startSynchronisation(final Repository repo, final EnumSet<SynchronizationFlag> flags, final int auditId)
+    public void startSynchronisation(final Repository repo, final Progress progress, final EnumSet<SynchronizationFlag> flags, final int auditId)
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
@@ -585,7 +586,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
             branchService.updateBranchHeads(repo, branches, oldBranchHeads);
-            branchService.updateBranches(repo, branches);
+            branchService.updateBranches(repo, progress, branches);
         }
         if (pullRequestSync && featureManager.isEnabled(ENABLE_GITHUB_PR_SYNCHRONIZATION_FEATURE))
         {

@@ -696,7 +696,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId)
+    public void startSynchronisation(Repository repo, Progress progress, EnumSet<SynchronizationFlag> flags, int auditId)
     {
         boolean softSync = flags.contains(SynchronizationFlag.SOFT_SYNC);
         boolean changestesSync = flags.contains(SynchronizationFlag.SYNC_CHANGESETS);
@@ -709,7 +709,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             processBitbucketCsetSync(repo, softSync, filterNodes, auditId);
 
             branchService.updateBranchHeads(repo, filterNodes.newBranches, filterNodes.oldHeads);
-            branchService.updateBranches(repo, filterNodes.newBranches);
+            branchService.updateBranches(repo, progress, filterNodes.newBranches);
         }
         // sync pull requests
         if (pullRequestSync)
