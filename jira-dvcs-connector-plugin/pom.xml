@@ -23,17 +23,14 @@
     <description>JIRA DVCS Connector for JIRA, linking JIRA issues to Bitbucket and GitHub changesets.</description>
     <packaging>atlassian-plugin</packaging>
     <dependencies>
-    
-    <!--
-       waiting for the release
+
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-development-integration-plugin</artifactId>
             <version>${devstatus.version}</version>
             <scope>provided</scope>
         </dependency>
-    -->
-    
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -281,13 +278,11 @@
                             <artifactId>jira-testkit-plugin</artifactId>
                             <version>${testkit.version}</version>
                         </pluginArtifact>
-                       <!--  
-                       <pluginArtifact>
+                        <pluginArtifact>
                             <groupId>com.atlassian.jira.plugins</groupId>
                             <artifactId>jira-development-integration-plugin</artifactId>
                             <version>${devstatus.version}</version>
                        </pluginArtifact> 
-                       -->
                     </pluginArtifacts>
                     <skipTests>${skipTests}</skipTests>
                     <testGroups>
