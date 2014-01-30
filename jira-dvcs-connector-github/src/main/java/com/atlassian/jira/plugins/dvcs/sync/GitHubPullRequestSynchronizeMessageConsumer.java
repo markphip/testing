@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Message;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
@@ -95,6 +96,10 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
     public void onReceive(Message<GitHubPullRequestSynchronizeMessage> message, GitHubPullRequestSynchronizeMessage payload)
     {
         Repository repository = payload.getRepository();
+        boolean softSync = payload.isSoftSync();
+        final Progress progress = payload.getProgress();
+        int jiraCount = progress.getJiraCount();
+        int pullRequestCount = progress.getPullRequestActivityCount();
 
         PullRequest remotePullRequest = getRemotePullRequest(repository, payload.getPullRequestNumber());
         RepositoryPullRequestMapping localPullRequest = repositoryPullRequestDao.findRequestByRemoteId(repository,
@@ -103,7 +108,17 @@ public class GitHubPullRequestSynchronizeMessageConsumer implements MessageConsu
         Map<String, Participant> participantIndex = new HashMap<String,Participant>();
 
         localPullRequest = updateLocalPullRequest(repository, remotePullRequest, localPullRequest, participantIndex);
-        repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+
+        Set<String> issueKeys = repositoryPullRequestDao.updatePullRequestIssueKeys(repository, localPullRequest.getID());
+
+        progress.inPullRequestProgress(pullRequestCount + 1,
+                jiraCount + issueKeys.size());
+
+        if (softSync)
+        {
+            progress.getAffectedIssueKeys().addAll(issueKeys);
+        }
+
         updateLocalPullRequestCommits(repository, remotePullRequest, localPullRequest);
 
         processPullRequestComments(repository, remotePullRequest, localPullRequest, participantIndex);
