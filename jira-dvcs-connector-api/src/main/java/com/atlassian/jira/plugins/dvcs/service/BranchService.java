@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
 public interface BranchService
@@ -12,7 +13,7 @@ public interface BranchService
 
     public void removeAllBranchHeadsInRepository(int repositoryId);
 
-    void updateBranches(Repository repository, List<Branch> newBranches);
+    void updateBranches(Repository repository, final Progress progress, List<Branch> newBranches);
 
     void removeAllBranchesInRepository(int repositoryId);
 

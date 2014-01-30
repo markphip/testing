@@ -12,6 +12,7 @@ import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 
@@ -100,5 +101,5 @@ public interface DvcsCommunicator
 
     String getCreatePullRequestUrl(Repository repository, String sourceSlug, final String sourceBranch, String destinationSlug, final String destinationBranch, String eventSource);
 
-    void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId);
+    void startSynchronisation(Repository repo, final Progress progress, EnumSet<SynchronizationFlag> flags, int auditId);
 }

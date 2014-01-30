@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
@@ -34,7 +35,7 @@ public class BranchServiceImpl implements BranchService
     }
 
     @Override
-    public void updateBranches(final Repository repository, final List<Branch> newBranches)
+    public void updateBranches(final Repository repository, final Progress progress, final List<Branch> newBranches)
     {
         List<Branch> oldBranches = branchDao.getBranches(repository.getId());
         for (Branch branch : newBranches)
@@ -42,6 +43,7 @@ public class BranchServiceImpl implements BranchService
             if (oldBranches == null || !oldBranches.contains(branch))
             {
                 Set<String> issueKeys = IssueKeyExtractor.extractIssueKeys(branch.getName());
+                progress.getAffectedIssueKeys().addAll(issueKeys);
                 branchDao.createBranch(repository.getId(), branch, issueKeys);
             }
         }

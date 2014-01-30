@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Resource;
 
 /**
@@ -74,6 +75,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
     public void onReceive(Message<BitbucketSynchronizeActivityMessage> message, BitbucketSynchronizeActivityMessage payload)
     {
         Repository repo = payload.getRepository();
+        boolean softSync = payload.isSoftSync();
         final Progress progress = payload.getProgress();
         int jiraCount = progress.getJiraCount();
 
@@ -123,8 +125,15 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
             int localPrId = processActivity(payload, info, pullRestpoint);
             markProcessed(payload, info, localPrId);
 
+            Set<String> issueKeys = dao.updatePullRequestIssueKeys(repo, localPrId);
+
             progress.inPullRequestProgress(processedSize(payload),
-                    jiraCount + dao.updatePullRequestIssueKeys(repo, localPrId));
+                    jiraCount + issueKeys.size());
+
+            if (softSync)
+            {
+                progress.getAffectedIssueKeys().addAll(issueKeys);
+            }
         }
         if (!isLastPage)
         {

@@ -183,7 +183,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
      * {@inheritDoc}
      */
     @Override
-    public int updatePullRequestIssueKeys(Repository domain, int pullRequestId)
+    public Set<String> updatePullRequestIssueKeys(Repository domain, int pullRequestId)
     {
         RepositoryPullRequestMapping repositoryPullRequestMapping = findRequestById(pullRequestId);
         Set<String> existingIssueKeys = getExistingIssueKeysMapping(domain, pullRequestId);
@@ -225,7 +225,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
                             repositoryPullRequestMapping.getID(), issueKeyToRemove)));
         }
 
-        return currentIssueKeys.size();
+        return currentIssueKeys;
     }
 
     private Set<String> getExistingIssueKeysMapping(Repository domain, RepositoryCommitMapping commitMapping)
