@@ -7,8 +7,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-
 /**
  * Information about the current synchronisation progress
  */
@@ -18,9 +16,10 @@ public interface Progress
     /**
      * Call this method to update the current status of the progress.
      *
-     * @param changesetCount
-     * @param issues
-     * @param synchroErrorCount
+     * @param changesetCount count of changesets processed so far
+     * @param issues set of issues that has been affected, it doesn't have to be all affected issues in synchronisation,
+     *        but only issues since the previous {@link #inProgress(int, java.util.Set, int)} invocation
+     * @param synchroErrorCount synchronization errors count
      */
     void inProgress(int changesetCount, Set<String> issues, int synchroErrorCount);
 
@@ -71,7 +70,7 @@ public interface Progress
 	 * Indication that the synchronisation should pause
 	 * Used when repository is unlinked or organisation and its repositories are deleted.
 	 *
-	 * @return
+	 * @return returns true if synchronisation should stop, false otherwise
 	 */
 	boolean isShouldStop();
 
@@ -79,7 +78,8 @@ public interface Progress
      * Call this method to update the current status of the pull request progress.
      *
      * @param pullRequestActivityCount
-     * @param issues
+     * @param issues set of issues that has been affected, it doesn't have to be all affected issues in synchronisation,
+     *        but only issues since the previous {@link #inPullRequestProgress(int, java.util.Set)} invocation
      */
     void inPullRequestProgress(int pullRequestActivityCount, Set<String> issues);
 
