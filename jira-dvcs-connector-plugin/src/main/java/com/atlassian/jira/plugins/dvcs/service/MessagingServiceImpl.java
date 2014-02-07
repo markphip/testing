@@ -48,6 +48,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpC
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
+import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginException;
 import com.atlassian.sal.api.transaction.TransactionCallback;
 import com.google.common.base.Function;
@@ -132,6 +133,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private EventPublisher eventPublisher;
+    
+    @Resource
+    private PluginAccessor pluginAccessor;
 
     private final Object endProgressLock = new Object();
 
@@ -159,8 +163,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * Contains all tags which are currently paused.
      */
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
-    
-    private static final boolean DEVSTATUS_EXISTS = SystemUtils.isDevStatsEnabled();
     
     /**
      * Initializes been.
@@ -854,10 +856,10 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     
     private void fireDataChangedEvent(Set<String> affectedIssueKeys)
     {
-        if (DEVSTATUS_EXISTS)
+        if (SystemUtils.isDevStatsEnabled(pluginAccessor))
         {
             if (affectedIssueKeys != null && !affectedIssueKeys.isEmpty()) {
-                eventPublisher.publish(new SummaryDataChangedEvent("dvcs.sync.affectedIssues", affectedIssueKeys));
+                eventPublisher.publish(new SummaryDataChangedEvent("bitbucket", affectedIssueKeys));
             }
         }
     }

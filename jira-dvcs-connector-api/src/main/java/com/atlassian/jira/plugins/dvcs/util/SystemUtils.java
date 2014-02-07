@@ -15,6 +15,7 @@ import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.PluginAccessor;
 
 public class SystemUtils
 {
@@ -24,7 +25,7 @@ public class SystemUtils
     private static final boolean URL_VALIDATOR_EXISTS;
     private static final boolean GET_ALL_ISSUE_KEYS_EXISTS;
     private static final boolean GET_ALL_PROJECT_KEYS_EXISTS;
-    private static final boolean DEVSTATUS_EXISTS;
+    private static final boolean DEVSTATUS_EVENT_EXISTS;
 
     static
     {
@@ -32,7 +33,7 @@ public class SystemUtils
         URL_VALIDATOR_EXISTS = getUrlValidatorExists();
         GET_ALL_ISSUE_KEYS_EXISTS = getAllIssueKeysExists();
         GET_ALL_PROJECT_KEYS_EXISTS = getAllProjectKeysExists();
-        DEVSTATUS_EXISTS = getDevstatusExists();
+        DEVSTATUS_EVENT_EXISTS = getDevstatusExists();
     }
 
     private static boolean getRedirectExists()
@@ -157,8 +158,8 @@ public class SystemUtils
         }
     }
     
-    public static boolean isDevStatsEnabled()
+    public static boolean isDevStatsEnabled(PluginAccessor pluginAccessor)
     {
-        return DEVSTATUS_EXISTS;
+        return pluginAccessor.isPluginEnabled(DvcsConstants.DEVSUMMARY_PLUGIN_ID) && DEVSTATUS_EVENT_EXISTS;
     }
 }

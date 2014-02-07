@@ -28,3 +28,6 @@ syntax: glob
 
 syntax: regexp
 ^bitbucket-client/test-output$
+
+syntax: regexp
+^jira-dvcs-connector-github/test-output$
