@@ -1,5 +1,57 @@
 package com.atlassian.jira.plugins.dvcs.spi.github;
 
+import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.auth.Authentication;
+import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
+import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Branch;
+import com.atlassian.jira.plugins.dvcs.model.BranchHead;
+import com.atlassian.jira.plugins.dvcs.model.Changeset;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
+import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Group;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.atlassian.jira.plugins.dvcs.service.BranchService;
+import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
+import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
+import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubSynchronizeChangesetsMessage;
+import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
+import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetsMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.base.Function;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
+import org.eclipse.egit.github.core.RepositoryHook;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.client.PagedRequest;
+import org.eclipse.egit.github.core.client.RequestException;
+import org.eclipse.egit.github.core.service.CommitService;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.ProtocolException;
@@ -17,66 +69,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.egit.github.core.RepositoryBranch;
-import org.eclipse.egit.github.core.RepositoryCommit;
-import org.eclipse.egit.github.core.RepositoryHook;
-import org.eclipse.egit.github.core.RepositoryId;
-import org.eclipse.egit.github.core.User;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.client.PageIterator;
-import org.eclipse.egit.github.core.client.RequestException;
-import org.eclipse.egit.github.core.service.CommitService;
-import org.eclipse.egit.github.core.service.RepositoryService;
-import org.eclipse.egit.github.core.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.auth.Authentication;
-import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
-import com.atlassian.jira.plugins.dvcs.auth.impl.OAuthAuthentication;
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
-import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
-import com.atlassian.jira.plugins.dvcs.model.Branch;
-import com.atlassian.jira.plugins.dvcs.model.BranchHead;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
-import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
-import com.atlassian.jira.plugins.dvcs.model.Group;
-import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.model.Repository;
-import com.atlassian.jira.plugins.dvcs.service.BranchService;
-import com.atlassian.jira.plugins.dvcs.service.ChangesetCache;
-
-import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
-import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessage;
-import com.atlassian.jira.plugins.dvcs.spi.github.parsers.GithubChangesetFactory;
-import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
-import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
-import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
     private static final Logger log = LoggerFactory.getLogger(GithubCommunicator.class);
 
     public static final String GITHUB = "github";
+
+    public static final int COMMITS_PER_PAGE = Integer.getInteger("github.request.changeset.limit", 15);
+    public static final int COMMITS_PER_PAGE_LARGE = Integer.getInteger("github.request.changeset.largelimit", PagedRequest.PAGE_SIZE);
 
     @Resource
     private  MessagingService messagingService;
@@ -260,7 +263,7 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new SourceControlException("could not get result", e);
         }
     }
-    
+
     private void checkRequestRateLimit(GitHubClient gitHubClient)
     {
         if (gitHubClient == null)
@@ -591,22 +594,25 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             Date synchronizationStartedAt = new Date();
             List<Branch> branches = getBranches(repo);
-            for (Branch branch : branches)
-            {
-                for (BranchHead branchHead : branch.getHeads())
-                {
-                    SynchronizeChangesetMessage message = new SynchronizeChangesetMessage(repo, //
-                            branch.getName(), branchHead.getHead(), //
-                            synchronizationStartedAt, //
-                            null, softSync, auditId);
-                    MessageAddress<SynchronizeChangesetMessage> key = messagingService.get( //
-                            SynchronizeChangesetMessage.class, //
-                            GithubSynchronizeChangesetMessageConsumer.ADDRESS //
-                    );
-                    messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
-                }
-            }
             List<BranchHead> oldBranchHeads = branchService.getListOfBranchHeads(repo);
+
+            if (requiresSync(branches, oldBranchHeads))
+            {
+                // if we don't have any old branches saved, we can synchronize faster with large page size
+                // otherwise it's enough to have smaller page
+                int pagelen = oldBranchHeads.isEmpty()? COMMITS_PER_PAGE_LARGE : COMMITS_PER_PAGE;
+                GitHubSynchronizeChangesetsMessage message = new GitHubSynchronizeChangesetsMessage(repo,
+                        synchronizationStartedAt, null, null, repo.getLastCommitDate(), pagelen,
+                        asNodeToBranches(branches), softSync, auditId);
+
+                MessageAddress<GitHubSynchronizeChangesetsMessage> key = messagingService.get(
+                        GitHubSynchronizeChangesetsMessage.class,
+                        GithubSynchronizeChangesetsMessageConsumer.KEY
+                );
+
+                messagingService.publish(key, message, softSync ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, messagingService.getTagForSynchronization(repo), messagingService.getTagForAuditSynchronization(auditId));
+            }
+
             branchService.updateBranchHeads(repo, branches, oldBranchHeads);
             branchService.updateBranches(repo, branches);
         }
@@ -614,6 +620,45 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             gitHubEventService.synchronize(repo, softSync, synchronizationTags);
         }
+    }
+
+    private boolean requiresSync(List<Branch> branches, List<BranchHead> oldBranchHeads)
+    {
+        Set<String> newHeads = new HashSet<String>();
+        Set<String> oldHeads = new HashSet<String>(Lists.transform(oldBranchHeads, new Function<BranchHead, String>()
+        {
+            @Override
+            public String apply(@Nullable final BranchHead input)
+            {
+                return input.getHead();
+            }
+        }));
+
+        for (Branch branch : branches)
+        {
+            for (BranchHead branchHead : branch.getHeads())
+            {
+                if (!oldHeads.contains(branchHead.getHead()))
+                {
+                    return true;
+                }
+                newHeads.add(branchHead.getHead());
+            }
+        }
+        return !Iterators.any(oldHeads.iterator(), Predicates.not(Predicates.in(newHeads)));
+    }
+
+    private Map<String, String> asNodeToBranches(List<Branch> list)
+    {
+        Map<String, String> changesetBranch = new HashMap<String, String>();
+        for (Branch branch : list)
+        {
+            for (BranchHead branchHead : branch.getHeads())
+            {
+                changesetBranch.put(branchHead.getHead(), branch.getName());
+            }
+        }
+        return changesetBranch;
     }
 
     private String getRef(String slug, String branch)

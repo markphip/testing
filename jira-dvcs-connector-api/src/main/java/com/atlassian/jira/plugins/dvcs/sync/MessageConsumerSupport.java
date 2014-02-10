@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.sync;
 
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.Message;
+import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.BranchService;
 import com.atlassian.jira.plugins.dvcs.service.ChangesetService;
@@ -53,7 +54,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
     public final void onReceive(final Message<P> message, P payload)
     {
         String[] tags = message.getTags();
-
+        final Progress progress = payload.getProgress();
         Repository repo = getRepository(payload);
         String node = getNode(payload);
         String branch = getBranch(payload);
@@ -63,7 +64,17 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
         if (changesetService.getByNode(repo.getId(), node) == null)
         {
             Date synchronizedAt = new Date();
-            Changeset changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
+            progress.incrementRequestCount(new Date());
+            long startFlightTime = System.currentTimeMillis();
+            Changeset changeset;
+            try
+            {
+                changeset = dvcsCommunicatorProvider.getCommunicator(repo.getDvcsType()).getChangeset(repo, node);
+            }
+            finally
+            {
+                progress.addFlightTimeMs((int) (System.currentTimeMillis() - startFlightTime));
+            }
             changeset.setSynchronizedAt(synchronizedAt);
             changeset.setBranch(branch);
 

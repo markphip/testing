@@ -15,7 +15,6 @@ import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.User;
 
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +36,7 @@ public class GithubChangesetFactory
         String name = "";
         String authorEmail = null;
 
-        Date date = Calendar.getInstance().getTime();
+        Date date = new Date();
 
         if (repositoryCommit.getCommit() != null
                 && repositoryCommit.getCommit().getAuthor() != null)

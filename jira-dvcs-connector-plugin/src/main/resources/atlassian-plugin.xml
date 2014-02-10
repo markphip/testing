@@ -404,6 +404,12 @@
     <component key="synchronizeChangesetMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer">
     	<interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
     </component>
+    <component key="synchronizeChangesetsMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetsMessageConsumer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
+    </component>
+    <component key="synchronizeChangesetsMessageSerializer" class="com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubSynchronizeChangesetsMessageSerializer">
+        <interface>com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer</interface>
+    </component>
     <component key="synchronizeBbChangesetMessageConsumer" class="com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer">
         <interface>com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer</interface>
     </component>
