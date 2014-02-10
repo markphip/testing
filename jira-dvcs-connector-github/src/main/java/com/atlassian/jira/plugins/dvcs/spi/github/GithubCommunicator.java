@@ -624,6 +624,12 @@ public class GithubCommunicator implements DvcsCommunicator
 
     private boolean requiresSync(List<Branch> branches, List<BranchHead> oldBranchHeads)
     {
+        // if repository is empty, we don't need to sync anything
+        if (branches.isEmpty())
+        {
+            return false;
+        }
+
         Set<String> newHeads = new HashSet<String>();
         Set<String> oldHeads = new HashSet<String>(Lists.transform(oldBranchHeads, new Function<BranchHead, String>()
         {
