@@ -45,12 +45,13 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.oldsync.OldBitbucketSynchronizeCsetMsgSerializer;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.message.GitHubSynchronizeChangesetsMessageSerializer;
 import com.atlassian.jira.plugins.dvcs.spi.github.message.SynchronizeChangesetMessageSerializer;
 import com.atlassian.jira.plugins.dvcs.sync.BitbucketSynchronizeChangesetMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetMessageConsumer;
+import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetsMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.OldBitbucketSynchronizeCsetMsgConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.plugins.dvcs.sync.impl.DefaultSynchronizer;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -61,6 +62,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.PeekingIterator;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.Commit;
@@ -71,6 +74,7 @@ import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.TypedResource;
+import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -89,11 +93,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -103,6 +108,7 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -111,8 +117,8 @@ public class DefaultSynchronizerTest
     @Mock
     private EventPublisher eventPublisher;
 
-    @Mock
     private Repository repositoryMock;
+
     @Mock
     private BitbucketLinker bitbucketLinker;
     @Mock
@@ -189,6 +195,12 @@ public class DefaultSynchronizerTest
 
     @InjectMocks
     private SynchronizeChangesetMessageSerializer githubSerializer;
+
+    @InjectMocks
+    private GithubSynchronizeChangesetsMessageConsumer githubChangesetsConsumer;
+
+    @InjectMocks
+    private GitHubSynchronizeChangesetsMessageSerializer githubChangesetsSerializer;
 
     @Mock
     private OAuthStore oAuthStore;
@@ -338,10 +350,8 @@ public class DefaultSynchronizerTest
         when(plugin.getPluginInformation()).thenReturn(pluginInformation);
         when(pluginAccessor.getPlugin(anyString())).thenReturn(plugin);
 
-        when(repositoryMock.getId()).thenReturn(1);
-        when(repositoryMock.isLinked()).thenReturn(true);
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
-        when(repositoryMock.getSlug()).thenReturn("SLUG");
+        repositoryMock = new Repository(1, 1, null, "SLUG", "SLUG", null, true, false, null);
+        repositoryMock.setOrgName("ORG");
 
         branchDao = new BranchDaoMock();
         branchService = new BranchServiceImpl();
@@ -387,21 +397,24 @@ public class DefaultSynchronizerTest
         ReflectionTestUtils.setField(consumer, "messagingService", messagingService);
         ReflectionTestUtils.setField(oldConsumer, "messagingService", messagingService);
         ReflectionTestUtils.setField(githubConsumer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(githubChangesetsConsumer, "messagingService", messagingService);
 
         ReflectionTestUtils.setField(serializer, "messagingService", messagingService);
         ReflectionTestUtils.setField(oldSerializer, "messagingService", messagingService);
         ReflectionTestUtils.setField(githubSerializer, "messagingService", messagingService);
+        ReflectionTestUtils.setField(githubChangesetsSerializer, "messagingService", messagingService);
         ReflectionTestUtils.setField(serializer, "synchronizer", defaultSynchronizer);
         ReflectionTestUtils.setField(oldSerializer, "synchronizer", defaultSynchronizer);
         ReflectionTestUtils.setField(githubSerializer, "synchronizer", defaultSynchronizer);
+        ReflectionTestUtils.setField(githubChangesetsSerializer, "synchronizer", defaultSynchronizer);
 
         messageExecutor = new MessageExecutor();
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
-        ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
+        ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer, githubChangesetsConsumer });
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
-        ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
-        ReflectionTestUtils.setField(messagingService, "payloadSerializers", new MessagePayloadSerializer<?>[] { serializer, oldSerializer, githubSerializer });
+        ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer, githubChangesetsConsumer });
+        ReflectionTestUtils.setField(messagingService, "payloadSerializers", new MessagePayloadSerializer<?>[] { serializer, oldSerializer, githubSerializer, githubChangesetsSerializer });
         ReflectionTestUtils.setField(messagingService, "messageExecutor", messageExecutor);
         ReflectionTestUtils.setField(messagingService, "synchronizer", defaultSynchronizer);
 
@@ -415,19 +428,26 @@ public class DefaultSynchronizerTest
             private final String node;
             private final String branch;
             private final Date date;
+            private final Date pushDate;
 
             Data(String node, String branch, Date date)
+            {
+                this(node, branch, date, date);
+            }
+
+            Data(String node, String branch, Date date, Date pushDate)
             {
                 this.node = node;
                 this.branch = branch;
                 this.date = date;
+                this.pushDate = pushDate;
             }
         }
 
         //TODO Do we need child nodes?
         private LinkedHashMultimap<String, String> children;
         private LinkedHashMultimap<String, String> parents;
-        private HashMap<String, Data> data;
+        private Map<String, Data> data;
         private LinkedHashMultimap<String,String> heads;
         private long fakeDate = System.currentTimeMillis();
 
@@ -443,12 +463,18 @@ public class DefaultSynchronizerTest
             children = LinkedHashMultimap.create();
             parents = LinkedHashMultimap.create();
             heads = LinkedHashMultimap.create();
-            data = Maps.newHashMap();
+            data = Maps.newLinkedHashMap();
         }
 
         public Graph merge(String node, String parentNode, String... parentNodes)
         {
-            commit(node, data.get(parentNode).branch, parentNode, parentNodes);
+            merge(node, null, null, parentNode, parentNodes);
+            return this;
+        }
+
+        public Graph merge(String node, Date commitDate, Date pushDate, String parentNode, String... parentNodes)
+        {
+            commit(node, data.get(parentNode).branch, commitDate, pushDate, parentNode, parentNodes);
             return this;
         }
 
@@ -460,24 +486,40 @@ public class DefaultSynchronizerTest
 
         public Graph branch(String newBranch, String node, String parentNode)
         {
-            commit(node, newBranch, parentNode);
+            commit(node, newBranch, null, null, parentNode);
             return this;
         }
 
         public Graph commit(String node, String parentNode)
         {
+            commit(node, null, null, parentNode);
+            return this;
+        }
+
+        public Graph commit(String node, Date commitDate, Date pushDate, String parentNode)
+        {
             if (parentNode == null)
             {
-                commit(node, "default", null);
+                commit(node, "default", commitDate, pushDate, null);
             } else
             {
-                commit(node, data.get(parentNode).branch, parentNode);
+                commit(node, data.get(parentNode).branch, commitDate, pushDate, parentNode);
             }
             return this;
         }
 
-        public Graph commit(String node, String branch, String parentNode, String... parentNodes)
+        public Graph commit(String node, String branch, Date commitDate, Date pushDate,  String parentNode, String... parentNodes)
         {
+            if (commitDate == null)
+            {
+                commitDate = generateDate();
+            }
+
+            if (pushDate == null)
+            {
+                pushDate = commitDate;
+            }
+
             if (parentNode != null)
             {
                 addNode(node, branch, parentNode);
@@ -490,11 +532,17 @@ public class DefaultSynchronizerTest
                 }
             }
 
-            data.put(node, new Data(node, branch, new Date(fakeDate)));
-            fakeDate += 1000*60*60;
+            data.put(node, new Data(node, branch, commitDate, pushDate));
 
             heads.put(branch, node);
             return this;
+        }
+
+        public Date generateDate()
+        {
+            Date date = new Date(fakeDate);
+            fakeDate += 1000*60;
+            return date;
         }
 
         private void addNode(String node, String branch, String parentNode)
@@ -646,6 +694,83 @@ public class DefaultSynchronizerTest
             {
                 throw new RuntimeException(e);
             }
+
+            when(commitService.pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt())).then(new Answer<PageIterator<RepositoryCommit>>()
+            {
+                @Override
+                public PageIterator<RepositoryCommit> answer(final InvocationOnMock invocation) throws Throwable
+                {
+                    String sha = (String)invocation.getArguments()[1];
+                    final int pagelen = (Integer)invocation.getArguments()[3];
+
+                    final PeekingIterator<Data> dataIterator = Iterators.peekingIterator(Ordering.from(new Comparator<Data>()
+                    {
+                        @Override
+                        public int compare(final Data data1, final Data data2)
+                        {
+                            return data2.date.compareTo(data1.date);
+                        }
+                    }).sortedCopy(data.values()).iterator());
+
+                    if (StringUtils.isNotEmpty(sha))
+                    {
+                        // consume first
+                        while (dataIterator.hasNext() && !dataIterator.peek().node.equals(sha))
+                        {
+                            dataIterator.next();
+                        }
+                    }
+
+                    PageIterator<RepositoryCommit> pageIterator = Mockito.mock(PageIterator.class);
+                    when(pageIterator.hasNext()).then(new Answer<Boolean>()
+                    {
+                        @Override
+                        public Boolean answer(final InvocationOnMock invocation) throws Throwable
+                        {
+                            return dataIterator.hasNext();
+                        }
+                    });
+
+                    when(pageIterator.next()).then(new Answer<Collection<RepositoryCommit>>()
+                    {
+                        @Override
+                        public Collection<RepositoryCommit> answer(final InvocationOnMock invocation) throws Throwable
+                        {
+                            return Lists.newArrayList(Iterators.transform(Iterators.limit(dataIterator, pagelen), new Function<Data, RepositoryCommit>()
+                            {
+                                @Override
+                                public RepositoryCommit apply(@Nullable final Data input)
+                                {
+                                    RepositoryCommit repositoryCommit = new RepositoryCommit();
+                                    Commit commit = new Commit();
+                                    repositoryCommit.setCommit(commit);
+                                    repositoryCommit.setSha(input.node);
+                                    commit.setSha(input.node);
+                                    repositoryCommit.setFiles(Collections.<CommitFile>emptyList());
+
+                                    List<Commit> parentsList = new ArrayList<Commit>();
+                                    for (String parent : parents.get(input.node))
+                                    {
+                                        Commit parentCommit = new Commit();
+                                        parentCommit.setSha(parent);
+                                        parentsList.add(parentCommit);
+                                    }
+                                    repositoryCommit.setParents(parentsList);
+                                    commit.setParents(parentsList);
+
+                                    Data changesetData = data.get(input.node);
+                                    CommitUser author = new CommitUser();
+                                    author.setDate(changesetData.date);
+                                    commit.setAuthor(author);
+                                    return repositoryCommit;
+                                }
+                            }));
+                        }
+                    });
+
+                    return pageIterator;
+                }
+            });
         }
 
         public Iterator<BitbucketChangesetPage> getPages(final List<String> includes, final List<String> excludes, final int pagelen)
@@ -829,7 +954,7 @@ public class DefaultSynchronizerTest
     public void getChangesets_Bitbucket_softSync()
     {
 //       B3   D  B1   B2
-//                    14
+//            ...     14
 //            16 13   |
 //             | |    12
 //            10 11  /
@@ -846,7 +971,8 @@ public class DefaultSynchronizerTest
         Graph graph = new Graph();
         final List<String> processedNodes = Lists.newArrayList();
 
-        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(BitbucketCommunicator.BITBUCKET);
         when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
         {
             @Override
@@ -900,7 +1026,8 @@ public class DefaultSynchronizerTest
     @Test
     public void getChangesets_Bitbucket_fullSync()
     {
-        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(BitbucketCommunicator.BITBUCKET);
         when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
         {
             @Override
@@ -934,8 +1061,14 @@ public class DefaultSynchronizerTest
                 .commit("node14", "node12")
                 .branch("B3", "node15", "node3")
                 .merge("node10", "node8", "node15")
-                .commit("node16", "node10")
-                .mock();
+                .commit("node16", "node10");
+
+        for (int i = 17; i < 300; i++)
+        {
+            graph.commit("node"+i, "node"+(i-1));
+        }
+
+        graph.mock();
 
         checkSynchronization(graph, false);
     }
@@ -946,7 +1079,8 @@ public class DefaultSynchronizerTest
         Graph graph = new Graph();
         final List<String> processedNodes = Lists.newArrayList();
 
-        when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(BitbucketCommunicator.BITBUCKET);
 
         when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
         {
@@ -1002,7 +1136,7 @@ public class DefaultSynchronizerTest
     public void getChangesets_GitHub_softSync()
     {
 //       B3   D  B1   B2
-//                    14
+//            ...     14
 //            16 13   |
 //             | |    12
 //            10 11  /
@@ -1019,7 +1153,8 @@ public class DefaultSynchronizerTest
         Graph graph = new Graph();
         final List<String> processedNodes = Lists.newArrayList();
 
-        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(GithubCommunicator.GITHUB);
         when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
         {
             @Override
@@ -1073,7 +1208,8 @@ public class DefaultSynchronizerTest
     @Test
     public void getChangesets_GitHub_fullSync()
     {
-        when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(GithubCommunicator.GITHUB);
         when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
         {
             @Override
@@ -1107,10 +1243,82 @@ public class DefaultSynchronizerTest
                 .commit("node14", "node12")
                 .branch("B3", "node15", "node3")
                 .merge("node10", "node8", "node15")
-                .commit("node16", "node10")
-                .mock();
+                .commit("node16", "node10");
+
+        for (int i = 17; i < 300; i++)
+        {
+            graph.commit("node"+i, "node"+(i-1));
+        }
+
+        graph.mock();
 
         checkSynchronization(graph, false);
+    }
+
+    @Test
+    public void getChangesets_GitHub_missingCommits()
+    {
+//         B1  D
+//
+//             8
+//             |
+//             7
+//           / |
+//          4  6
+//          |  |
+//          3  5
+//           \ |
+//             2
+//             |
+//             1
+        Graph graph = new Graph();
+        final List<String> processedNodes = Lists.newArrayList();
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(GithubCommunicator.GITHUB);
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return processedNodes.isEmpty();
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
+
+        graph
+                .commit("node1", null)
+                .commit("node2", "node1")
+                .branch("B1", "node3", "node2");
+        // node4 committed but not pushed yet
+        Date node4Date = graph.generateDate();
+
+        graph
+                .commit("node5", "node2")
+                .commit("node6", "node5")
+                .mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
+
+        graph
+                .commit("node4", node4Date, graph.generateDate(), "node3")
+                .merge("node7", "node6", "node4")
+                .commit("node8", "node7")
+                .mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        checkSynchronization(graph, processedNodes, true);
     }
 
 
