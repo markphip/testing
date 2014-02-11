@@ -109,7 +109,12 @@ import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DefaultSynchronizerTest
@@ -1008,7 +1013,9 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
 
         // add more commits
         graph
@@ -1020,7 +1027,9 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
     }
 
     @Test
@@ -1054,6 +1063,7 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, false);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
 
         // add more commits
         graph
@@ -1071,6 +1081,7 @@ public class DefaultSynchronizerTest
         graph.mock();
 
         checkSynchronization(graph, false);
+        verify(changesetRestpoint, atLeast(3)).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
     }
 
     @Test
@@ -1117,7 +1128,11 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint, never()).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
+        verify(changesetRestpoint, times(11)).getChangeset(anyString(), anyString(), anyString());
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint, never()).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
+        verify(changesetRestpoint, times(11)).getChangeset(anyString(), anyString(), anyString());
 
         // add more commits
         graph
@@ -1129,7 +1144,46 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
+        verify(changesetRestpoint, never()).getChangeset(anyString(), anyString(), anyString());
         checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
+        verify(changesetRestpoint, never()).getChangeset(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void getChangesets_Bitbucket_emptyRepo()
+    {
+        final List<String> processedNodes = Lists.newArrayList();
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(BitbucketCommunicator.BITBUCKET);
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return processedNodes.isEmpty();
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
+
+        Graph graph = new Graph();
+        graph.mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        verify(changesetRestpoint, never()).getNextChangesetsPage(anyString(), anyString(), Mockito.anyListOf(String.class), Mockito.anyListOf(String.class), anyInt(), any(BitbucketChangesetPage.class));
+        verify(changesetRestpoint, never()).getChangeset(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -1190,7 +1244,9 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
 
         // add more commits
         graph
@@ -1202,7 +1258,9 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
     }
 
     @Test
@@ -1236,6 +1294,7 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, false);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
 
         // add more commits
         graph
@@ -1253,10 +1312,11 @@ public class DefaultSynchronizerTest
         graph.mock();
 
         checkSynchronization(graph, false);
+        verify(commitService, atLeast(3)).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
     }
 
     @Test
-    public void getChangesets_GitHub_missingCommits()
+    public void getChangesets_GitHub_missingCommits() throws IOException
     {
 //         B1  D
 //
@@ -1309,7 +1369,11 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
+        verify(commitService, never()).getCommit(any(RepositoryId.class), anyString());
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
+        verify(commitService, never()).getCommit(any(RepositoryId.class), anyString());
 
         graph
                 .commit("node4", node4Date, graph.generateDate(), "node3")
@@ -1318,7 +1382,46 @@ public class DefaultSynchronizerTest
                 .mock();
 
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
+        verify(commitService).getCommit(any(RepositoryId.class), anyString());
         checkSynchronization(graph, processedNodes, true);
+        verify(commitService).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
+        verify(commitService).getCommit(any(RepositoryId.class), anyString());
+    }
+
+    @Test
+    public void getChangesets_GitHub_emptyRepo() throws IOException
+    {
+        final List<String> processedNodes = Lists.newArrayList();
+        repositoryMock.setLastCommitDate(null);
+        repositoryMock.setDvcsType(GithubCommunicator.GITHUB);
+
+        when(changesetCache.isEmpty(anyInt())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                return processedNodes.isEmpty();
+            }
+        });
+
+        when(changesetCache.isCached(anyInt(), anyString())).then(new Answer<Boolean>()
+        {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable
+            {
+                String node = (String)invocation.getArguments()[1];
+
+                return processedNodes.contains(node);
+            }
+        });
+
+        Graph graph = new Graph();
+        graph.mock();
+
+        checkSynchronization(graph, processedNodes, true);
+        verify(commitService, never()).pageCommits(any(RepositoryId.class), anyString(), isNull(String.class), anyInt());
+        verify(commitService, never()).getCommit(any(RepositoryId.class), anyString());
     }
 
 

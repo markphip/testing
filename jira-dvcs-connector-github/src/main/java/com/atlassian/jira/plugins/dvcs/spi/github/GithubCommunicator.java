@@ -625,10 +625,6 @@ public class GithubCommunicator implements DvcsCommunicator
     private boolean requiresSync(List<Branch> branches, List<BranchHead> oldBranchHeads)
     {
         // if repository is empty, we don't need to sync anything
-        if (branches.isEmpty())
-        {
-            return false;
-        }
 
         Set<String> newHeads = new HashSet<String>();
         Set<String> oldHeads = new HashSet<String>(Lists.transform(oldBranchHeads, new Function<BranchHead, String>()
@@ -651,7 +647,7 @@ public class GithubCommunicator implements DvcsCommunicator
                 newHeads.add(branchHead.getHead());
             }
         }
-        return !Iterators.any(oldHeads.iterator(), Predicates.not(Predicates.in(newHeads)));
+        return Iterators.any(oldHeads.iterator(), Predicates.not(Predicates.in(newHeads)));
     }
 
     private Map<String, String> asNodeToBranches(List<Branch> list)
