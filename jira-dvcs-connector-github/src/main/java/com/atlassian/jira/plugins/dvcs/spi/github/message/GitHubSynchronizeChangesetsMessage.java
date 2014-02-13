@@ -19,11 +19,11 @@ public class GitHubSynchronizeChangesetsMessage extends BaseProgressEnabledMessa
 {
     private static final long serialVersionUID = 1L;
 
-    private String firstSha;
-    private Date refreshAfterSynchronizedAt;
-    private Map<String, String> nodesToBranches;
-    private Date lastCommitDate;
-    private int pagelen;
+    private final String firstSha;
+    private final Date refreshAfterSynchronizedAt;
+    private final Map<String, String> nodesToBranches;
+    private final Date lastCommitDate;
+    private final int pagelen;
 
     public GitHubSynchronizeChangesetsMessage(Repository repository, Date refreshAfterSynchronizedAt,
             Progress progress, String firstSha, Date lastCommitDate, int pagelen,

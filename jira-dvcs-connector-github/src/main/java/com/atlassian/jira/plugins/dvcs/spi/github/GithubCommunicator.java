@@ -25,7 +25,6 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.GithubSynchronizeChangesetsMessageConsumer;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import com.google.common.base.Function;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -626,7 +625,6 @@ public class GithubCommunicator implements DvcsCommunicator
     {
         // if repository is empty, we don't need to sync anything
 
-        Set<String> newHeads = new HashSet<String>();
         Set<String> oldHeads = new HashSet<String>(Lists.transform(oldBranchHeads, new Function<BranchHead, String>()
         {
             @Override
@@ -636,6 +634,7 @@ public class GithubCommunicator implements DvcsCommunicator
             }
         }));
 
+        int newHeadsSize = 0;
         for (Branch branch : branches)
         {
             for (BranchHead branchHead : branch.getHeads())
@@ -644,10 +643,10 @@ public class GithubCommunicator implements DvcsCommunicator
                 {
                     return true;
                 }
-                newHeads.add(branchHead.getHead());
+                newHeadsSize++;
             }
         }
-        return Iterators.any(oldHeads.iterator(), Predicates.not(Predicates.in(newHeads)));
+        return newHeadsSize != oldHeads.size();
     }
 
     private Map<String, String> asNodeToBranches(List<Branch> list)
