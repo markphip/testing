@@ -543,6 +543,11 @@ public class DefaultSynchronizerTest
             return this;
         }
 
+        /**
+         * Returns new date and prepare the next date increased by 1 minute
+         *
+         * @return new date
+         */
         public Date generateDate()
         {
             Date date = new Date(fakeDate);
