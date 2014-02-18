@@ -185,7 +185,10 @@ public class GithubSynchronizeChangesetsMessageConsumer implements MessageConsum
         changesetBranch.remove(commit.getSha());
         for (Commit parent : commit.getParents())
         {
-            changesetBranch.put(parent.getSha(), branch);
+            if (!changesetBranch.containsKey(parent.getSha()))
+            {
+                changesetBranch.put(parent.getSha(), branch);
+            }
         }
 
         return branch;

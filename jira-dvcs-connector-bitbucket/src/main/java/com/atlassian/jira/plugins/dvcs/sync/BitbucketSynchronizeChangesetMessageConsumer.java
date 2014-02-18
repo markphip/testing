@@ -126,7 +126,10 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         changesetBranch.remove(cset.getHash());
         for (BitbucketNewChangeset parent : cset.getParents())
         {
-            changesetBranch.put(parent.getHash(), branch);
+            if (!changesetBranch.containsKey(parent.getHash()))
+            {
+                changesetBranch.put(parent.getHash(), branch);
+            }
         }
     }
 
