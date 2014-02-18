@@ -165,7 +165,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private final Set<String> pausedTags = new CopyOnWriteArraySet<String>();
     
     /**
-     * Initializes been.
+     * Initializes bean.
      */
     @PostConstruct
     public void init()
@@ -856,7 +856,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     
     private void fireDataChangedEvent(Set<String> affectedIssueKeys)
     {
-        if (SystemUtils.isDevStatsEnabled(pluginAccessor))
+        if (SystemUtils.isDevStatusEnabled(pluginAccessor))
         {
             if (affectedIssueKeys != null && !affectedIssueKeys.isEmpty()) {
                 eventPublisher.publish(new SummaryDataChangedEvent("bitbucket", affectedIssueKeys));
