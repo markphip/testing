@@ -6,6 +6,7 @@ import org.apache.commons.httpclient.HttpStatus;
 
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -72,4 +73,15 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
         WebResource hooksWebResource = cachedWebResource(repository, "/hooks");
         return hooksWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubRepositoryHook[].class);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GitHubEvent[] getEvents(Repository repository, int page, int rowsPerPage)
+    {
+        WebResource eventsWebResource = cachedWebResource(repository, "/events");
+        return eventsWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubEvent[].class);
+    }
+
 }

@@ -28,7 +28,7 @@ import com.sun.jersey.api.client.WebResource;
  * 
  */
 // TODO: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
-@Test(enabled = false)
+@Test(enabled = true)
 public class GitHubRESTClientImplTest
 {
 
@@ -168,6 +168,11 @@ public class GitHubRESTClientImplTest
     public void testDeleteHook()
     {
         testedObject.deleteHook(repository, createdHook);
+    }
+
+    @Test(enabled = true)
+    public void testEvents() {
+        testedObject.getEvents(repository, 0, 10);
     }
 
 }
