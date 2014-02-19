@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.github.impl;
 
+import java.util.List;
+
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -29,7 +31,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public GitHubRepositoryHook addHook(Repository repository, GitHubRepositoryHook hook)
     {
-        WebResource webResource = cachedWebResource(repository, "/hooks");
+        WebResource webResource = resource(repository, "/hooks");
         try
         {
             return webResource.type(MediaType.APPLICATION_JSON_TYPE).post(GitHubRepositoryHook.class, hook);
@@ -41,7 +43,6 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
                         + e.getResponse().getEntity(String.class), e);
             } else
             {
-                // TODO: BBC-610 No i18n support in DVCS Connector
                 throw new SourceControlException.PostCommitHookRegistrationException(
                         "Could not add request hook. Possibly due to lack of admin permissions.", e);
             }
@@ -54,7 +55,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public void deleteHook(Repository repository, GitHubRepositoryHook hook)
     {
-        WebResource webResource = newWebResource(repository, "/hooks/" + hook.getId());
+        WebResource webResource = resource(repository, "/hooks/" + hook.getId());
         try
         {
             webResource.delete();
@@ -68,10 +69,10 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
      * {@inheritDoc}
      */
     @Override
-    public GitHubRepositoryHook[] getHooks(Repository repository)
+    public List<GitHubRepositoryHook> getHooks(Repository repository)
     {
-        WebResource hooksWebResource = cachedWebResource(repository, "/hooks");
-        return hooksWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubRepositoryHook[].class);
+        WebResource hooksWebResource = resource(repository, "/hooks");
+        return getAll(hooksWebResource, GitHubRepositoryHook[].class);
     }
 
     /**
@@ -80,7 +81,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public GitHubEvent[] getEvents(Repository repository, int page, int rowsPerPage)
     {
-        WebResource eventsWebResource = cachedWebResource(repository, "/events");
+        WebResource eventsWebResource = resource(repository, "/events");
         return eventsWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubEvent[].class);
     }
 

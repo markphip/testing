@@ -1,5 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.github.api;
 
+
+import java.util.List;
+
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -35,7 +38,7 @@ public interface GitHubRESTClient
      *            for which repository
      * @return returns hooks for provided repository.
      */
-    GitHubRepositoryHook[] getHooks(Repository repository);
+    List<GitHubRepositoryHook> getHooks(Repository repository);
 
     /**
      * Returns events which happened on provided repository.
