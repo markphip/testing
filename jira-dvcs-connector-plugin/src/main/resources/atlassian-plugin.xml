@@ -269,19 +269,13 @@
     </component>
 
     <!-- GitHub - Events -->
-    <component key="defaultGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.spi.github.service.DefaultGitHubEventProcessor">
+    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestEventGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="gitHubEventProcessorAggregatorImpl" class="com.atlassian.jira.plugins.dvcs.spi.github.service.impl.GitHubEventProcessorAggregatorImpl">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessorAggregator</interface>
-    </component>
-    <component key="pullRequestPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestPayloadGitHubEventProcessor">
+    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestReviewCommentEventGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
-    <component key="pullRequestReviewCommentPayloadGitHubEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.PullRequestReviewCommentPayloadGitHubEventProcessor">
-        <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
-    </component>
-    <component key="issueCommentPayloadEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.IssueCommentPayloadEventProcessor">
+    <component key="issueCommentPayloadEventProcessor" class="com.atlassian.jira.plugins.dvcs.sync.IssueCommentEventGitHubEventProcessor">
         <interface>com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor</interface>
     </component>
     

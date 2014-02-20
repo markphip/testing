@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.github.api.model;
 
+import java.util.Date;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -22,7 +23,12 @@ public class GitHubEvent
     /**
      * @see #getId()
      */
-    private long id;
+    private String id;
+
+    /**
+     * @see #getCreatedAt()
+     */
+    private Date createdAt;
 
     /**
      * @see #getType()
@@ -44,7 +50,7 @@ public class GitHubEvent
     /**
      * @return Identity of this event (it is unique over whole system, not only according to repository).
      */
-    public long getId()
+    public String getId()
     {
         return id;
     }
@@ -53,9 +59,26 @@ public class GitHubEvent
      * @param id
      *            {@link #getId()}
      */
-    public void setId(long id)
+    public void setId(String id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return Date when this event was created.
+     */
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
+
+    /**
+     * @param createdAt
+     *            {@link #getCreatedAt()}
+     */
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
     }
 
     /**

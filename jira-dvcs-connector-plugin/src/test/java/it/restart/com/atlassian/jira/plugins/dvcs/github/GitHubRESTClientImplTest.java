@@ -22,7 +22,7 @@ import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
  * 
  */
 // TODO: BBC-688: tests are disabled, they need to have generated access token, which is not available until BBC-647 branch will be merged
-@Test(enabled = false)
+@Test(enabled = true)
 public class GitHubRESTClientImplTest
 {
 
@@ -131,7 +131,7 @@ public class GitHubRESTClientImplTest
 
     @Test(enabled = true)
     public void testEvents() {
-        testedObject.getEvents(repository, 0, 10);
+        testedObject.getEvents(repository);
     }
 
 }

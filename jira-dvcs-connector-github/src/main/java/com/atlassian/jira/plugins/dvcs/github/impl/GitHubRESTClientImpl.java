@@ -9,6 +9,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -31,7 +32,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public GitHubRepositoryHook addHook(Repository repository, GitHubRepositoryHook hook)
     {
-        WebResource webResource = resource(repository, "/hooks");
+        WebResource webResource = getClient().resource(uri(repository, "/hooks"));
         try
         {
             return webResource.type(MediaType.APPLICATION_JSON_TYPE).post(GitHubRepositoryHook.class, hook);
@@ -55,7 +56,7 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public void deleteHook(Repository repository, GitHubRepositoryHook hook)
     {
-        WebResource webResource = resource(repository, "/hooks/" + hook.getId());
+        WebResource webResource = getClient().resource(uri(repository, "/hooks/" + hook.getId()));
         try
         {
             webResource.delete();
@@ -71,18 +72,26 @@ public class GitHubRESTClientImpl extends AbstractGitHubRESTClientImpl implement
     @Override
     public List<GitHubRepositoryHook> getHooks(Repository repository)
     {
-        WebResource hooksWebResource = resource(repository, "/hooks");
-        return getAll(hooksWebResource, GitHubRepositoryHook[].class);
+        return getAll(GitHubRepositoryHook[].class, uri(repository, "/hooks"));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public GitHubEvent[] getEvents(Repository repository, int page, int rowsPerPage)
+    public GitHubPage<GitHubEvent> getEvents(Repository repository)
     {
-        WebResource eventsWebResource = resource(repository, "/events");
-        return eventsWebResource.accept(MediaType.APPLICATION_JSON_TYPE).get(GitHubEvent[].class);
+        return getPage(GitHubEvent[].class, uri(repository, "/events"));
+    }
+
+    /**
+     * @param currentPage
+     * @return next page
+     */
+    @Override
+    public <E> GitHubPage<E> getNextPage(Class<E[]> arrayElementType, GitHubPage<E> currentPage)
+    {
+        return getPage(arrayElementType, currentPage.getNextPage());
     }
 
 }

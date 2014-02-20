@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.github.api;
 
-
 import java.util.List;
 
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
@@ -44,10 +44,21 @@ public interface GitHubRESTClient
      * Returns events which happened on provided repository.
      * 
      * @param repository
-     * @param page
-     * @param rowsPerPage
-     * @return
+     *            for which repository
+     * @return first page
+     * @see #getNextPage(Class, GitHubPage)
      */
-    GitHubEvent[] getEvents(Repository repository, int page, int rowsPerPage);
+    GitHubPage<GitHubEvent> getEvents(Repository repository);
+
+    /**
+     * Loads next page for current loaded page.
+     * 
+     * @param arrayElementType
+     *            type of page elements
+     * @param currentPage
+     *            cursor
+     * @return next page
+     */
+    <E> GitHubPage<E> getNextPage(Class<E[]> arrayElementType, GitHubPage<E> currentPage);
 
 }

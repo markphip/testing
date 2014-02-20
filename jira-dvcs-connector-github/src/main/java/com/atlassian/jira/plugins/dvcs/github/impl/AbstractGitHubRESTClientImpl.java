@@ -15,11 +15,11 @@ import javax.ws.rs.core.UriBuilder;
 import org.eclipse.egit.github.core.client.IGitHubConstants;
 
 import com.atlassian.cache.CacheFactory;
+import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
@@ -139,28 +139,45 @@ public class AbstractGitHubRESTClientImpl
     /**
      * Goes over all GitHub pages and return all pages union.
      * 
-     * @param webResource
-     *            of first page
-     * @param entityType
+     * @param responseEntityType
      *            type of entities
+     * @param uri
+     *            of resource
      * @return union
      */
-    protected <T> List<T> getAll(WebResource webResource, Class<T[]> entityType)
+    protected <T> List<T> getAll(Class<T[]> responseEntityType, URI uri)
     {
         List<T> result = new LinkedList<T>();
 
-        WebResource cursor = webResource;
-        do
+        URI cursor = uri;
+        while (cursor != null)
         {
-            ClientResponse clientResponse = cursor.accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-            result.addAll(Arrays.asList(clientResponse.getEntity(entityType)));
+            GitHubPage<T> page = getPage(responseEntityType, uri);
+            result.addAll(Arrays.asList(page.getValues()));
+            cursor = page.getNextPage();
+        }
 
-            LinkHeaders linkHeaders = getLinks(clientResponse);
-            LinkHeader nextLink = linkHeaders.getLink("next");
-            URI nextPage = nextLink != null ? nextLink.getUri() : null;
-            cursor = nextPage != null ? client.resource(nextPage) : null;
-        } while (cursor != null);
         return result;
+    }
+
+    /**
+     * 
+     * @param responseEntityType
+     *            type of entities
+     * @param uri
+     *            of web resource
+     * @return loaded page
+     */
+    protected <E> GitHubPage<E> getPage(Class<E[]> responseEntityType, URI uri)
+    {
+        ClientResponse response = client.resource(uri).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+        E[] pageValues = response.getEntity(responseEntityType);
+
+        LinkHeaders linkHeaders = getLinks(response);
+        LinkHeader nextLink = linkHeaders.getLink("next");
+        URI nextPage = nextLink != null ? nextLink.getUri() : null;
+
+        return new GitHubPage<E>(pageValues, nextPage);
     }
 
     /**
@@ -174,10 +191,11 @@ public class AbstractGitHubRESTClientImpl
     {
         // raw 'Link' headers values
         List<String> linksRaw = clientResponse.getHeaders().get("Link");
-        if (linksRaw == null) {
+        if (linksRaw == null)
+        {
             linksRaw = new LinkedList<String>();
         }
-        
+
         // proceed 'Link' values according to multiple values header policy
         List<String> links = new LinkedList<String>();
 
@@ -189,25 +207,24 @@ public class AbstractGitHubRESTClientImpl
                 links.add(link.trim());
             }
         }
-        
+
         MultivaluedMapImpl headers = new MultivaluedMapImpl();
         headers.put("Link", links);
         return new LinkHeaders(headers);
     }
 
     /**
-     * Creates new {@link WebResource} without caching.
+     * Builds new {@link URI} - for provided repository and appropriate path part.
      * 
      * @param repository
-     *            over which reposiory
-     * @param uri
-     *            of resource
-     * @return created web resource
+     *            over which repository
+     * @param path
+     *            to resource
+     * @return created uri
      */
-    protected WebResource resource(Repository repository, String uri)
+    protected URI uri(Repository repository, String path)
     {
-        WebResource result = client.resource(getRepositoryAPIUrl(repository)).path(uri);
-        return result;
+        return UriBuilder.fromUri(getRepositoryAPIUrl(repository)).path(path).build();
     }
 
 }
