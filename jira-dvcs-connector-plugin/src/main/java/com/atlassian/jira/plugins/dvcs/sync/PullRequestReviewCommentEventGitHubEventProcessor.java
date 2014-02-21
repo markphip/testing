@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,20 +47,21 @@ public class PullRequestReviewCommentEventGitHubEventProcessor implements GitHub
     public void process(Repository repository, GitHubEvent gitHubEvent, boolean isSoftSync, String[] synchronizationTags,
             GitHubEventContext context)
     {
-        String pullRequestUrl = (String) gitHubEvent.getPayload().get("pull_request_url");
-        if (StringUtils.isBlank(pullRequestUrl))
-        {
-            throw new RuntimeException("Payload (Repository: " + repository.getOrgName() + "/" + repository.getSlug() + " GitHubEvent: "
-                    + gitHubEvent.getId() + " ) does not contains 'pull_request_url', payload keys: "
-                    + gitHubEvent.getPayload().keySet().toString());
-        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> commentPayload = (Map<String, Object>) gitHubEvent.getPayload().get("comment");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> links = (Map<String, Object>) commentPayload.get("_links");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> pullRequestLink = (Map<String, Object>) links.get("pull_request");
+        String pullRequestUrl = (String) pullRequestLink.get("href");
 
         Matcher pullRequestNumberMatcher = PULL_REQUEST_NUMBER_PATTERN.matcher(pullRequestUrl);
         Integer pullRequestNumber = pullRequestNumberMatcher.matches() ? Integer.parseInt(pullRequestNumberMatcher.group(1)) : null;
         if (pullRequestNumber == null)
         {
-            throw new RuntimeException("Payload (Repository: " + repository.getOrgName() + "/" + repository.getSlug() + " GitHubEvent: "
-                    + gitHubEvent.getId() + " ) does not contains valid pull request url, pull_request_url: " + pullRequestUrl);
+            throw new RuntimeException("Links payload (Repository: " + repository.getOrgName() + "/" + repository.getSlug()
+                    + " GitHubEvent: " + gitHubEvent.getId() + " ) does not contains valid pull request url, pull_request: "
+                    + pullRequestUrl);
         }
 
         PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);

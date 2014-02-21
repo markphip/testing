@@ -104,7 +104,8 @@ public class GitHubEventServiceImpl implements GitHubEventService
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync,
                 synchronizationTags);
 
-        for (final GitHubEvent event : new GitHubPageIterable<GitHubEvent>(gitHubRESTClient, gitHubRESTClient.getEvents(repository)))
+        for (final GitHubEvent event : new GitHubPageIterable<GitHubEvent>(GitHubEvent.class, gitHubRESTClient,
+                gitHubRESTClient.getEvents(repository)))
         {
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
             // proceed

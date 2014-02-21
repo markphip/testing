@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.sync;
 
+import java.util.Map;
+
 import org.eclipse.egit.github.core.event.PullRequestPayload;
 
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
@@ -22,8 +24,10 @@ public class PullRequestEventGitHubEventProcessor implements GitHubEventProcesso
     public void process(Repository repository, GitHubEvent gitHubEvent, boolean isSoftSync, String[] synchronizationTags,
             GitHubEventContext context)
     {
-        Long pullRequestId = (Long) gitHubEvent.getPayload().get("id");
-        Integer pullRequestNumber = (Integer) gitHubEvent.getPayload().get("number");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> pullRequestPayload = (Map<String, Object>) gitHubEvent.getPayload().get("pull_request");
+        long pullRequestId = ((Number) pullRequestPayload.get("id")).longValue();
+        Integer pullRequestNumber = (Integer) pullRequestPayload.get("number");
         context.savePullRequest(pullRequestId, pullRequestNumber);
     }
 

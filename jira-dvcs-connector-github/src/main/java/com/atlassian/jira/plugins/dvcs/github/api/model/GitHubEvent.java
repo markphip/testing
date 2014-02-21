@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.github.api.model;
 import java.util.Date;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -28,6 +29,7 @@ public class GitHubEvent
     /**
      * @see #getCreatedAt()
      */
+    @XmlElement(name = "created_at")
     private Date createdAt;
 
     /**

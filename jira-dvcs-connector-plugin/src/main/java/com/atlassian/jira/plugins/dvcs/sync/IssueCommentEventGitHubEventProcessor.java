@@ -39,10 +39,13 @@ public class IssueCommentEventGitHubEventProcessor implements GitHubEventProcess
     public void process(Repository repository, GitHubEvent gitHubEvent, boolean isSoftSync, String[] synchronizationTags,
             GitHubEventContext context)
     {
-        if (isPullRequestIssueComment(gitHubEvent))
+        @SuppressWarnings("unchecked")
+        Map<String, Object> issuePayload = (Map<String, Object>) gitHubEvent.getPayload().get("issue");
+
+        if (isPullRequestIssueComment(issuePayload))
         {
             // pull request number is the same as issue number (pull request - is no more than special kind of issue)
-            Integer pullRequestNumber = (Integer) gitHubEvent.getPayload().get("number");
+            Integer pullRequestNumber = (Integer) issuePayload.get("number");
             PullRequest pullRequest = getRemotePullRequest(repository, pullRequestNumber);
             if (pullRequest == null)
             {
@@ -57,13 +60,13 @@ public class IssueCommentEventGitHubEventProcessor implements GitHubEventProcess
     /**
      * Checks, that this comment is pull request issue comment => contains pull request information in payload.
      * 
-     * @param gitHubEvent
+     * @param issuePayload
      * @return true if this comment is pull request issue comment
      */
-    private boolean isPullRequestIssueComment(GitHubEvent gitHubEvent)
+    private boolean isPullRequestIssueComment(Map<String, Object> issuePayload)
     {
         @SuppressWarnings("unchecked")
-        Map<String, Object> pullRequestInfo = (Map<String, Object>) gitHubEvent.getPayload().get("pull_request");
+        Map<String, Object> pullRequestInfo = (Map<String, Object>) issuePayload.get("pull_request");
 
         // GitHub API until v3:
         // if issue comment is not done on pull request issue, than GitHub provides empty "pull_request" object instead of null
@@ -83,7 +86,7 @@ public class IssueCommentEventGitHubEventProcessor implements GitHubEventProcess
      *            {@link PullRequest#getNumber()}
      * @return
      */
-    private PullRequest getRemotePullRequest(Repository repository, Integer pullRequestNumber)
+    private PullRequest getRemotePullRequest(Repository repository, int pullRequestNumber)
     {
         PullRequestService pullRequestService = githubClientProvider.getPullRequestService(repository);
         try

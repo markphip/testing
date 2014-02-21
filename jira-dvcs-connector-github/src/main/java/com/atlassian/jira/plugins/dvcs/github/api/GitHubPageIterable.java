@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.github.api;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -10,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 public class GitHubPageIterable<T> implements Iterable<T>
 {
 
+    private Class<T> type;
     private GitHubRESTClient gitHubRESTClient;
     private GitHubPage<T> firstPage;
 
@@ -19,8 +19,9 @@ public class GitHubPageIterable<T> implements Iterable<T>
      * @param gitHubRESTClient
      * @param firstPage
      */
-    public GitHubPageIterable(GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
+    public GitHubPageIterable(Class<T> type, GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
     {
+        this.type = type;
         this.gitHubRESTClient = gitHubRESTClient;
         this.firstPage = firstPage;
     }
@@ -30,11 +31,13 @@ public class GitHubPageIterable<T> implements Iterable<T>
 
         private final GitHubRESTClient gitHubRESTClient;
 
+        private Class<T> type;
         private GitHubPage<T> currentPage;
         private Iterator<T> currentPageIterator;
 
-        public GitHubPageIterator(GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
+        public GitHubPageIterator(Class<T> type, GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
         {
+            this.type = type;
             this.gitHubRESTClient = gitHubRESTClient;
             currentPage = firstPage;
             currentPageIterator = Arrays.asList(currentPage.getValues()).iterator();
@@ -53,16 +56,10 @@ public class GitHubPageIterable<T> implements Iterable<T>
             T result = currentPageIterator.next();
             if (!currentPageIterator.hasNext() && currentPage.getNextPage() != null)
             {
-                currentPage = gitHubRESTClient.getNextPage((Class<T[]>) Array.newInstance(getType(), 0).getClass(), currentPage);
+                currentPage = gitHubRESTClient.getNextPage((Class<T[]>) Array.newInstance(type, 0).getClass(), currentPage);
                 currentPageIterator = Arrays.asList(currentPage.getValues()).iterator();
             }
             return result;
-        }
-
-        @SuppressWarnings("unchecked")
-        private Class<T> getType()
-        {
-            return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         }
 
         @Override
@@ -79,7 +76,7 @@ public class GitHubPageIterable<T> implements Iterable<T>
     @Override
     public Iterator<T> iterator()
     {
-        return new GitHubPageIterator<T>(gitHubRESTClient, firstPage);
+        return new GitHubPageIterator<T>(type, gitHubRESTClient, firstPage);
     }
 
 }
