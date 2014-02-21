@@ -6,18 +6,41 @@ import java.util.Iterator;
 
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 
+/**
+ * Utility, which iterates over all {@link GitHubPage}-s.
+ * 
+ * @author Stanislav Dvorscak
+ * 
+ * @param <T>
+ *            type of entities inside page
+ */
 public class GitHubPageIterable<T> implements Iterable<T>
 {
 
+    /**
+     * Class type of entities inside a page.
+     */
     private Class<T> type;
+
+    /**
+     * Used for loading next pages.
+     */
     private GitHubRESTClient gitHubRESTClient;
+
+    /**
+     * First page, which was already loaded.
+     */
     private GitHubPage<T> firstPage;
 
     /**
      * Constructor.
      * 
+     * @param type
+     *            class type of entities inside a page.
      * @param gitHubRESTClient
+     *            used for loading next pages.
      * @param firstPage
+     *            first page, which was already loaded.
      */
     public GitHubPageIterable(Class<T> type, GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
     {
@@ -26,13 +49,35 @@ public class GitHubPageIterable<T> implements Iterable<T>
         this.firstPage = firstPage;
     }
 
+    /**
+     * Iterates over all result pages.
+     * 
+     * @author Stanislav Dvorscak
+     * 
+     * @param <T>
+     *            type of entities inside page
+     */
     private static final class GitHubPageIterator<T> implements Iterator<T>
     {
 
+        /**
+         * Used for loading next pages.
+         */
         private final GitHubRESTClient gitHubRESTClient;
 
+        /**
+         * Class type of entities inside a page.
+         */
         private Class<T> type;
+
+        /**
+         * Current loaded page.
+         */
         private GitHubPage<T> currentPage;
+
+        /**
+         * Iterator build up over {@link #currentPage}.
+         */
         private Iterator<T> currentPageIterator;
 
         public GitHubPageIterator(Class<T> type, GitHubRESTClient gitHubRESTClient, GitHubPage<T> firstPage)
@@ -43,12 +88,18 @@ public class GitHubPageIterable<T> implements Iterable<T>
             currentPageIterator = Arrays.asList(currentPage.getValues()).iterator();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean hasNext()
         {
             return currentPageIterator.hasNext();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @SuppressWarnings("unchecked")
         @Override
         public T next()
@@ -62,6 +113,9 @@ public class GitHubPageIterable<T> implements Iterable<T>
             return result;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void remove()
         {
