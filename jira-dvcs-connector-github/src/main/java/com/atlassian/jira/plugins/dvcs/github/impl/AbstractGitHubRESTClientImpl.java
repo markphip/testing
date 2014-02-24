@@ -19,6 +19,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.RepositoryService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
@@ -155,13 +156,20 @@ public class AbstractGitHubRESTClientImpl
     protected <E> GitHubPage<E> getPage(Class<E[]> responseEntityType, URI uri)
     {
         ClientResponse response = client.resource(uri).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-        E[] pageValues = response.getEntity(responseEntityType);
 
-        LinkHeaders linkHeaders = getLinks(response);
-        LinkHeader nextLink = linkHeaders.getLink("next");
-        URI nextPage = nextLink != null ? nextLink.getUri() : null;
+        if (response.getStatus() < 300)
+        {
+            E[] pageValues = response.getEntity(responseEntityType);
 
-        return new GitHubPage<E>(pageValues, nextPage);
+            LinkHeaders linkHeaders = getLinks(response);
+            LinkHeader nextLink = linkHeaders.getLink("next");
+            URI nextPage = nextLink != null ? nextLink.getUri() : null;
+
+            return new GitHubPage<E>(pageValues, nextPage);
+        } else
+        {
+            throw new UniformInterfaceException(response);
+        }
     }
 
     /**

@@ -12,11 +12,13 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -61,6 +63,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 
 public class GithubCommunicator implements DvcsCommunicator
 {
@@ -347,7 +351,22 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void ensureHookPresent(Repository repository, String hookUrl)
     {
-        List<GitHubRepositoryHook> hooks = gitHubRESTClient.getHooks(repository);
+        List<GitHubRepositoryHook> hooks;
+        try
+        {
+            hooks = gitHubRESTClient.getHooks(repository);
+        } catch (UniformInterfaceException e)
+        {
+            // not found is received when you don't have necessary access rights
+            if (e.getResponse().getStatus() == HttpStatus.SC_NOT_FOUND)
+            {
+                throw new SourceControlException.PostCommitHookRegistrationException(
+                        "Could not add request hook. Possibly due to lack of admin permissions.", e);
+            } else
+            {
+                throw e;
+            }
+        }
 
 	    //Cleanup orphan this instance related hooks.
         boolean foundChangesetHook = false;

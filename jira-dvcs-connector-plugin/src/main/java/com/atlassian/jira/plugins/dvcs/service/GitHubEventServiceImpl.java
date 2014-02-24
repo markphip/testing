@@ -100,7 +100,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
     public void synchronize(final Repository repository, final boolean isSoftSync, final String[] synchronizationTags)
     {
         final GitHubEventMapping lastGitHubEventSavePoint = gitHubEventDAO.getLastSavePoint(repository);
-        String lastProceedEventGitHubId = null;
+        String lastProcessedEventGitHubId = null;
         final GitHubEventContextImpl context = new GitHubEventContextImpl(synchronizer, messagingService, repository, isSoftSync,
                 synchronizationTags);
 
@@ -108,7 +108,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
                 gitHubRESTClient.getEvents(repository)))
         {
             // processes single event - and returns flag if the processing of next records should be stopped, because their was already
-            // proceed
+            // processed
             boolean shouldStop = activeObjects.executeInTransaction(new TransactionCallback<Boolean>()
             {
 
@@ -141,7 +141,7 @@ public class GitHubEventServiceImpl implements GitHubEventService
                     return Boolean.FALSE;
                 }
             });
-            lastProceedEventGitHubId = event.getId();
+            lastProcessedEventGitHubId = event.getId();
 
             if (shouldStop)
             {
@@ -150,9 +150,9 @@ public class GitHubEventServiceImpl implements GitHubEventService
         }
 
         // marks last event as a save point - because all previous records was fully proceed
-        if (lastProceedEventGitHubId != null)
+        if (lastProcessedEventGitHubId != null)
         {
-            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, lastProceedEventGitHubId));
+            gitHubEventDAO.markAsSavePoint(gitHubEventDAO.getByGitHubId(repository, lastProcessedEventGitHubId));
         }
     }
 

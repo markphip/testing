@@ -42,7 +42,9 @@ public class IssueCommentEventGitHubEventProcessor implements GitHubEventProcess
         @SuppressWarnings("unchecked")
         Map<String, Object> issuePayload = (Map<String, Object>) gitHubEvent.getPayload().get("issue");
 
-        if (isPullRequestIssueComment(issuePayload))
+        // issue payload is null, if an issue was created and after that the issues support was disabled on repository
+        // the payload will contains only issue_id - but this issue will be not accessible via rest
+        if (issuePayload != null && isPullRequestIssueComment(issuePayload))
         {
             // pull request number is the same as issue number (pull request - is no more than special kind of issue)
             Integer pullRequestNumber = (Integer) issuePayload.get("number");
