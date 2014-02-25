@@ -15,16 +15,19 @@ import com.atlassian.jira.issue.changehistory.ChangeHistoryManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.atlassian.plugin.PluginAccessor;
 
 public class SystemUtils
 {
+    private static final String DEVSTATUS_SUMMARY_EVENT_CLASS = "com.atlassian.jira.plugin.devstatus.api.provider.SummaryDataChangedEvent";
+
     private static final Logger log = LoggerFactory.getLogger(SystemUtils.class);
 
     private static final boolean SAFE_REDIRECT_EXISTS;
     private static final boolean URL_VALIDATOR_EXISTS;
     private static final boolean GET_ALL_ISSUE_KEYS_EXISTS;
     private static final boolean GET_ALL_PROJECT_KEYS_EXISTS;
-    private static final boolean DEVSTATUS_EXISTS;
+    private static Boolean DEVSTATUS_EVENT_EXISTS = null;
 
     static
     {
@@ -32,7 +35,6 @@ public class SystemUtils
         URL_VALIDATOR_EXISTS = getUrlValidatorExists();
         GET_ALL_ISSUE_KEYS_EXISTS = getAllIssueKeysExists();
         GET_ALL_PROJECT_KEYS_EXISTS = getAllProjectKeysExists();
-        DEVSTATUS_EXISTS = getDevstatusExists();
     }
 
     private static boolean getRedirectExists()
@@ -44,11 +46,11 @@ public class SystemUtils
     private static boolean getDevstatusExists()
     {
         try {
-            Class.forName("com.atlassian.jira.plugin.devstatus.api.provider.SummaryDataChangedEvent");
+            Class.forName(DEVSTATUS_SUMMARY_EVENT_CLASS);
             return true;
         } catch (ClassNotFoundException e)
         {
-            log.info("Devstatus plugin not installed.");
+            log.info(DEVSTATUS_SUMMARY_EVENT_CLASS + " not found.");
             return false;
         }
     }
@@ -156,9 +158,18 @@ public class SystemUtils
             return Collections.singleton(project.getKey());
         }
     }
-    
-    public static boolean isDevStatsEnabled()
+
+    public static boolean isDevStatusEnabled(PluginAccessor pluginAccessor)
     {
-        return DEVSTATUS_EXISTS;
+        if (DEVSTATUS_EVENT_EXISTS == null)
+        {
+            DEVSTATUS_EVENT_EXISTS = pluginAccessor.isPluginEnabled(DvcsConstants.DEVSUMMARY_PLUGIN_ID) && getDevstatusExists();
+        }
+        return DEVSTATUS_EVENT_EXISTS;
+    }
+    
+    public static void clearDevStatusExists()
+    {
+        DEVSTATUS_EVENT_EXISTS = null;
     }
 }

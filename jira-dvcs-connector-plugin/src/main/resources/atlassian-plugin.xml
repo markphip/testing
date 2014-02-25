@@ -259,6 +259,9 @@
     <!-- Bitbucket -->
     
     <!-- GitHub -->
+    <component key="gitHubRESTClient" class="com.atlassian.jira.plugins.dvcs.github.impl.GitHubRESTClientImpl">
+    	<interface>com.atlassian.jira.plugins.dvcs.github.api.GitHubRESTClient</interface>
+    </component>
 	<component key="gitHubEventDAO" name="GitHub Event DAO" class="com.atlassian.jira.plugins.dvcs.dao.impl.GitHubEventDAOImpl">
 		<interface>com.atlassian.jira.plugins.dvcs.spi.github.dao.GitHubEventDAO</interface>
 	</component>
@@ -339,12 +342,6 @@
         <description>changesetService</description>
         <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetService</interface>
     </component>
-
-    <component key="changesetCache" name="changesetCache"
-               class="com.atlassian.jira.plugins.dvcs.service.ChangesetCacheImpl">
-        <description>changesetCache</description>
-        <interface>com.atlassian.jira.plugins.dvcs.service.ChangesetCache</interface>
-    </component>
     
     <component key="branchService" name="branchService"
                class="com.atlassian.jira.plugins.dvcs.service.BranchServiceImpl">
@@ -385,6 +382,7 @@
     <!-- Listener -->
     <component key="dvcsAddUserListenerFactoryBean" class="com.atlassian.jira.plugins.dvcs.listener.UserAddListenerFactoryBean" />
     <component key="postponeOndemandPrSyncListener" class="com.atlassian.jira.plugins.dvcs.listener.PostponeOndemandPrSyncListener" />
+    <component key="genericPluginEventsListener" class="com.atlassian.jira.plugins.dvcs.listener.GenericPluginEventsListener" />
 
 	 <!-- Messaging -->
     <component key="messageDao" class="com.atlassian.jira.plugins.dvcs.dao.impl.MessageDaoImpl">

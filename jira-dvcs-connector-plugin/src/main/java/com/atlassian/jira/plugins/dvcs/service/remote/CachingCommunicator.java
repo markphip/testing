@@ -201,9 +201,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public List<Repository> getRepositories(Organization organization)
+    public List<Repository> getRepositories(Organization organization, List<Repository> storedRepositories)
     {
-        return delegate.getRepositories(organization);
+        return delegate.getRepositories(organization, storedRepositories);
     }
     
     /**
@@ -228,15 +228,9 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public Iterable<Changeset> getChangesets(Repository repository)
+    public void ensureHookPresent(Repository repository, String postCommitUrl)
     {
-        return delegate.getChangesets(repository);
-    }
-
-    @Override
-    public void setupPostcommitHook(Repository repository, String postCommitUrl)
-    {
-        delegate.setupPostcommitHook(repository, postCommitUrl);
+        delegate.ensureHookPresent(repository, postCommitUrl);
     }
 
     @Override
