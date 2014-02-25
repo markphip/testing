@@ -101,13 +101,9 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
 
             payload.getProgress().inProgress( //
                     payload.getProgress().getChangesetCount() + 1, //
-                    payload.getProgress().getJiraCount() + issues.size(), //
+                    issues, //
                     0 //
                     );
-            if (softSync)
-            {
-                payload.getProgress().getAffectedIssueKeys().addAll(issues);
-            }
         }
 
         if (StringUtils.isNotBlank(page.getNext()))

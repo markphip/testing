@@ -81,7 +81,6 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
         boolean softSync = payload.isSoftSync();
         final Repository repo = payload.getRepository();
         final Progress progress = payload.getProgress();
-        int jiraCount = progress.getJiraCount();
 
         BitbucketPullRequestPage<BitbucketPullRequestActivityInfo> activityPage = null;
 
@@ -128,13 +127,7 @@ public class BitbucketSynchronizeActivityMessageConsumer implements MessageConsu
 
             Set<String> issueKeys = dao.updatePullRequestIssueKeys(repo, localPrId);
 
-            progress.inPullRequestProgress(processedSize(payload),
-                    jiraCount + issueKeys.size());
-
-            if (softSync)
-            {
-                progress.getAffectedIssueKeys().addAll(issueKeys);
-            }
+            progress.inPullRequestProgress(processedSize(payload), issueKeys);
         }
         if (!isLastPage)
         {

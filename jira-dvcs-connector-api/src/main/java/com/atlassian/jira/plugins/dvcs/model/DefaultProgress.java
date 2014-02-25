@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.collect.Sets;
 
 @XmlRootElement(name = "sync")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -84,18 +85,20 @@ public class DefaultProgress implements Progress
 
     @Override
     // TODO remove synchroErrorCount
-    public void inProgress(int changesetCount, int jiraCount, int synchroErrorCount)
+    public void inProgress(int changesetCount, Set<String> issues, int synchroErrorCount)
     {
         this.changesetCount = changesetCount;
-        this.jiraCount = jiraCount;
+        this.jiraCount += Sets.difference(issues, affectedIssueKeys).size();
+        affectedIssueKeys.addAll(issues);
         this.synchroErrorCount = synchroErrorCount;
     }
 
     @Override
-    public void inPullRequestProgress(int pullRequestActivityCount, int jiraCount)
+    public void inPullRequestProgress(int pullRequestActivityCount, Set<String> issues)
     {
         this.pullRequestActivityCount = pullRequestActivityCount;
-        this.jiraCount = jiraCount;
+        this.jiraCount += Sets.difference(issues, affectedIssueKeys).size();
+        affectedIssueKeys.addAll(issues);
     }
 
     public void queued()
