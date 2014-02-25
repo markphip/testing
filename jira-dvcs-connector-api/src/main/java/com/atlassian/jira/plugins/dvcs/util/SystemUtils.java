@@ -158,7 +158,7 @@ public class SystemUtils
             return Collections.singleton(project.getKey());
         }
     }
-    
+
     public static boolean isDevStatusEnabled(PluginAccessor pluginAccessor)
     {
         if (DEVSTATUS_EVENT_EXISTS == null)
