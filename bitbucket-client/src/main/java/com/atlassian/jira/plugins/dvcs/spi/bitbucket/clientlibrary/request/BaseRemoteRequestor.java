@@ -315,7 +315,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
         {
             String content = logRequestAndResponse(method, httpResponse, statusCode);
 
-            RuntimeException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
+            BitbucketRequestException toBeThrown = new BitbucketRequestException.Other("Error response code during the request : "
                     + statusCode);
 
             switch (statusCode)
@@ -336,6 +336,7 @@ public class BaseRemoteRequestor implements RemoteRequestor
                     toBeThrown = new BitbucketRequestException.InternalServerError_500(content);
             }
 
+            toBeThrown.setContent(content);
 
             throw toBeThrown;
         }

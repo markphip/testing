@@ -15,6 +15,8 @@ public class BitbucketRequestException extends RuntimeException
 
     private static final long serialVersionUID = 2834085757547295408L;
 
+    private String content;
+
 	public BitbucketRequestException()
 	{
 		super();
@@ -30,7 +32,17 @@ public class BitbucketRequestException extends RuntimeException
 		super(message, cause);
 	}
 
-	public static final class Other extends BitbucketRequestException implements RetryableRequestException
+    public String getContent()
+    {
+        return content;
+    }
+
+    public void setContent(final String content)
+    {
+        this.content = content;
+    }
+
+    public static final class Other extends BitbucketRequestException implements RetryableRequestException
 	{
 		public Other()
 		{

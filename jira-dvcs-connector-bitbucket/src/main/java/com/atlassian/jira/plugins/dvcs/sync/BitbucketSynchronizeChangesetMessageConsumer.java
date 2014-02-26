@@ -7,6 +7,9 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.ClientUtils;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketHttpError;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -26,6 +29,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.Bitbuck
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketNewChangeset;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchronizeChangesetMessage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Consumer of {@link BitbucketSynchronizeChangesetMessage}-s.
@@ -35,6 +40,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTrans
  */
 public class BitbucketSynchronizeChangesetMessageConsumer implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
+    private static final Logger log = LoggerFactory.getLogger(BitbucketSynchronizeChangesetMessageConsumer.class);
 
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
@@ -59,16 +65,73 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
     {
         final BitbucketCommunicator communicator = (BitbucketCommunicator) cachingCommunicator.getDelegate();
 
-        final BitbucketChangesetPage page = FlightTimeInterceptor.execute(payload.getProgress(), new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
+        BitbucketChangesetPage page = null;
+
+        try
+        {
+            page = FlightTimeInterceptor.execute(payload.getProgress(), new FlightTimeInterceptor.Callable<BitbucketChangesetPage>()
         {
             @Override
             public BitbucketChangesetPage call()
             {
                 return communicator.getNextPage(payload.getRepository(), payload.getInclude(), payload.getExclude(), payload.getPage());
             }
-        });
+            });
+        }
+        catch (BitbucketRequestException.NotFound_404 e)
+        {
+            retryWithoutInvalidNodes(message, payload, e);
+        }
 
-        process(message, payload, page);
+        if (page != null)
+        {
+            process(message, payload, page);
+        }
+    }
+
+    private void retryWithoutInvalidNodes(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketRequestException.NotFound_404 e)
+    {
+        BitbucketHttpError error;
+        try
+        {
+            error = ClientUtils.fromJson(e.getContent(), BitbucketHttpError.class);
+        } catch (Exception e2)
+        {
+            log.warn("Content from http error response could not be parsed.", e2);
+            throw e;
+        }
+
+        List<String> invalidShas = extractInvalidShas(error);
+
+        List<String> includes = payload.getInclude();
+        includes.removeAll(invalidShas);
+        if (includes.isEmpty())
+        {
+            log.warn("Include nodes list is empty, all commits will be requested.");
+        }
+        List<String> excludes = payload.getExclude();
+        excludes.removeAll(invalidShas);
+        if (excludes.isEmpty())
+        {
+            log.warn("Exclude nodes list is empty, no commits will be excluded.");
+        }
+
+        messagingService.publish(
+                getAddress(), //
+                new BitbucketSynchronizeChangesetMessage(payload.getRepository(), //
+                        payload.getRefreshAfterSynchronizedAt(), //
+                        payload.getProgress(), //
+                        includes, excludes, payload.getPage(), payload.getNodesToBranches(), payload.isSoftSync(), payload.getSyncAuditId()), payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, message.getTags());
+    }
+
+    private List<String> extractInvalidShas(final BitbucketHttpError error)
+    {
+        if (error.getData() != null)
+        {
+            return error.getData().getShas();
+        }
+
+        return null;
     }
 
     private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
