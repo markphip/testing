@@ -116,12 +116,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
             log.warn("Exclude nodes list is empty, no commits will be excluded.");
         }
 
+        // we need to start over as pages can be shifted because of stripping and rebasing
         messagingService.publish(
                 getAddress(), //
                 new BitbucketSynchronizeChangesetMessage(payload.getRepository(), //
                         payload.getRefreshAfterSynchronizedAt(), //
                         payload.getProgress(), //
-                        includes, excludes, payload.getPage(), payload.getNodesToBranches(), payload.isSoftSync(), payload.getSyncAuditId()), payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, message.getTags());
+                        includes, excludes, null, payload.getNodesToBranches(), payload.isSoftSync(), payload.getSyncAuditId()), payload.isSoftSync() ? MessagingService.SOFTSYNC_PRIORITY: MessagingService.DEFAULT_PRIORITY, message.getTags());
     }
 
     private List<String> extractInvalidShas(final BitbucketHttpError error)
@@ -180,6 +181,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer implements MessageCons
         Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
 
         String branch = changesetBranch.get(cset.getHash());
+
         cset.setBranch(branch);
         changesetBranch.remove(cset.getHash());
         for (BitbucketNewChangeset parent : cset.getParents())
