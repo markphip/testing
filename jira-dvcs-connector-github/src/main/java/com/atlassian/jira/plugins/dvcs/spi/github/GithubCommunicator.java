@@ -12,13 +12,13 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.httpclient.HttpStatus;
+import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -43,7 +43,6 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
 import com.atlassian.jira.plugins.dvcs.model.BranchHead;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
-import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -63,7 +62,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
 public class GithubCommunicator implements DvcsCommunicator
@@ -296,7 +294,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
     
     @Override
-    public List<ChangesetFileDetail> getFileDetails(Repository repository, Changeset changeset)
+    public ChangesetFileDetailsEnvelope getFileDetails(Repository repository, Changeset changeset)
     {
         CommitService commitService = githubClientProvider.getCommitService(repository);
         RepositoryId repositoryId = RepositoryId.create(repository.getOrgName(), repository.getSlug());
@@ -307,7 +305,7 @@ public class GithubCommunicator implements DvcsCommunicator
         {
             RepositoryCommit commit = commitService.getCommit(repositoryId, changeset.getNode());
 
-            return GithubChangesetFactory.transformToFileDetails(commit.getFiles());
+            return new ChangesetFileDetailsEnvelope(GithubChangesetFactory.transformToFileDetails(commit.getFiles()), commit.getFiles().size());
         }
         catch (IOException e)
         {
@@ -373,27 +371,26 @@ public class GithubCommunicator implements DvcsCommunicator
         boolean foundPullRequesttHook = false;
         for (GitHubRepositoryHook hook : hooks)
 	    {
-            String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-            boolean isPullRequestHook = isPullRequestHook(hook);
-
-            if (!foundChangesetHook && url.equals(hookUrl) && !isPullRequestHook)
-            {
-                foundChangesetHook = true;
-                continue;
-            }
-
-            if (!foundPullRequesttHook && url.equals(hookUrl) && isPullRequestHook(hook))
-            {
-                foundPullRequesttHook = true;
-                continue;
-            }
-
-            String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
-
             if (GitHubRepositoryHook.NAME_WEB.equals(hook.getName()))
             {
+                String url = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
+                boolean isPullRequestHook = isPullRequestHook(hook);
+
+                if (!foundChangesetHook && hookUrl.equals(url) && !isPullRequestHook)
+                {
+                    foundChangesetHook = true;
+                    continue;
+                }
+
+                if (!foundPullRequesttHook && hookUrl.equals(url) && isPullRequestHook)
+                {
+                    foundPullRequesttHook = true;
+                    continue;
+                }
+
+                String thisHostAndRest =  applicationProperties.getBaseUrl() + DvcsCommunicator.POST_HOOK_SUFFIX;
                 String postCommitHookUrl = hook.getConfig().get(GitHubRepositoryHook.CONFIG_URL);
-                if (postCommitHookUrl.startsWith(thisHostAndRest))
+                if (StringUtils.startsWith(postCommitHookUrl, thisHostAndRest))
                 {
                     gitHubRESTClient.deleteHook(repository, hook);
                 }
