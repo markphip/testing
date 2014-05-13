@@ -220,11 +220,4 @@ public class GithubSynchronizeChangesetsMessageConsumer implements MessageConsum
     {
         return MessageConsumer.THREADS_PER_CONSUMER;
     }
-
-    @Override
-    public boolean shouldDiscard(int messageId, int retryCount, GitHubSynchronizeChangesetsMessage payload, String[] tags)
-    {
-        return retryCount >= 3;
-    }
-
 }
