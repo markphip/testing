@@ -1,13 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.eclipse.egit.github.core.event.Event;
-
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.GitHubEventMapping;
 import com.atlassian.jira.plugins.dvcs.dao.GitHubEventDAO;
@@ -21,6 +13,12 @@ import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.github.service.GitHubEventService;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import org.eclipse.egit.github.core.event.Event;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * Implementation of the {@link GitHubEventService}.

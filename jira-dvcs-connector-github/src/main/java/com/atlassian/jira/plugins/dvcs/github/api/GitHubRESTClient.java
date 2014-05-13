@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github.api;
 
-import java.util.List;
-
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubEvent;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubPage;
 import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+
+import java.util.List;
 
 /**
  * API abstraction over GitHub REST API.
