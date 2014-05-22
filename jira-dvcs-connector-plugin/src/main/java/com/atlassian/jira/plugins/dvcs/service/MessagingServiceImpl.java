@@ -18,6 +18,8 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
+import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
@@ -124,6 +126,9 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
 
     @Resource
     private HttpClientProvider httpClientProvider;
+
+    @Resource
+    private DvcsCommunicatorProvider communicatorProvider;
 
     private final Object endProgressLock = new Object();
 
@@ -813,6 +818,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         {
             try
             {
+                setupNewLinkers(repository, progress);
+
                 // TODO error could be in PR synchronization and thus we can process smartcommits
                 if (progress == null || progress.getError() == null)
                 {
@@ -867,5 +874,33 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     public void destroy() throws Exception
     {
         stop = true;
+    }
+
+    private void setupNewLinkers(Repository repository, Progress progress)
+    {
+        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+
+        Set<String> projectKeys = changesetService.findReferencedProjects(repository.getId());
+
+        if (!projectKeys.isEmpty())
+        {
+            if (progress.isSoftsync())
+            {
+                // removing all project keys that were referenced at the synchronization start
+                if (progress.getInitiallyReferencedProjects() != null)
+                {
+                    projectKeys.removeAll(progress.getInitiallyReferencedProjects());
+                }
+
+                if (!projectKeys.isEmpty())
+                {
+                    communicator.linkRepositoryIncremental(repository, projectKeys);
+                }
+            }
+            else
+            {
+                communicator.linkRepository(repository, projectKeys);
+            }
+        }
     }
 }

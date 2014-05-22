@@ -29,6 +29,13 @@ public class DefaultBitbucketClientBuilderFactory implements BitbucketClientBuil
         httpClientProvider.setUserAgent(userAgent);
     }
 
+    public DefaultBitbucketClientBuilderFactory(Encryptor encryptor, String userAgent, HttpClientProvider httpClientProvider)
+    {
+        this.encryptor = encryptor;
+        this.userAgent = userAgent;
+        this.httpClientProvider = httpClientProvider;
+    }
+
     @Override
     public BitbucketClientBuilder forOrganization(Organization organization)
     {

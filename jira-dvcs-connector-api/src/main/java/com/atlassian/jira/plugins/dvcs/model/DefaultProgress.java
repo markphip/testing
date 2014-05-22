@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -70,6 +71,9 @@ public class DefaultProgress implements Progress
 
     @XmlTransient
     private EnumSet<SynchronizationFlag> runAgain;
+
+    @XmlTransient
+    private Set<String> initiallyReferencedProjects;
 
     public DefaultProgress()
     {
@@ -300,5 +304,17 @@ public class DefaultProgress implements Progress
     public void setSoftsync(final boolean softsync)
     {
         this.softsync = softsync;
+    }
+
+    @Override
+    public Set<String> getInitiallyReferencedProjects()
+    {
+        return initiallyReferencedProjects;
+    }
+
+    @Override
+    public void setInitiallyReferencedProjects(final Set<String> initiallyReferencedProjects)
+    {
+        this.initiallyReferencedProjects = initiallyReferencedProjects;
     }
 }

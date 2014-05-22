@@ -155,6 +155,8 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
                     repositoryDao.save(repo);
                 }
 
+                progress.setInitiallyReferencedProjects(changesetService.findReferencedProjects(repo.getId()));
+
                 // first retry all failed messages
                 try
                 {

@@ -2,13 +2,26 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.pageobjects.pages.DashboardPage;
+import com.atlassian.jira.plugins.dvcs.crypto.Encryptor;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketConstants;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLink;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepositoryLinkHandler;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryLinkRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.DashboardActivityStreamsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.GreenHopperBoardPage;
@@ -34,7 +47,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -104,6 +120,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositories(true).size()).isEqualTo(4);
         assertThat(organization.getRepositories(true).get(3).getMessage()).isEqualTo("Fri Mar 02 2012");
+
+        assertLinksWereInstalled(ACCOUNT_NAME, organization.getRepositories(true).get(3).getRepositoryName(), "QA");
 
         assertThat(getCommitsForIssue("QA-2", 1)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
         assertThat(getCommitsForIssue("QA-3", 2)).hasItemWithCommitMessage("BB modified 1 file to QA-2 and QA-3 from TestRepo-QA");
@@ -418,5 +436,80 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // but maybe we will add something here one day
     }
 
+    private RepositoryLinkRemoteRestpoint getRepositoryLinkRemoteRestpoint(String owner, String password)
+    {
+        BitbucketClientBuilderFactory bitbucketClientBuilderFactory = new DefaultBitbucketClientBuilderFactory(new Encryptor()
+        {
 
+            @Override
+            public String encrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+
+            @Override
+            public String decrypt(final String input, final String organizationName, final String hostUrl)
+            {
+                return input;
+            }
+        }, "DVCS Connector Tests", new HttpClientProvider());
+        Credential credential = new Credential();
+        credential.setAdminUsername(owner);
+        credential.setAdminPassword(password);
+        BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", null, credential).build();
+        return bitbucketClient.getRepositoryLinksRest();
+    }
+
+    private void assertLinksWereInstalled(String owner, String repositoryName, String... projectKeys)
+    {
+        RepositoryLinkRemoteRestpoint repositoryLinkRemoteRestpoint = getRepositoryLinkRemoteRestpoint(owner, PasswordUtil.getPassword(owner));
+
+        List<BitbucketRepositoryLink> repositoryLinks = filterLinksToThisJira(repositoryLinkRemoteRestpoint.getRepositoryLinks(owner, repositoryName));
+        assertThat(repositoryLinks).isNotNull().isNotEmpty().hasSize(1).as("Exactly one link to the instance for the repository should be installed");
+        assertThat(getProjectKeysFromLinkOrNull(repositoryLinks.get(0))).containsExactly(projectKeys).as("Links for project are not installed");
+    }
+
+    //TODO these methods are from BitbucketLinker to tests Bitbucket links, some refactor and code reuse would be needed
+    private List<BitbucketRepositoryLink> filterLinksToThisJira(List<BitbucketRepositoryLink> currentBitbucketLinks)
+    {
+        List<BitbucketRepositoryLink> linksToThisJira = Lists.newArrayList();
+        for (BitbucketRepositoryLink repositoryLink : currentBitbucketLinks)
+        {
+            // make sure that is of type jira or custom (new version of linking)
+            if (isCustomOrJiraType(repositoryLink))
+            {
+                BitbucketRepositoryLinkHandler handler = repositoryLink.getHandler();
+                String displayTo = handler.getDisplayTo();
+                if (displayTo!=null && displayTo.toLowerCase().startsWith(jira.getProductInstance().getBaseUrl().toLowerCase()))
+                {
+                    // remove links just to OUR jira instance
+                    linksToThisJira.add(repositoryLink);
+                }
+            }
+        }
+        return linksToThisJira;
+    }
+
+    private boolean isCustomOrJiraType(BitbucketRepositoryLink repositoryLink)
+    {
+        return repositoryLink.getHandler() != null &&
+                (BitbucketConstants.REPOSITORY_LINK_TYPE_JIRA.equals(repositoryLink.getHandler().getName())
+                        || BitbucketConstants.REPOSITORY_LINK_TYPE_CUSTOM.equals(repositoryLink.getHandler().getName()));
+    }
+
+    private HashSet<String> getProjectKeysFromLinkOrNull(BitbucketRepositoryLink bitbucketRepositoryLink)
+    {
+        String regexp = null;
+        try
+        {
+            regexp = bitbucketRepositoryLink.getHandler().getRawRegex();
+            Matcher matcher = Pattern.compile("[A-Z|a-z]{2,}(|)+").matcher(regexp);
+            matcher.find();
+            String pipedProjectKeys = matcher.group(0);
+            return Sets.newHashSet(Splitter.on("|").split(pipedProjectKeys));
+        } catch (Exception e)
+        {
+            return null;
+        }
+    }
 }

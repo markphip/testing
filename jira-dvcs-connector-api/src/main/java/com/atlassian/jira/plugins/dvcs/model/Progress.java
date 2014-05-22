@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Information about the current synchronisation progress
@@ -138,4 +139,8 @@ public interface Progress
     boolean isSoftsync();
 
     void setSoftsync(boolean softsync);
+
+    Set<String> getInitiallyReferencedProjects();
+
+    void setInitiallyReferencedProjects(Set<String> referencedProjects);
 }
