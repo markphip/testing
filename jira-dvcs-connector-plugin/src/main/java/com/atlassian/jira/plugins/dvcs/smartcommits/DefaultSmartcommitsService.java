@@ -104,6 +104,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		//
 		// Authenticate user
 		//
+        User originalLoggedInUser = jiraAuthenticationContext.getLoggedInUser();
 		jiraAuthenticationContext.setLoggedInUser(user);
 
 		if (CollectionUtils.isEmpty(commands.getCommands()))
@@ -120,6 +121,9 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		processCommands(commands, results, user);
 
 		log.debug("Processing commands results : " + results);
+
+        // resetting the original user
+        jiraAuthenticationContext.setLoggedInUser(originalLoggedInUser);
 
 		return results;
 	}
