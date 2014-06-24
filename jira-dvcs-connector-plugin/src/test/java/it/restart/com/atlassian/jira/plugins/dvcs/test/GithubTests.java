@@ -153,6 +153,15 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         if (!hooksPage.contains(githubServiceConfigUrlPath))
         {
+            // wait for a while before trying again
+            try
+            {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e)
+            {
+
+            }
             // let's retry once more
             jira.getTester().gotoUrl(hooksURL);
             hooksPage = jira.getTester().getDriver().getPageSource();
