@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.google.common.base.Function;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.OrganizationDiv;
@@ -24,6 +25,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matchers;
+import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -31,6 +33,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -146,34 +149,27 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         // check that it created postcommit hook
-        String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
+        final String githubServiceConfigUrlPath = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/repository/";
         String hooksURL = "https://github.com/jirabitbucketconnector/test-project/settings/hooks";
         jira.getTester().gotoUrl(hooksURL);
-        String hooksPage = jira.getTester().getDriver().getPageSource();
+        final String hooksPage = jira.getTester().getDriver().getPageSource();
 
-        if (!hooksPage.contains(githubServiceConfigUrlPath))
+        jira.getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
         {
-            // wait for a while before trying again
-            try
+            @Override
+            public Boolean apply(@Nullable final WebDriver input)
             {
-                Thread.sleep(2000);
+                return hooksPage.contains(githubServiceConfigUrlPath);
             }
-            catch (InterruptedException e)
-            {
-
-            }
-            // let's retry once more
-            jira.getTester().gotoUrl(hooksURL);
-            hooksPage = jira.getTester().getDriver().getPageSource();
-        }
+        }, 15000);
 
         assertThat(hooksPage).contains(githubServiceConfigUrlPath);
         // delete repository
         new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
         // check that postcommit hook is removed
         jira.getTester().gotoUrl(hooksURL);
-        hooksPage = jira.getTester().getDriver().getPageSource();
-        assertThat(hooksPage).doesNotContain(githubServiceConfigUrlPath);
+        String hooksPageRemoved = jira.getTester().getDriver().getPageSource();
+        assertThat(hooksPageRemoved).doesNotContain(githubServiceConfigUrlPath);
     }
 
     @Test
