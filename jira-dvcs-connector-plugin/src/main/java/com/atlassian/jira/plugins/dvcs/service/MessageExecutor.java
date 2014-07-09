@@ -9,6 +9,10 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
+import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +70,9 @@ public class MessageExecutor
      */
     @Resource
     private MessageConsumer<?>[] consumers;
+
+    @Resource
+    private SyncDisabledHelper syncDisabledHelper;
 
     /**
      * {@link MessageAddress} to appropriate consumers listeners.
@@ -265,9 +272,18 @@ public class MessageExecutor
                     throw e;
                 }
 
-                consumer.onReceive(message, payload);
-                messagingService.ok(consumer, message);
-
+                Repository repository = payload.getRepository();
+                if (!isSyncDisabled(repository.getDvcsType()))
+                {
+                    consumer.onReceive(message, payload);
+                    messagingService.ok(consumer, message);
+                }
+                else
+                {
+                    messagingService.disable(consumer, message);
+                    // let's disable all the messages from the repository
+                    messagingService.disableAll(messagingService.getTagForSynchronization(repository));
+                }
             } catch (Throwable t)
             {
                 LOGGER.error("Synchronization failed: " + t.getMessage(), t);
@@ -303,6 +319,26 @@ public class MessageExecutor
                 LOGGER.error(e.getMessage(), e);
                 // Any RuntimeException will be ignored in this step
             }
+        }
+
+        private boolean isSyncDisabled(String dvcsType)
+        {
+            if (BitbucketCommunicator.BITBUCKET.equals(dvcsType))
+            {
+                return syncDisabledHelper.isBitbucketSyncDisabled();
+            }
+
+            if (GithubCommunicator.GITHUB.equals(dvcsType))
+            {
+                return syncDisabledHelper.isGithubSyncDisabled();
+            }
+
+            if (GithubEnterpriseCommunicator.GITHUB_ENTERPRISE.equals(dvcsType))
+            {
+                return syncDisabledHelper.isGithubEnterpriseSyncDisabled();
+            }
+
+            return false;
         }
     }
 

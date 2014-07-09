@@ -78,12 +78,17 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                     mapping.setNumRequests(numRequests);
                     mapping.setFlightTimeMs(flightTimeMs);
 
-                    if (StringUtils.isNotBlank(mapping.getExcTrace()))
+                    // if sync status is set to disabled, we don't overwrite it
+                    if (!SyncAuditLogMapping.SYNC_STATUS_DISABLED.equals(mapping.getSyncStatus()))
                     {
-                        mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_FAILED);
-                    } else
-                    {
-                        mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SUCCESS);
+                        if (StringUtils.isNotBlank(mapping.getExcTrace()))
+                        {
+                            mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_FAILED);
+                        }
+                        else
+                        {
+                            mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SUCCESS);
+                        }
                     }
 
                     mapping.save();
@@ -112,10 +117,16 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
     @Override
     public SyncAuditLogMapping pause(final int syncId)
     {
-        return status(syncId);
+        return status(syncId, SyncAuditLogMapping.SYNC_STATUS_SLEEPING);
     }
 
-    protected SyncAuditLogMapping status(final int syncId)
+    @Override
+    public SyncAuditLogMapping disable(final int syncId)
+    {
+        return status(syncId, SyncAuditLogMapping.SYNC_STATUS_DISABLED);
+    }
+
+    protected SyncAuditLogMapping status(final int syncId, final String status)
     {
         return doTxQuietly(new Callable<SyncAuditLogMapping>(){
             @Override
@@ -124,7 +135,7 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
                 SyncAuditLogMapping mapping = find(syncId);
                 if (mapping != null)
                 {
-                    mapping.setSyncStatus(SyncAuditLogMapping.SYNC_STATUS_SLEEPING);
+                    mapping.setSyncStatus(status);
                     mapping.save();
                 }
                 return mapping;

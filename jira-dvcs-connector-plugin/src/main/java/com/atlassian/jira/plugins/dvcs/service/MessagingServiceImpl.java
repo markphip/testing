@@ -48,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.xml.transform.Source;
 
 /**
  * A {@link MessagingService} implementation.
@@ -539,6 +538,61 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
         messageQueueItemDao.save(queueItem);
         syncAudit.setException(getSynchronizationAuditIdFromTags(message.getTags()), t, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <P extends HasProgress> void disable(MessageConsumer<P> consumer, Message<P> message)
+    {
+        MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
+        queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
+        messageQueueItemDao.save(queueItem);
+    }
+
+    @Override
+    public void disableAll(String tag)
+    {
+        final Set<Integer> syncAudits = new LinkedHashSet<Integer>();
+        messageDao.getByTag(tag, new StreamCallback<MessageMapping>()
+        {
+
+            @Override
+            public void callback(final MessageMapping message)
+            {
+                activeObjects.executeInTransaction(new TransactionCallback<Void>()
+                {
+
+                    @Override
+                    public Void doInTransaction()
+                    {
+                        for (MessageQueueItemMapping messageQueueItem : message.getQueuesItems())
+                        {
+                            // messages, which are running can not be paused!
+                            if (!MessageState.RUNNING.name().equals(messageQueueItem.getState()))
+                            {
+                                messageQueueItem.setState(MessageState.WAITING_FOR_RETRY.name());
+                                messageQueueItemDao.save(messageQueueItem);
+                            }
+                        }
+                        return null;
+                    }
+
+                });
+
+                int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
+                if (syncAuditId != 0)
+                {
+                    syncAudits.add(syncAuditId);
+                }
+            }
+
+        });
+        for (Integer syncAuditId : syncAudits)
+        {
+            syncAudit.disable(syncAuditId);
+        }
     }
 
     @Override

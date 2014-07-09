@@ -98,7 +98,7 @@ public interface MessagingService
     <P extends HasProgress> void ok(MessageConsumer<P> consumer, Message<P> message);
 
     /**
-     * Marks message specified by provided message id, as proceed successfully.
+     * Marks message specified by provided message id to be retried, increasing the number of retries.
      *
      * @param consumer
      *            of message
@@ -106,6 +106,21 @@ public interface MessagingService
      *            for marking
      */
     <P extends HasProgress> void fail(MessageConsumer<P> consumer, Message<P> message, Throwable t);
+
+    /**
+     * Marks message specified by provided message id to be retried, the number of retries is not changed.
+     *
+     * @param consumer
+     * @param message
+     */
+    <P extends HasProgress> void disable(MessageConsumer<P> consumer, Message<P> message);
+
+    /**
+     * Marks all messages with the specified tag to be retried, the number of retries will not be changed
+     *
+     * @param tag
+     */
+    void disableAll(String tag);
 
     /**
      * Discards message.

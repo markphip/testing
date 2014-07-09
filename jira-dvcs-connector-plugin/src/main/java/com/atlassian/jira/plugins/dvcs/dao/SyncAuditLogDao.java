@@ -28,5 +28,7 @@ public interface SyncAuditLogDao
 
     SyncAuditLogMapping pause(int syncId);
 
+    SyncAuditLogMapping disable(int syncId);
+
     SyncAuditLogMapping resume(int syncId);
 }
