@@ -546,7 +546,13 @@ function configureOAuth(org, atlToken) {
     		data.fullName = data.username;
         AJS.$(".repositoryOAuthDialog #tokenUser").html(dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
     }).error(function (err) {
-            AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
+            if (err.status == 503) {
+                var response = AJS.$.parseJSON(err.responseText);
+                AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;" + response.message + "&gt;<i>");
+            } else {
+
+                AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
+            }
         });
 
     return false;

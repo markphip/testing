@@ -91,7 +91,7 @@ public class DefaultSynchronizer implements Synchronizer, DisposableBean, Initia
         // We take a copy of the flags ourself, so we can modify them as we want for this sync without others who reuse the flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
-        if (communicator.isSyncDisabled(repo, flags))
+        if (communicator.isSyncDisabled())
         {
             log.info("Synchronization is disabled for repository {} ({})", repo.getName(), repo.getId());
             throw new SourceControlException.SynchronizationDisabled("Synchronization is disabled for repository " + repo.getName() + " (" + repo.getId() + ")");

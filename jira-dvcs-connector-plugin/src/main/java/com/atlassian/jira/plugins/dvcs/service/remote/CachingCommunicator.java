@@ -187,9 +187,15 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
-    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    public boolean isSyncDisabled()
     {
-        return delegate.isSyncDisabled(repo, flags);
+        return delegate.isSyncDisabled();
+    }
+
+    @Override
+    public void checkSyncDisabled()
+    {
+        delegate.checkSyncDisabled();
     }
 
     @Override

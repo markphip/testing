@@ -101,6 +101,7 @@ public class ChangesetServiceImpl implements ChangesetService
         {
             final Repository repository = repositoryDao.get(repoChangesets.getKey());
             final DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+            communicator.checkSyncDisabled();
 
             for (Changeset changeset : repoChangesets.getValue())
             {
@@ -214,6 +215,7 @@ public class ChangesetServiceImpl implements ChangesetService
             {
                 Repository repository = repositoryDao.get(changeset.getRepositoryId());
                 DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
+                communicator.checkSyncDisabled();
 
                 Changeset updatedChangeset = communicator.getChangeset(repository, changeset.getNode());
 

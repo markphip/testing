@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise;
 
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
@@ -58,9 +59,18 @@ public class GithubEnterpriseCommunicator extends GithubCommunicator
         return GITHUB_ENTERPRISE;
     }
 
-    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    public boolean isSyncDisabled()
     {
         return syncDisabledHelper.isGithubEnterpriseSyncDisabled();
+    }
+
+    @Override
+    public void checkSyncDisabled()
+    {
+        if (isSyncDisabled())
+        {
+            throw new SourceControlException.SynchronizationDisabled(getDvcsType() + " synchronization disabled");
+        }
     }
 }
 

@@ -102,5 +102,12 @@ public interface DvcsCommunicator
 
     void startSynchronisation(Repository repo, EnumSet<SynchronizationFlag> flags, int auditId);
 
-    boolean isSyncDisabled(Repository repo, EnumSet<SynchronizationFlag> flags);
+    boolean isSyncDisabled();
+
+    /**
+     * Checks whether the synchronization is disabled
+     *
+     * throws SourceControlException.SynchronizationDisabled if synchronization is disabled
+     */
+    void checkSyncDisabled();
 }

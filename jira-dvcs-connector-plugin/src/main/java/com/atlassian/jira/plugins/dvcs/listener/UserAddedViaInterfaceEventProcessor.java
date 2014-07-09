@@ -168,7 +168,8 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 		if (CollectionUtils.isNotEmpty(groupSlugs))
 		{
 			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-			communicator.inviteUser(organization, groupSlugs, email);
+            communicator.checkSyncDisabled();
+            communicator.inviteUser(organization, groupSlugs, email);
 		}
 	}
 

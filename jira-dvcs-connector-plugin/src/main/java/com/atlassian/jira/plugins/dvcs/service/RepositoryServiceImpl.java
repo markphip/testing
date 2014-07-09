@@ -154,6 +154,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         // get repositories from the dvcs hosting server
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+        communicator.checkSyncDisabled();
 
         // get local repositories
         List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
@@ -555,6 +556,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+        communicator.checkSyncDisabled();
 
         if (repository.isLinked())
         {
@@ -652,6 +654,8 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
         try
         {
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            communicator.checkSyncDisabled();
+
             String postCommitUrl = getPostCommitUrl(repository);
             communicator.removePostcommitHook(repository, postCommitUrl);
         } catch (Exception e)
@@ -706,6 +710,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
             log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
 
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
+            communicator.checkSyncDisabled();
             if (enableLinkers && repository.isLinked())
             {
                 communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
@@ -734,6 +739,7 @@ public class RepositoryServiceImpl implements RepositoryService, DisposableBean
 
         if (!Strings.isNullOrEmpty(author))
         {
+            communicator.checkSyncDisabled();
             try
             {
                 user = communicator.getUser(repository, author);

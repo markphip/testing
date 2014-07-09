@@ -639,9 +639,18 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    public boolean isSyncDisabled()
     {
         return syncDisabledHelper.isGithubSyncDisabled();
+    }
+
+    @Override
+    public void checkSyncDisabled()
+    {
+        if (isSyncDisabled())
+        {
+            throw new SourceControlException.SynchronizationDisabled(getDvcsType() + " synchronization disabled");
+        }
     }
 
     private String getRef(String slug, String branch)

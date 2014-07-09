@@ -95,6 +95,8 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
             if (CollectionUtils.isNotEmpty(slugsStrings))
             {
                 DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
+                communicator.checkSyncDisabled();
+
                 communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
             }
         }

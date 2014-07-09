@@ -227,6 +227,7 @@ public class OrganizationServiceImpl implements OrganizationService
     {
         Organization organization = get(organizationId, false);
         DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
+        communicator.checkSyncDisabled();
         DvcsUser currentUser = communicator.getTokenOwner(organization);
         return currentUser;
     }

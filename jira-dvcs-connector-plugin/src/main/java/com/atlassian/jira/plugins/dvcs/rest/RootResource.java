@@ -154,6 +154,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -193,6 +194,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -226,6 +228,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -259,6 +262,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -285,6 +289,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -311,6 +316,7 @@ public class RootResource
         }
         catch (SourceControlException.SynchronizationDisabled e)
         {
+            log.error(e.getMessage());
             return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
@@ -337,7 +343,16 @@ public class RootResource
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        AccountInfo accountInfo = organizationService.getAccountInfo(server, account);
+        AccountInfo accountInfo;
+        try
+        {
+            accountInfo = organizationService.getAccountInfo(server, account);
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error(e.getMessage());
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
 
         if (accountInfo != null)
         {
@@ -363,7 +378,13 @@ public class RootResource
         {
             currentUser = organizationService.getTokenOwner(Integer.parseInt(organizationId));
             return Response.ok(currentUser).build();
-        } catch (Exception e)
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error(e.getMessage());
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
+        catch (Exception e)
         {
             log.warn("Error retrieving token owner: " + e.getMessage());
         }
@@ -386,7 +407,13 @@ public class RootResource
         try
         {
             repositoryService.syncRepositoryList(organization);
-        } catch (SourceControlException e)
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error(e.getMessage());
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
+        catch (SourceControlException e)
         {
             log.error("Could not refresh repository list", e);
         }
@@ -481,11 +508,18 @@ public class RootResource
 
             return Response.ok(result).build();
 
-        } catch (SourceControlException.Forbidden_403 e)
+        }
+        catch (SourceControlException.Forbidden_403 e)
         {
             return buildErrorResponse(Response.Status.FORBIDDEN, "Unable to access Bitbucket");
 
-        } catch (SourceControlException e)
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error(e.getMessage());
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
+        catch (SourceControlException e)
         {
             return buildErrorResponse(Response.Status.INTERNAL_SERVER_ERROR,
                     "Error retrieving list of groups for " + organization.getOrganizationUrl()
@@ -531,7 +565,13 @@ public class RootResource
 
                 organizations.add(organizationView);
 
-            } catch (Exception e)
+            }
+            catch (SourceControlException.SynchronizationDisabled e)
+            {
+                log.error(e.getMessage());
+                return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+            }
+            catch (Exception e)
             {
                 log.warn("Failed to get groups for organization {}. Cause message is {}", organization.getName(), e.getMessage());
 
@@ -562,7 +602,13 @@ public class RootResource
             boolean onOffBoolean = BooleanUtils.toBoolean(onOff);
             repositoryService.onOffLinkers(onOffBoolean);
             return Response.ok("OK").build();
-        } catch (Exception e)
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error(e.getMessage());
+            return buildErrorResponse(Response.Status.SERVICE_UNAVAILABLE, e.getMessage());
+        }
+        catch (Exception e)
         {
             log.error("Failed to reload config.", e);
             return Response.serverError().build();

@@ -690,9 +690,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
     }
 
     @Override
-    public boolean isSyncDisabled(final Repository repo, final EnumSet<SynchronizationFlag> flags)
+    public boolean isSyncDisabled()
     {
         return syncDisabledHelper.isBitbucketSyncDisabled();
+    }
+
+    @Override
+    public void checkSyncDisabled()
+    {
+        if (isSyncDisabled())
+        {
+            throw new SourceControlException.SynchronizationDisabled(getDvcsType() + " synchronization disabled");
+        }
     }
 
     protected BranchFilterInfo getFilterNodes(Repository repository)
