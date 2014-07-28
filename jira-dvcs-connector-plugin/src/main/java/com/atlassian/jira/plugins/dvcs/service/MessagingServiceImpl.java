@@ -569,16 +569,11 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                     {
                         for (MessageQueueItemMapping messageQueueItem : message.getQueuesItems())
                         {
-                            // messages, which are running can not be paused!
-                            if (!MessageState.RUNNING.name().equals(messageQueueItem.getState()))
-                            {
-                                messageQueueItem.setState(MessageState.WAITING_FOR_RETRY.name());
-                                messageQueueItemDao.save(messageQueueItem);
-                            }
+                            messageQueueItem.setState(MessageState.WAITING_FOR_RETRY.name());
+                            messageQueueItemDao.save(messageQueueItem);
                         }
                         return null;
                     }
-
                 });
 
                 int syncAuditId = getSynchronizationAuditIdFromTags(transformTags(message.getTags()));
