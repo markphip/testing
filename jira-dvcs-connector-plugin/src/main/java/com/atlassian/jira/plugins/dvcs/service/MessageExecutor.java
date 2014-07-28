@@ -280,7 +280,7 @@ public class MessageExecutor
                 }
                 else
                 {
-                    messagingService.disable(consumer, message);
+                    LOGGER.info("Disabling current synchronization for repository {} ({})", repository.getName(), repository.getId());
                     // let's disable all the messages from the repository
                     messagingService.disableAll(messagingService.getTagForSynchronization(repository));
                 }
