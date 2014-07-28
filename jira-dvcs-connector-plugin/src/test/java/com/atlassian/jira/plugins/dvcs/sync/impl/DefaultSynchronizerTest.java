@@ -411,6 +411,7 @@ public class DefaultSynchronizerTest
         messageExecutor = new MessageExecutor();
         ReflectionTestUtils.setField(messageExecutor, "messagingService", messagingService);
         ReflectionTestUtils.setField(messageExecutor, "consumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
+        ReflectionTestUtils.setField(messageExecutor, "syncDisabledHelper", syncDisabledHelper);
         ReflectionTestUtils.invokeMethod(messageExecutor, "init");
 
         ReflectionTestUtils.setField(messagingService, "messageConsumers", new MessageConsumer<?>[] { consumer, oldConsumer, githubConsumer });
