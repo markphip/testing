@@ -24,7 +24,8 @@ import static org.mockito.Mockito.when;
  */
 public class MessageExecutorTest
 {
-    public static final String ADDRESS_ID = "address";
+    private static final String ADDRESS_ID = "address";
+
     @InjectMocks
     private MessageExecutor messageExecutor;
 
@@ -80,7 +81,7 @@ public class MessageExecutorTest
     public void immediateMessagesDisablingTest()
     {
         when(syncDisabledHelper.isBitbucketSyncDisabled()).thenReturn(true);
-        messageExecutor.notify("address");
+        messageExecutor.notify(ADDRESS_ID);
 
         verify(messagingService).disableAll(eq("synchronization-repository-1234"));
     }
