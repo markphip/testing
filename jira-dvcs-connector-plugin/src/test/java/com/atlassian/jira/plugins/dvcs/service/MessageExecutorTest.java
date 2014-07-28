@@ -8,8 +8,12 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
 import com.atlassian.jira.plugins.dvcs.service.remote.SyncDisabledHelper;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
@@ -56,7 +60,9 @@ public class MessageExecutorTest
     @BeforeMethod
     public void init()
     {
+        messageExecutor = new MessageExecutor();
         MockitoAnnotations.initMocks(this);
+        Mockito.reset(messagingService);
 
         when(messageAddress.getId()).thenReturn(ADDRESS_ID);
 
@@ -73,14 +79,38 @@ public class MessageExecutorTest
         when(payload.getProgress()).thenReturn(progress);
         when(payload.getRepository()).thenReturn(repository);
 
-        when(repository.getDvcsType()).thenReturn("bitbucket");
         when(repository.getId()).thenReturn(1234);
     }
 
     @Test
-    public void immediateMessagesDisablingTest() throws Exception
+    public void immediateMessagesDisablingTest_Bitbucket() throws Exception
     {
+        when(repository.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
         when(syncDisabledHelper.isBitbucketSyncDisabled()).thenReturn(true);
+        messageExecutor.notify(ADDRESS_ID);
+
+        // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
+        messageExecutor.destroy();
+        verify(messagingService).disableAll(eq("synchronization-repository-1234"));
+    }
+
+    @Test
+    public void immediateMessagesDisablingTest_GitHub() throws Exception
+    {
+        when(repository.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
+        when(syncDisabledHelper.isGithubSyncDisabled()).thenReturn(true);
+        messageExecutor.notify(ADDRESS_ID);
+
+        // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
+        messageExecutor.destroy();
+        verify(messagingService).disableAll(eq("synchronization-repository-1234"));
+    }
+
+    @Test
+    public void immediateMessagesDisablingTest_GitHubEnteprise() throws Exception
+    {
+        when(repository.getDvcsType()).thenReturn(GithubEnterpriseCommunicator.GITHUB_ENTERPRISE);
+        when(syncDisabledHelper.isGithubEnterpriseSyncDisabled()).thenReturn(true);
         messageExecutor.notify(ADDRESS_ID);
 
         // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
