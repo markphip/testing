@@ -91,7 +91,7 @@ public class MessageExecutorTest
 
         // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
         messageExecutor.destroy();
-        verify(messagingService).disableAll(eq("synchronization-repository-1234"));
+        verify(messagingService).delayAll(eq("synchronization-repository-1234"));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class MessageExecutorTest
 
         // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
         messageExecutor.destroy();
-        verify(messagingService).disableAll(eq("synchronization-repository-1234"));
+        verify(messagingService).delayAll(eq("synchronization-repository-1234"));
     }
 
     @Test
@@ -115,6 +115,6 @@ public class MessageExecutorTest
 
         // calling destroy to force internal executor to shutdown and wait for execution to finish for 1 minute
         messageExecutor.destroy();
-        verify(messagingService).disableAll(eq("synchronization-repository-1234"));
+        verify(messagingService).delayAll(eq("synchronization-repository-1234"));
     }
 }

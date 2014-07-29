@@ -544,7 +544,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * {@inheritDoc}
      */
     @Override
-    public <P extends HasProgress> void disable(MessageConsumer<P> consumer, Message<P> message)
+    public <P extends HasProgress> void delay(MessageConsumer<P> consumer, Message<P> message)
     {
         MessageQueueItemMapping queueItem = messageQueueItemDao.getByQueueAndMessage(consumer.getQueue(), message.getId());
         queueItem.setState(MessageState.WAITING_FOR_RETRY.name());
@@ -552,7 +552,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     }
 
     @Override
-    public void disableAll(String tag)
+    public void delayAll(String tag)
     {
         final Set<Integer> syncAudits = new LinkedHashSet<Integer>();
         messageDao.getByTag(tag, new StreamCallback<MessageMapping>()

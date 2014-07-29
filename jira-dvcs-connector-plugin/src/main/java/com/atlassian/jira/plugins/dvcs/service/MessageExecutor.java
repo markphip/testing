@@ -281,8 +281,8 @@ public class MessageExecutor
                 else
                 {
                     LOGGER.info("Disabling current synchronization for repository {} ({})", repository.getName(), repository.getId());
-                    // let's disable all the messages from the repository
-                    messagingService.disableAll(messagingService.getTagForSynchronization(repository));
+                    // let's delay all the messages from the repository
+                    messagingService.delayAll(messagingService.getTagForSynchronization(repository));
                 }
             } catch (Throwable t)
             {

@@ -113,14 +113,14 @@ public interface MessagingService
      * @param consumer
      * @param message
      */
-    <P extends HasProgress> void disable(MessageConsumer<P> consumer, Message<P> message);
+    <P extends HasProgress> void delay(MessageConsumer<P> consumer, Message<P> message);
 
     /**
      * Marks all messages with the specified tag to be retried, the number of retries will not be changed
      *
      * @param tag
      */
-    void disableAll(String tag);
+    void delayAll(String tag);
 
     /**
      * Discards message.
