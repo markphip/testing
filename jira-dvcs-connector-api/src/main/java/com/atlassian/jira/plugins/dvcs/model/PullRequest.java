@@ -1,5 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+
 import java.util.Date;
 import java.util.List;
 
@@ -12,12 +14,16 @@ public class PullRequest
     private String url;
     private PullRequestRef source;
     private PullRequestRef destination;
-    private String status;
+    private PullRequestStatus status;
     private Date createdOn;
     private Date updatedOn;
     private String author;
     private List<Participant> participants;
     private int commentCount;
+    private String executedBy;
+
+    @JsonCreator
+    private PullRequest() {}
 
     public PullRequest(final int id)
     {
@@ -94,12 +100,12 @@ public class PullRequest
         this.destination = destination;
     }
 
-    public String getStatus()
+    public PullRequestStatus getStatus()
     {
         return status;
     }
 
-    public void setStatus(final String status)
+    public void setStatus(final PullRequestStatus status)
     {
         this.status = status;
     }
@@ -152,5 +158,15 @@ public class PullRequest
     public void setCommentCount(final int commentCount)
     {
         this.commentCount = commentCount;
+    }
+
+    public String getExecutedBy()
+    {
+        return executedBy;
+    }
+
+    public void setExecutedBy(final String executedBy)
+    {
+        this.executedBy = executedBy;
     }
 }

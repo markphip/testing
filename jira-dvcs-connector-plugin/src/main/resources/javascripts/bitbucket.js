@@ -132,10 +132,10 @@ function updateSyncStatus(repo) {
         var errorSmrtcmmtIcon = AJS.$("#error_smrtcmmt_icon_" + repo.id);
         // show error icon if smart commit has error
         if (repo.sync.smartCommitErrors.length > 0) {
-            errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-error");
+            errorSmrtcmmtIcon.addClass("error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error dvcs-color-red");
             var tooltip = registerInlineDialogTooltip(errorSmrtcmmtIcon, dvcs.connector.plugin.soy.smartCommitErrors({'smartCommitErrors':repo.sync.smartCommitErrors}));
         } else {
-            errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-error")
+            errorSmrtcmmtIcon.removeClass("error_smrtcmmt aui-icon aui-icon-small aui-iconfont-error dvcs-color-red")
         }
 
     }
@@ -293,7 +293,7 @@ function createAddOrganizationDialog(action) {
             AJS.$('#add-organization-dialog .button-panel-submit-button').attr("disabled", "disabled");
             AJS.$('#add-organization-dialog .button-panel-submit-button').attr("aria-disabled", "true");
         }
-    }
+    };
     dvcs.connector.plugin.addOrganizationDialog = dialog;
 }
 
@@ -420,7 +420,7 @@ var dvcsSubmitFormAjaxHandler = {
         AJS.$("#repoEntry").attr("action", BASE_URL + "/secure/admin/AddGithubOrganization.jspa");
         AJS.$('#repoEntry').submit();
     }
-}
+};
 
 function configureDefaultGroups(orgName, id) {
 
@@ -735,7 +735,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 
                     // show warning icon if not already shown
                     var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
-                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-warning");
+                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow");
                     registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
                 }
 
@@ -757,7 +757,7 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
 
     ).error(function (err) {
             var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
-            errorStatusIcon.removeClass("admin_permission aui-icon-warning").addClass("aui-icon aui-icon-error");
+            errorStatusIcon.removeClass("admin_permission aui-iconfont-warning dvcs-color-yellow").addClass("aui-icon aui-icon-small aui-iconfont-error dvcs-color-red");
             var response = AJS.$.parseJSON(err.responseText);
             var message = "";
             if (response) {
@@ -853,13 +853,13 @@ function confirmationDialog(options) {
         AJS.$('#confirm-dialog .button-panel-submit-button').attr("disabled", "disabled");
         AJS.$('#confirm-dialog .button-panel-submit-button').attr("aria-disabled", "true");
         AJS.$('#confirm-dialog .button-panel-cancel-link').addClass('dvcs-link-disabled');
-    }
+    };
 
     dialog.enableActions = function () {
         AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("disabled");
         AJS.$('#confirm-dialog .button-panel-submit-button').removeAttr("aria-disabled");
         AJS.$('#confirm-dialog .button-panel-cancel-link').removeClass('dvcs-link-disabled');
-    }
+    };
 
     dialog.working = function (working) {
         if (working) {
@@ -869,15 +869,15 @@ function confirmationDialog(options) {
             AJS.$("#confirm-action-wait").removeClass("aui-icon-wait");
             this.enableActions();
         }
-    }
+    };
 
     dialog.showError = function (message) {
         dialog.working(false);
         showError(message, "#aui-message-bar-confirmation-dialog");
         dialog.updateHeight();
-    }
+    };
 
-    dialog.isAttached = function () { return !AJS.$.isEmptyObject(dialog.popup.element);}
+    dialog.isAttached = function () { return !AJS.$.isEmptyObject(dialog.popup.element);};
 
     dialog.show();
     dialog.updateHeight();
