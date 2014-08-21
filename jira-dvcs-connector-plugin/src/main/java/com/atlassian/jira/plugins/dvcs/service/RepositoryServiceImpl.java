@@ -759,9 +759,9 @@ public class RepositoryServiceImpl implements RepositoryService
 
         if (!Strings.isNullOrEmpty(author))
         {
-            communicator.checkSyncDisabled();
             try
             {
+                communicator.checkSyncDisabled();
                 user = communicator.getUser(repository, author);
             } catch (Exception e)
             {
