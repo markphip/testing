@@ -18,6 +18,7 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
@@ -253,7 +254,8 @@ public class MessageExecutor
      */
     private static ThreadPoolExecutor createThreadPoolExecutor()
     {
-        return new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+        return new ThreadPoolExecutor(1, Integer.MAX_VALUE, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(),
+                ThreadFactories.namedThreadFactory("DVCSConnector.MessageExecutor"));
     }
 
     /**

@@ -144,7 +144,6 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
                 request.put(RepositoryDomainMapping.DOMAIN, repositoryId);
                 return activeObjects.create(RepositoryPullRequestMapping.class, request);
             }
-
         });
     }
 
@@ -387,15 +386,15 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
     {
         Query query = Query
                 .select("ID, *")
-                .alias(RepositoryCommitMapping.class, "COMMIT")
-                .alias(RepositoryPullRequestToCommitMapping.class, "PR_TO_COMMIT")
+                .alias(RepositoryCommitMapping.class, "cm")
+                .alias(RepositoryPullRequestToCommitMapping.class, "pr2cm")
                 .alias(RepositoryPullRequestMapping.class, "PR")
                 .join(RepositoryPullRequestToCommitMapping.class,
-                        "COMMIT.ID = PR_TO_COMMIT." + RepositoryPullRequestToCommitMapping.COMMIT)
+                        "cm.ID = pr2cm." + RepositoryPullRequestToCommitMapping.COMMIT)
                 .join(RepositoryPullRequestMapping.class,
-                        "PR_TO_COMMIT." + RepositoryPullRequestToCommitMapping.REQUEST_ID + " = PR.ID")
-                .where("COMMIT." + RepositoryDomainMapping.DOMAIN + " = ? AND PR.ID"
-                        + " = ? AND COMMIT." + RepositoryCommitMapping.NODE
+                        "pr2cm." + RepositoryPullRequestToCommitMapping.REQUEST_ID + " = PR.ID")
+                .where("cm." + RepositoryDomainMapping.DOMAIN + " = ? AND PR.ID"
+                        + " = ? AND cm." + RepositoryCommitMapping.NODE
                         + " = ?", domain.getId(), pullRequestId, node);
 
         RepositoryCommitMapping[] found = activeObjects.find(RepositoryCommitMapping.class, query);
@@ -493,6 +492,7 @@ public class RepositoryPullRequestDaoImpl implements RepositoryPullRequestDao
         attributes.put(RepositoryPullRequestMapping.URL, mapping.getUrl());
         attributes.put(RepositoryPullRequestMapping.TO_REPO_ID, mapping.getToRepositoryId());
         attributes.put(RepositoryPullRequestMapping.AUTHOR, mapping.getAuthor());
+        attributes.put(RepositoryPullRequestMapping.EXECUTED_BY, mapping.getExecutedBy());
         attributes.put(RepositoryPullRequestMapping.CREATED_ON, mapping.getCreatedOn());
         attributes.put(RepositoryPullRequestMapping.UPDATED_ON, mapping.getUpdatedOn());
         attributes.put(RepositoryPullRequestMapping.DESTINATION_BRANCH, mapping.getDestinationBranch());
