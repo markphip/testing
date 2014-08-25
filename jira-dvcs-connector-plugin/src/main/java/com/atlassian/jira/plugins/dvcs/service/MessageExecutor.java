@@ -375,8 +375,6 @@ public class MessageExecutor
                     // let's delay all the messages from the repository
                     messagingService.delayAll(messagingService.getTagForSynchronization(repository));
                 }
-                consumer.onReceive(message, payload);
-                messagingService.ok(consumer, message);
             }
             catch (Throwable t)
             {
