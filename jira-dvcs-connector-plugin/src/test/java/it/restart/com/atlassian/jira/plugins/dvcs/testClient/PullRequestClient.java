@@ -22,9 +22,9 @@ public interface PullRequestClient<T>
      *
      * @param owner repository owner
      * @param repositoryName repository name
-     * @param pullRequestId pull request to close
+     * @param pullRequest pull request to close
      */
-    void declinePullRequest(String owner, String repositoryName, String password, Long pullRequestId);
+    void declinePullRequest(String owner, String repositoryName, String password, T pullRequest);
 
     /**
      * Approves pull request

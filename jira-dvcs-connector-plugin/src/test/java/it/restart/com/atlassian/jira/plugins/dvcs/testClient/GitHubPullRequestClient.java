@@ -39,9 +39,9 @@ public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
     }
 
     @Override
-    public void declinePullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId)
+    public void declinePullRequest(final String owner, final String repositoryName, final String password, final PullRequest pullRequest)
     {
-        throw new UnsupportedOperationException("Not implemented");
+        gitHubTestResource.closePullRequest(owner, repositoryName, pullRequest);
     }
 
     @Override

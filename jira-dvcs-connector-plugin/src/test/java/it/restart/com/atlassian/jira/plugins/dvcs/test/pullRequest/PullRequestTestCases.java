@@ -205,6 +205,38 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), allCommits);
     }
 
+    @Test
+    public void testDecline()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String fixBranchName = issueKey + "_fix";
+        Collection<String> commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
+
+        PullRequestClient.PullRequestDetails<T> pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+                fixBranchName, dvcs.getDefaultBranchName());
+        String pullRequestLocation = pullRequestDetails.getLocation();
+
+        // Wait for remote system after creation of pullRequest
+        sleep(500);
+
+        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
+                fixBranchName, dvcs.getDefaultBranchName());
+
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
+
+        pullRequestClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest());
+
+        restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        final RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
+        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.DECLINED.toString());
+        Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
+
+        asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), commits);
+    }
+
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
         AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
