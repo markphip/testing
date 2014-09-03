@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -121,7 +122,14 @@ public class OrganizationServiceImpl implements OrganizationService
         org = organizationDao.save(organization);
 
         // sync repository list
-        repositoryService.syncRepositoryList(org, false);
+        try
+        {
+            repositoryService.syncRepositoryList(org, false);
+        }
+        catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.warn("Repositories for organization '{}' can't be synchronized. Synchronization is disabled.", org);
+        }
 
         return org;
     }
@@ -226,8 +234,7 @@ public class OrganizationServiceImpl implements OrganizationService
     public DvcsUser getTokenOwner(int organizationId)
     {
         Organization organization = get(organizationId, false);
-        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType());
-        communicator.checkSyncDisabled();
+        DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled(organization.getDvcsType());
         DvcsUser currentUser = communicator.getTokenOwner(organization);
         return currentUser;
     }
@@ -238,7 +245,7 @@ public class OrganizationServiceImpl implements OrganizationService
     @Override
     public List<Group> getGroupsForOrganization(Organization organization)
     {
-        return dvcsCommunicatorProvider.getCommunicator(organization.getDvcsType()).getGroupsForOrganization(organization);
+        return dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled(organization.getDvcsType()).getGroupsForOrganization(organization);
     }
 
     @Override

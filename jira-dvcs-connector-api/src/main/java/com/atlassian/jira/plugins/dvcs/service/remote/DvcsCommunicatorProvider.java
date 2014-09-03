@@ -5,10 +5,12 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 public interface DvcsCommunicatorProvider
 {
 
-    public abstract DvcsCommunicator getCommunicator(String dvcsType);
+    public DvcsCommunicator getCommunicator(String dvcsType);
 
-    public abstract AccountInfo getAccountInfo(String hostUrl, String accountName);
+    public DvcsCommunicator getCommunicatorAndCheckSyncDisabled(String dvcsType);
 
-    public abstract AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType);
+    public AccountInfo getAccountInfo(String hostUrl, String accountName);
+
+    public AccountInfo getAccountInfo(String hostUrl, String accountName, String dvcsType);
 
 }

@@ -373,7 +373,7 @@ public class MessageExecutor
                 {
                     LOGGER.info("Disabling current synchronization for repository {} ({})", repository.getName(), repository.getId());
                     // let's delay all the messages from the repository
-                    messagingService.delayAll(messagingService.getTagForSynchronization(repository));
+                    messagingService.markForRetryAll(messagingService.getTagForSynchronization(repository));
                 }
             }
             catch (Throwable t)

@@ -10,6 +10,8 @@ import com.atlassian.jira.user.util.UserManager;
 import com.google.common.base.Splitter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,175 +19,188 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
- * {@link Runnable} processor that handles logic beside
- * invitations for user added to JIRA via
- * user interface.
+ * {@link Runnable} processor that handles logic beside invitations for user added to JIRA via user interface.
+ * <p/>
+ * <p/>
+ * <br /><br /> Created on 21.6.2012, 15:32:33 <br /><br />
  *
- * 
- * <br /><br />
- * Created on 21.6.2012, 15:32:33
- * <br /><br />
  * @author jhocman@atlassian.com
- *
  */
 public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
 {
+    private static final Logger log = LoggerFactory.getLogger(UserAddedViaInterfaceEventProcessor.class);
 
-	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
+    public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
 
-	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";
-		
-	public static String EMAIL_PARAM = "email";
+    public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";
 
-	/** The Constant SPLITTER. */
-	private static final String SPLITTER = ":";
+    public static String EMAIL_PARAM = "email";
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
-	
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    /**
+     * The Constant SPLITTER.
+     */
+    private static final String SPLITTER = ":";
+
+    /**
+     * The organization service.
+     */
+    private final OrganizationService organizationService;
+
+    /**
+     * The communicator provider.
+     */
+    private final DvcsCommunicatorProvider communicatorProvider;
 
     private final String serializedGroupsUiChoice;
 
     private final User user;
 
-	/**
-	 * Instantiates a new user added via interface event processor.
-	 *
-	 * @param event the event
-	 * @param organizationService the organization service
-	 * @param communicatorProvider the communicator provider
-	 */
-	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, User user ,OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
-	{
-	    super(userManager, groupManager);
-      
-	    this.serializedGroupsUiChoice = serializedGroupsUiChoice;
+    /**
+     * Instantiates a new user added via interface event processor.
+     *
+     * @param event the event
+     * @param organizationService the organization service
+     * @param communicatorProvider the communicator provider
+     */
+    public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, User user, OrganizationService organizationService,
+            DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
+    {
+        super(userManager, groupManager);
+
+        this.serializedGroupsUiChoice = serializedGroupsUiChoice;
         this.user = user;
-	    
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void run()
-	{
-		// continue ? ------------------------------------------------
-		if (StringUtils.isBlank(serializedGroupsUiChoice))
-		{
-			return;
-		}
-		// ------------------------------------------------------------
+        this.organizationService = organizationService;
+        this.communicatorProvider = communicatorProvider;
+    }
 
-		Collection<Invitations> invitationsFor = convertInvitations();
-		String email = user.getEmailAddress();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void run()
+    {
+        // continue ? ------------------------------------------------
+        if (StringUtils.isBlank(serializedGroupsUiChoice))
+        {
+            return;
+        }
+        // ------------------------------------------------------------
 
-		// log invite
-		logInvite(user, invitationsFor);
-		
-		// invite
-		invite(email, invitationsFor);
+        Collection<Invitations> invitationsFor = convertInvitations();
+        String email = user.getEmailAddress();
 
-	}
+        // log invite
+        logInvite(user, invitationsFor);
 
-	/**
-	 * To invitations.
-	 *
-	 * @param organizationIdsAndGroupSlugs the organization ids and group slugs
-	 * @return the collection
-	 */
-	private Collection<Invitations> convertInvitations()
-	{
+        // invite
+        invite(email, invitationsFor);
 
-		Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, Invitations>();
+    }
 
-		Iterable<String> organizationIdsAndGroupSlugs = Splitter.on(ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).split(serializedGroupsUiChoice);
-		
+    /**
+     * To invitations.
+     *
+     * @param organizationIdsAndGroupSlugs the organization ids and group slugs
+     * @return the collection
+     */
+    private Collection<Invitations> convertInvitations()
+    {
+
+        Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, Invitations>();
+
+        Iterable<String> organizationIdsAndGroupSlugs = Splitter.on(ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).split(serializedGroupsUiChoice);
+
         for (String requestParamToken : organizationIdsAndGroupSlugs)
-		{
+        {
 
-			String[] tokens = requestParamToken.split(SPLITTER);
-			Integer orgId = Integer.parseInt(tokens[0]);
-			String slug = tokens[1];
-			Invitations existingInvitations = orgIdsToInvitations.get(orgId);
+            String[] tokens = requestParamToken.split(SPLITTER);
+            Integer orgId = Integer.parseInt(tokens[0]);
+            String slug = tokens[1];
+            Invitations existingInvitations = orgIdsToInvitations.get(orgId);
 
-			//
-			// first time organization ?
-			if (existingInvitations == null)
-			{
-				Invitations newInvitations = new Invitations();
-				newInvitations.organizaton = organizationService.get(orgId, false);
-				
-				if (newInvitations.organizaton == null) 
-				{
-				    continue;
-				}
-				
-				orgIdsToInvitations.put(orgId, newInvitations);
-				existingInvitations = newInvitations;
-			}
-			//
-			existingInvitations.groupSlugs.add(slug);
-		}
+            //
+            // first time organization ?
+            if (existingInvitations == null)
+            {
+                Invitations newInvitations = new Invitations();
+                newInvitations.organizaton = organizationService.get(orgId, false);
 
-		return orgIdsToInvitations.values();
-	}
+                if (newInvitations.organizaton == null)
+                {
+                    continue;
+                }
 
-	/**
-	 * Invite.
-	 *
-	 * @param email the email
-	 * @param invitations the invitations
-	 */
-	private void invite( String email, Collection<Invitations> invitations)
-	{
-		if (CollectionUtils.isNotEmpty(invitations))
-		{
-			for (Invitations invitation : invitations)
-			{
-				Collection<String> groupSlugs = invitation.groupSlugs;
-				Organization organizaton = invitation.organizaton;
-				invite(email, organizaton, groupSlugs);
-			}
-		}
-	}
+                orgIdsToInvitations.put(orgId, newInvitations);
+                existingInvitations = newInvitations;
+            }
+            //
+            existingInvitations.groupSlugs.add(slug);
+        }
 
-	/**
-	 * Invite.
-	 *
-	 * @param email the email
-	 * @param organization the organization
-	 * @param groupSlugs the group slugs
-	 */
-	private void invite(String email, Organization organization, Collection<String> groupSlugs)
-	{
-		if (CollectionUtils.isNotEmpty(groupSlugs))
-		{
-			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-            communicator.checkSyncDisabled();
-            communicator.inviteUser(organization, groupSlugs, email);
-		}
-	}
+        return orgIdsToInvitations.values();
+    }
 
-	/**
-	 * The Class Invitations.
-	 */
-	static class Invitations
-	{
-		/** The organizaton. */
-		Organization organizaton;
-		/** The group slugs. */
-		Collection<String> groupSlugs = new ArrayList<String>();
-		@Override
-		public String toString()
-		{
-		    return organizaton.getName() + " : " + groupSlugs + "\n";
-		}
-	}
+    /**
+     * Invite.
+     *
+     * @param email the email
+     * @param invitations the invitations
+     */
+    private void invite(String email, Collection<Invitations> invitations)
+    {
+        if (CollectionUtils.isNotEmpty(invitations))
+        {
+            for (Invitations invitation : invitations)
+            {
+                Collection<String> groupSlugs = invitation.groupSlugs;
+                Organization organizaton = invitation.organizaton;
+                invite(email, organizaton, groupSlugs);
+            }
+        }
+    }
+
+    /**
+     * Invite.
+     *
+     * @param email the email
+     * @param organization the organization
+     * @param groupSlugs the group slugs
+     */
+    private void invite(String email, Organization organization, Collection<String> groupSlugs)
+    {
+        if (CollectionUtils.isNotEmpty(groupSlugs))
+        {
+            DvcsCommunicator communicator = communicatorProvider.getCommunicatorAndCheckSyncDisabled(organization.getDvcsType());
+            if (!communicator.isSyncDisabled())
+            {
+                communicator.inviteUser(organization, groupSlugs, email);
+            }
+            else
+            {
+                log.warn("User cannot be invited to {}. Sync is disabled.", organization.getName());
+            }
+        }
+    }
+
+    /**
+     * The Class Invitations.
+     */
+    static class Invitations
+    {
+        /**
+         * The organizaton.
+         */
+        Organization organizaton;
+        /**
+         * The group slugs.
+         */
+        Collection<String> groupSlugs = new ArrayList<String>();
+
+        @Override
+        public String toString()
+        {
+            return organizaton.getName() + " : " + groupSlugs + "\n";
+        }
+    }
 }

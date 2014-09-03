@@ -175,8 +175,7 @@ public class RepositoryServiceImpl implements RepositoryService
             invalidOrganizationsManager.setOrganizationValid(organization.getId(), true);
 
             // get repositories from the dvcs hosting server
-            DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-            communicator.checkSyncDisabled();
+            DvcsCommunicator communicator = communicatorProvider.getCommunicatorAndCheckSyncDisabled(organization.getDvcsType());
 
             // get local repositories
             List<Repository> storedRepositories = repositoryDao.getAllByOrganization(organization.getId(), true);
@@ -222,7 +221,6 @@ public class RepositoryServiceImpl implements RepositoryService
     public void syncRepositoryList(Organization organization)
     {
         syncRepositoryList(organization, true);
-
     }
 
     /**
@@ -448,6 +446,14 @@ public class RepositoryServiceImpl implements RepositoryService
                         // if the user didn't have rights to add post commit hook, just unlink the repository
                         repositoryDao.save(repository);
                     }
+                    catch (SourceControlException.SynchronizationDisabled e)
+                    {
+                        log.warn("Adding postcommit hook for repository "
+                                + repository.getRepositoryUrl() + " failed. Synchronization is disabled", e);
+                        updateAdminPermission(repository, false);
+                        // if the user didn't have rights to add post commit hook, just unlink the repository
+                        repositoryDao.save(repository);
+                    }
                     catch (Exception e)
                     {
                         log.warn("Adding postcommit hook for repository "
@@ -508,7 +514,7 @@ public class RepositoryServiceImpl implements RepositoryService
      * {@inheritDoc}
      */
     @Override
-    public RepositoryRegistration  enableRepository(int repoId, boolean linked)
+    public RepositoryRegistration enableRepository(int repoId, boolean linked)
     {
         RepositoryRegistration registration = new RepositoryRegistration();
 
@@ -534,6 +540,12 @@ public class RepositoryServiceImpl implements RepositoryService
             catch (SourceControlException.PostCommitHookRegistrationException e)
             {
                 log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl(), e);
+                registration.setCallBackUrlInstalled(!linked);
+                updateAdminPermission(repository, false);
+            }
+            catch (SourceControlException.SynchronizationDisabled e)
+            {
+                log.warn("Error when " + (linked ? "adding": "removing") + " web hooks for repository " + repository.getRepositoryUrl() + ". Synchronization is disabled", e);
                 registration.setCallBackUrlInstalled(!linked);
                 updateAdminPermission(repository, false);
             }
@@ -579,8 +591,7 @@ public class RepositoryServiceImpl implements RepositoryService
      */
     private void addOrRemovePostcommitHook(Repository repository, String postCommitCallbackUrl)
     {
-        DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-        communicator.checkSyncDisabled();
+        DvcsCommunicator communicator = communicatorProvider.getCommunicatorAndCheckSyncDisabled(repository.getDvcsType());
 
         if (repository.isLinked())
         {
@@ -679,7 +690,12 @@ public class RepositoryServiceImpl implements RepositoryService
         try
         {
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-            communicator.checkSyncDisabled();
+
+            if (communicator.isSyncDisabled())
+            {
+                log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
+                        + repository.getRepositoryUrl() + ". Synchronization is disabled");
+            }
 
             String postCommitUrl = getPostCommitUrl(repository);
             communicator.removePostcommitHook(repository, postCommitUrl);
@@ -730,13 +746,16 @@ public class RepositoryServiceImpl implements RepositoryService
             log.debug((enableLinkers ? "Adding" : "Removing") + " linkers for" + repository.getSlug());
 
             DvcsCommunicator communicator = communicatorProvider.getCommunicator(repository.getDvcsType());
-            communicator.checkSyncDisabled();
-            if (enableLinkers && repository.isLinked())
+            if (!communicator.isSyncDisabled())
             {
-                communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
-            } else
-            {
-                communicator.linkRepository(repository, new HashSet<String>());
+                if (enableLinkers && repository.isLinked())
+                {
+                    communicator.linkRepository(repository, changesetService.findReferencedProjects(repository.getId()));
+                }
+                else
+                {
+                    communicator.linkRepository(repository, new HashSet<String>());
+                }
             }
         }
 

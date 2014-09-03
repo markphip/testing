@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
@@ -95,9 +96,15 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
             if (CollectionUtils.isNotEmpty(slugsStrings))
             {
                 DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-                communicator.checkSyncDisabled();
 
-                communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
+                if (!communicator.isSyncDisabled())
+                {
+                    communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
+                }
+                else
+                {
+                    log.warn("User cannot be invited to {}. Sync is disabled.", organization.getName());
+                }
             }
         }
 

@@ -126,11 +126,10 @@ public class ChangesetServiceImpl implements ChangesetService
 
             for (Changeset changeset : repoChangesets.getValue())
             {
-                if (changeset.getFileDetails() == null)
+                if (changeset.getFileDetails() == null && !communicator.isSyncDisabled())
                 {
                     try
                     {
-                        communicator.checkSyncDisabled();
                         ChangesetFileDetailsEnvelope changesetFileDetailsEnvelope = communicator.getFileDetails(repository, changeset);
                         List<ChangesetFileDetail> fileDetails = changesetFileDetailsEnvelope.getFileDetails();
                         logger.debug("Loaded file details for {}: {}", changeset, fileDetails);
@@ -239,13 +238,9 @@ public class ChangesetServiceImpl implements ChangesetService
                 Repository repository = repositoryDao.get(changeset.getRepositoryId());
                 DvcsCommunicator communicator = dvcsCommunicatorProvider.getCommunicator(repository.getDvcsType());
 
-                try
+                if (communicator.isSyncDisabled())
                 {
-                    communicator.checkSyncDisabled();
-                }
-                catch (SourceControlException.SynchronizationDisabled e)
-                {
-                    logger.warn("Changeset " + changeset.getNode() +  " is not updated.", e);
+                    logger.warn("Changeset " + changeset.getNode() +  " is not updated. Synchronization is disabled.");
                     return changeset;
                 }
 

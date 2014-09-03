@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 
 import javax.annotation.Resource;
@@ -9,9 +8,6 @@ public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
 {
     @Resource
     private DvcsCommunicator[] dvcsCommunicators;
-
-    @Resource
-    private SyncDisabledHelper syncDisabledHelper;
 
     /**
      * {@inheritDoc}
@@ -27,6 +23,17 @@ public class DvcsCommunicatorProviderImpl implements DvcsCommunicatorProvider
             }
         }
         throw new IllegalArgumentException("Unsupported DVCS Type: " + dvcsType);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DvcsCommunicator getCommunicatorAndCheckSyncDisabled(String dvcsType)
+    {
+        DvcsCommunicator communicator = getCommunicator(dvcsType);
+        communicator.checkSyncDisabled();
+        return communicator;
     }
 
     /**

@@ -232,7 +232,7 @@ public class RootResource
         URI uri = ub.path("/repository/{id}").build(id);
 
         return Response.seeOther(uri).build();
-}
+    }
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })

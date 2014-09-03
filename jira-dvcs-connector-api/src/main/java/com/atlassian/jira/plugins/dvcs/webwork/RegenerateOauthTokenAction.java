@@ -62,9 +62,12 @@ public abstract class RegenerateOauthTokenAction extends CommonDvcsConfiguration
         try
         {
             repositoryService.syncRepositoryList(org);
+        } catch (SourceControlException.SynchronizationDisabled e)
+        {
+            log.error("Could not refresh repository list for organization {} ({}), synchronization is disabled", org.getName(), org.getId());
         } catch (SourceControlException e)
         {
-            log.error("Could not refresh repository list", e);
+            log.error("Could not refresh repository list for organization " + org.getId(), e);
         }
 
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
