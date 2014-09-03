@@ -86,18 +86,25 @@ public class DvcsChangesetServiceImplTest
     @Test
     public void getChangesetsWithFileDetails_shouldNotThrowExceptionWhenSyncDisabled()
     {
-        Mockito.doThrow(new SourceControlException.SynchronizationDisabled("Synchronization disabled")).when(communicator).checkSyncDisabled();
+        mockSyncDisabled();
         dvcsChangesetService.getChangesetsWithFileDetails(Collections.singletonList(changeset));
     }
 
     @Test
     public void getChangesets_shouldNotThrowExceptionWhenSyncDisabled()
     {
+        mockSyncDisabled();
         when(changesetDao.getByIssueKey(any(Iterable.class), anyBoolean())).thenReturn(Collections.singletonList(changeset));
         when(changesetDao.getByIssueKey(any(Iterable.class), eq(BitbucketCommunicator.BITBUCKET), anyBoolean())).thenReturn(Collections.singletonList(changeset));
 
-        Mockito.doThrow(new SourceControlException.SynchronizationDisabled("Synchronization disabled")).when(communicator).checkSyncDisabled();
         assertThat(dvcsChangesetService.getChangesets(Collections.singletonList(ISSUE_KEY)), allOf(notNullValue(), not(empty())));
         assertThat(dvcsChangesetService.getChangesets(Collections.singletonList(ISSUE_KEY), BitbucketCommunicator.BITBUCKET), allOf(notNullValue(), not(empty())));
+    }
+
+    private void mockSyncDisabled()
+    {
+        when(communicator.isSyncDisabled()).thenReturn(true);
+        when(communicatorProvider.getCommunicatorAndCheckSyncDisabled(repository.getDvcsType())).thenThrow(new SourceControlException.SynchronizationDisabled("Synchronization disabled"));
+        Mockito.doThrow(new SourceControlException.SynchronizationDisabled("Synchronization disabled")).when(communicator).checkSyncDisabled();
     }
 }

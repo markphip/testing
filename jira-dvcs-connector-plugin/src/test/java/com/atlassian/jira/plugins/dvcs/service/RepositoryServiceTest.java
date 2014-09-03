@@ -107,7 +107,8 @@ public class RepositoryServiceTest
 		Repository sampleRepository = createSampleRepository();
 		when(repositoryDao.get(0)).thenReturn(sampleRepository);
 		when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
-		when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
+        when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled("bitbucket")).thenReturn(bitbucketCommunicator);
+        when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
 		RepositoryRegistration registration = repositoryService.enableRepository(0, false);
 
@@ -124,6 +125,7 @@ public class RepositoryServiceTest
         Repository sampleRepository = createSampleRepository();
         when(repositoryDao.get(0)).thenReturn(sampleRepository);
         when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled("bitbucket")).thenReturn(bitbucketCommunicator);
         Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).removePostcommitHook(Mockito.any(Repository.class), Mockito.anyString());
         when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
@@ -143,6 +145,7 @@ public class RepositoryServiceTest
 		Repository sampleRepository = createSampleRepository();
 		when(repositoryDao.get(0)).thenReturn(sampleRepository);
 		when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+		when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled("bitbucket")).thenReturn(bitbucketCommunicator);
 		when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
 		RepositoryRegistration registration = repositoryService.enableRepository(0, true);
@@ -162,6 +165,7 @@ public class RepositoryServiceTest
         Repository sampleRepository = createSampleRepository();
         when(repositoryDao.get(0)).thenReturn(sampleRepository);
         when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+        when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled("bitbucket")).thenReturn(bitbucketCommunicator);
         Mockito.doThrow(new SourceControlException.PostCommitHookRegistrationException("", null)).when(bitbucketCommunicator).ensureHookPresent(Mockito.any(Repository.class), Mockito.anyString());
         when(applicationProperties.getBaseUrl()).thenReturn("https://myjira.org");
 
@@ -210,6 +214,7 @@ public class RepositoryServiceTest
 		sampleOrganization.setAutolinkNewRepos(true);
 
 		when(dvcsCommunicatorProvider.getCommunicator("bitbucket")).thenReturn(bitbucketCommunicator);
+		when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled("bitbucket")).thenReturn(bitbucketCommunicator);
 		when(bitbucketCommunicator.getRepositories(sampleOrganization, storedRepos)).thenReturn(remoteRepos);
 		when(repositoryDao.getAllByOrganization(5, true)).thenReturn(storedRepos);
 		when(repositoryDao.save(sampleRepository3)).thenReturn(sampleRepository3);
@@ -301,6 +306,7 @@ public class RepositoryServiceTest
 
         when(repository.getDvcsType()).thenReturn(dvcsType);
         when(dvcsCommunicatorProvider.getCommunicator(dvcsType)).thenReturn(testCommunicator);
+        when(dvcsCommunicatorProvider.getCommunicatorAndCheckSyncDisabled(dvcsType)).thenReturn(testCommunicator);
         when(testCommunicator.getUser(Mockito.eq(repository), Mockito.anyString())).thenAnswer(new Answer<DvcsUser>()
         {
 
