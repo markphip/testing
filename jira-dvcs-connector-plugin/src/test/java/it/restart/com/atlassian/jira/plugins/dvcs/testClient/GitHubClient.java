@@ -3,11 +3,11 @@ package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 import com.atlassian.jira.plugins.dvcs.base.resource.GitHubTestSupport;
 import org.eclipse.egit.github.core.PullRequest;
 
-public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
+public class GitHubClient implements DvcsHostClient<PullRequest>
 {
     private final GitHubTestSupport gitHubTestSupport;
 
-    public GitHubPullRequestClient(final GitHubTestSupport gitHubTestSupport)
+    public GitHubClient(final GitHubTestSupport gitHubTestSupport)
     {
         this.gitHubTestSupport = gitHubTestSupport;
     }
@@ -35,13 +35,15 @@ public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
     @Override
     public PullRequestDetails<PullRequest> openForkPullRequest(final String owner, final String repositoryName, final String title, final String description, final String head, final String base, final String forkOwner, final String forkPassword)
     {
-        throw new UnsupportedOperationException("Not implemented");
+        PullRequest pullRequest = gitHubTestSupport.openPullRequest(owner, repositoryName, title, title, forkOwner + ":" + head, base);
+
+        return new PullRequestDetails(pullRequest.getHtmlUrl(), new Long(pullRequest.getNumber()), pullRequest);
     }
 
     @Override
     public void declinePullRequest(final String owner, final String repositoryName, final String password, final PullRequest pullRequest)
     {
-        gitHubTestResource.closePullRequest(owner, repositoryName, pullRequest);
+        gitHubTestSupport.closePullRequest(owner, repositoryName, pullRequest);
     }
 
     @Override
@@ -61,5 +63,29 @@ public class GitHubPullRequestClient implements PullRequestClient<PullRequest>
     public void commentPullRequest(final String owner, final String repositoryName, final String password, final PullRequest pullRequest, final String comment)
     {
         gitHubTestSupport.commentPullRequest(owner, repositoryName, pullRequest, comment);
+    }
+
+    @Override
+    public void createRepository(final String accountName, final String repositoryName, final String password, final String scm)
+    {
+        gitHubTestSupport.addRepositoryByName(accountName, repositoryName, GitHubTestSupport.Lifetime.DURING_TEST_METHOD);
+    }
+
+    @Override
+    public void removeRepositories()
+    {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public void fork(final String owner, final String repositoryName, final String forkOwner, final String forkPassword)
+    {
+        gitHubTestSupport.fork(owner, forkOwner, repositoryName, GitHubTestSupport.Lifetime.DURING_TEST_METHOD);
+    }
+
+    @Override
+    public boolean isRepositoryExists(final String owner, final String repositoryName, final String password)
+    {
+        return gitHubTestSupport.repositoryExists(owner, repositoryName);
     }
 }

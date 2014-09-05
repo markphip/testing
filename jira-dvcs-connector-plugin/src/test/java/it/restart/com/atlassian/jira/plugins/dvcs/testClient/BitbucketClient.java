@@ -6,14 +6,23 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketClientBuilderFacto
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.DefaultBitbucketClientBuilderFactory;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.PullRequestRemoteRestpoint;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-public class BitbucketPRClient implements PullRequestClient<BitbucketPullRequest>
+public class BitbucketClient implements DvcsHostClient<BitbucketPullRequest>
 {
+    private Collection<RepositoryInfo> testRepositories = new ArrayList<RepositoryInfo>();
+
     @Override
     public PullRequestDetails<BitbucketPullRequest> openPullRequest(String owner, String repositoryName,
             String password, String title, String description, String head, String base, String... reviewers)
@@ -78,6 +87,71 @@ public class BitbucketPRClient implements PullRequestClient<BitbucketPullRequest
         pullRequestRemoteRestpoint.commentPullRequest(owner, repositoryName, pullRequest.getId(), comment);
     }
 
+    @Override
+    public void createRepository(final String accountName, final String repositoryName, final String password, String scm)
+    {
+        BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(accountName, password);
+        RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
+
+        BitbucketRepository remoteRepository = repositoryService.createRepository(repositoryName, scm, false);
+        testRepositories.add(new RepositoryInfo(remoteRepository, repositoryService));
+    }
+
+    @Override
+    public void removeRepositories()
+    {
+        for (RepositoryInfo repositoryInfo : testRepositories)
+        {
+            RepositoryRemoteRestpoint repositoryService = repositoryInfo.getRepositoryService();
+            BitbucketRepository testRepository = repositoryInfo.getRepository();
+            repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
+        }
+    }
+
+    @Override
+    public void fork(String owner, String repositoryName, String forkOwner, String forkPassword)
+    {
+        final RepositoryRemoteRestpoint forkRepositoryService = getRepositoryRemoteRestpoint(forkOwner, forkPassword);
+
+        BitbucketRepository remoteRepository = forkRepositoryService.forkRepository(owner, repositoryName, repositoryName, true);
+
+        testRepositories.add(new RepositoryInfo(remoteRepository, forkRepositoryService));
+    }
+
+    /**
+     * @param owner
+     * @param repositoryName
+     * @return True when test repository exists.
+     */
+    @Override
+    public boolean isRepositoryExists(String owner, String repositoryName, String password)
+    {
+        final RepositoryRemoteRestpoint repositoryService = getRepositoryRemoteRestpoint(owner, password);
+
+        try
+        {
+            return repositoryService.getRepository(owner, repositoryName) != null;
+
+        } catch (BitbucketRequestException.NotFound_404 e)
+        {
+            return false;
+        }
+    }
+
+    private RepositoryRemoteRestpoint getRepositoryRemoteRestpoint(String owner, String password)
+    {
+        HttpClientProvider httpClientProvider = new HttpClientProvider();
+        httpClientProvider.setUserAgent("jirabitbucketconnectortest");
+
+        // Bitbucket client setup
+        AuthProvider authProvider = new BasicAuthAuthProvider(BitbucketRemoteClient.BITBUCKET_URL,
+                owner,
+                password,
+                httpClientProvider);
+
+        BitbucketRemoteClient bitbucketClient = new BitbucketRemoteClient(authProvider);
+        return bitbucketClient.getRepositoriesRest();
+    }
 
     private PullRequestRemoteRestpoint getPullRequestRemoteRestpoint(String owner, String password)
     {
@@ -101,5 +175,37 @@ public class BitbucketPRClient implements PullRequestClient<BitbucketPullRequest
         credential.setAdminPassword(password);
         BitbucketRemoteClient bitbucketClient = bitbucketClientBuilderFactory.authClient("https://bitbucket.org", null, credential).apiVersion(2).build();
         return bitbucketClient.getPullRequestAndCommentsRemoteRestpoint();
+    }
+
+    public static class RepositoryInfo
+    {
+        private BitbucketRepository repository;
+        private RepositoryRemoteRestpoint repositoryService;
+
+        public RepositoryInfo(BitbucketRepository repository, RepositoryRemoteRestpoint repositoryService)
+        {
+            this.repository = repository;
+            this.repositoryService = repositoryService;
+        }
+
+        public BitbucketRepository getRepository()
+        {
+            return repository;
+        }
+
+        public void setRepository(BitbucketRepository repository)
+        {
+            this.repository = repository;
+        }
+
+        public RepositoryRemoteRestpoint getRepositoryService()
+        {
+            return repositoryService;
+        }
+
+        public void setRepositoryService(RepositoryRemoteRestpoint repositoryService)
+        {
+            this.repositoryService = repositoryService;
+        }
     }
 }

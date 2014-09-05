@@ -3,23 +3,20 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test.pullRequest;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketPullRequest;
-import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.AuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BasicAuthAuthProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.bitbucket.BitbucketOAuthPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketPRClient;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.MercurialDvcs;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
 {
-    private Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
-
     public BitbucketPRTest()
     {
     }
@@ -28,7 +25,7 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     protected void beforeEachTestInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         dvcs = new MercurialDvcs();
-        pullRequestClient = new BitbucketPRClient();
+        dvcsHostClient = new BitbucketClient();
         addOrganizations(jiraTestedProduct);
     }
 
@@ -48,24 +45,14 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     @Override
     protected void initLocalTestRepository()
     {
-        BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(ACCOUNT_NAME, PASSWORD);
-        RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
-
-        BitbucketRepository remoteRepository = repositoryService.createRepository(repositoryName, dvcs.getDvcsType(), false);
-        testRepositories.add(remoteRepository);
+        dvcsHostClient.createRepository(ACCOUNT_NAME, repositoryName, PASSWORD, dvcs.getDvcsType());
         dvcs.createTestLocalRepository(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
     }
 
     @Override
     protected void cleanupLocalTestRepository()
     {
-        BitbucketRemoteClient bbRemoteClient = new BitbucketRemoteClient(ACCOUNT_NAME, PASSWORD);
-        RepositoryRemoteRestpoint repositoryService = bbRemoteClient.getRepositoriesRest();
-
-        for (BitbucketRepository testRepository : testRepositories)
-        {
-            repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
-        }
+        dvcsHostClient.removeRepositories();
 
         dvcs.deleteAllRepositories();
     }

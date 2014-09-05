@@ -317,17 +317,15 @@ public class GitHubTestSupport
      * @param owner of created repository
      * @param namePrefix of repository
      * @param lifetime validity of repository (when it should be clean up)
-     * @param expirationDuration duration (expiration time), when can be removed the repository, even by some other test
-     * (if cleaning of repository failed, this can be used by cleaning retry)
      * @return name of created repository
      */
     public String addRepository(String owner, String namePrefix, Lifetime lifetime, int expirationDuration)
     {
         String repositoryName = timestampNameTestResource.randomName(namePrefix, expirationDuration);
-        return addRepositoryByName(owner, repositoryName, lifetime, expirationDuration);
+        return addRepositoryByName(owner, repositoryName, lifetime);
     }
 
-    public String addRepositoryByName(String owner, String repositoryName, Lifetime lifetime, int expirationDuration)
+    public String addRepositoryByName(String owner, String repositoryName, Lifetime lifetime)
     {
         Repository repository = createRepository(owner, repositoryName);
 
@@ -343,10 +341,8 @@ public class GitHubTestSupport
      * after test finished.
      *
      * @param lifetime validity of repository (when it should be clean up)
-     * @param expirationDuration duration (expiration time), when can be removed the repository, even by some other test
-     * (if cleaning of repository failed, this can be used by cleaning retry)
      */
-    public void fork(String owner, String repositoryOwner, String repositoryName, Lifetime lifetime, int expirationDuration)
+    public void fork(String owner, String repositoryOwner, String repositoryName, Lifetime lifetime)
     {
         GitHubClient gitHubClient = getGitHubClient(owner);
         RepositoryService repositoryService = new RepositoryService(gitHubClient);
@@ -370,6 +366,28 @@ public class GitHubTestSupport
         catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Return true if repository already exists on the host, false otherwise
+     *
+     * @param owner
+     * @param repositoryName
+     * @return true if repository already exists on the host, false otherwise
+     */
+    public boolean repositoryExists(String owner, String repositoryName)
+    {
+        GitHubClient gitHubClient = getGitHubClient(owner);
+        RepositoryService repositoryService = new RepositoryService(gitHubClient);
+
+        try
+        {
+            return repositoryService.getRepository(RepositoryId.create(owner, repositoryName)) != null;
+        }
+        catch (IOException e)
+        {
+            return false;
         }
     }
 

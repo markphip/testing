@@ -10,10 +10,9 @@ import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubPullRequestClient;
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.client.GitHubClient;
 import org.testng.annotations.AfterClass;
 
 public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
@@ -33,7 +32,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
         gitHubTestSupport.beforeClass();
         setupGitHubTestResource(gitHubTestSupport);
         dvcs = new GitHubDvcs(gitHubTestSupport);
-        pullRequestClient = new GitHubPullRequestClient(gitHubTestSupport);
+        dvcsHostClient = new GitHubClient(gitHubTestSupport);
 
         addOrganizations(jiraTestedProduct);
     }
@@ -55,12 +54,12 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
 
     protected void setupGitHubTestResource(GitHubTestSupport gitHubTestSupport)
     {
-        GitHubClient gitHubClient = GithubEnterpriseClientProvider.createClient(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, GITHUB_ENTERPRISE_USER_AGENT);
+        org.eclipse.egit.github.core.client.GitHubClient gitHubClient = GithubEnterpriseClientProvider.createClient(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, GITHUB_ENTERPRISE_USER_AGENT);
         gitHubClient.setCredentials(ACCOUNT_NAME, PASSWORD);
         gitHubTestSupport.addOwner(ACCOUNT_NAME, gitHubClient);
         gitHubTestSupport.addOwner(GitHubTestSupport.ORGANIZATION, gitHubClient);
 
-        GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, GITHUB_ENTERPRISE_USER_AGENT);
+        org.eclipse.egit.github.core.client.GitHubClient gitHubClient2 = GithubEnterpriseClientProvider.createClient(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL, GITHUB_ENTERPRISE_USER_AGENT);
         gitHubClient2.setCredentials(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         gitHubTestSupport.addOwner(FORK_ACCOUNT_NAME, gitHubClient2);
     }
@@ -78,9 +77,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
     protected void initLocalTestRepository()
     {
         gitHubTestSupport.beforeMethod();
-        repositoryName = gitHubTestSupport.addRepositoryByName(ACCOUNT_NAME, repositoryName,
-                GitHubTestSupport.Lifetime.DURING_TEST_METHOD, EXPIRATION_DURATION_5_MIN);
-
+        dvcsHostClient.createRepository(ACCOUNT_NAME, repositoryName, null, dvcs.getDvcsType());
         dvcs.createTestLocalRepository(ACCOUNT_NAME, repositoryName, ACCOUNT_NAME, PASSWORD);
     }
 

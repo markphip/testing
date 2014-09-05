@@ -1,15 +1,15 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 /**
- * This interface provides a Facade for common pull request operations on our supported repository hosts - Bitbucket and
- * Github. Not all the parameters are necessarily used by all the implementations, implementations need to do enough to
- * support testing.
+ * This interface provides a Facade for common operations like creating, removing repositories, pull request operations on our supported
+ * repository hosts - Bitbucket and Github. Not all the parameters are necessarily used by all the implementations,
+ * implementations need to do enough to support testing.
  *
  * Like {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs} there will be some points where the
  * underlying remote repository will not fit exactly, i.e. Github does not support approval of Pull Requests but
  * it should be enough to support testing.
  */
-public interface PullRequestClient<T>
+public interface DvcsHostClient<T>
 {
     PullRequestDetails<T> openPullRequest(String owner, String repositoryName, String password, String title, String description, String head, String base, String... reviewers);
 
@@ -52,6 +52,14 @@ public interface PullRequestClient<T>
      * @return created remote comment
      */
     void commentPullRequest(String owner, String repositoryName, String password, T pullRequest, String comment);
+
+    void createRepository(String accountName, String repositoryName, String password, String scm);
+
+    void removeRepositories();
+
+    void fork(String owner, String repositoryName, String forkOwner, String forkPassword);
+
+    boolean isRepositoryExists(String owner, String repositoryName, String password);
 
     /**
      * Represents a pull request

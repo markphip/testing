@@ -6,13 +6,15 @@ import com.atlassian.jira.plugins.dvcs.model.PullRequestStatus;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
+import com.google.common.base.Function;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs;
-import it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient;
+import it.restart.com.atlassian.jira.plugins.dvcs.testClient.DvcsHostClient;
+import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -22,13 +24,14 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.annotation.Nullable;
 
 /**
  * Base class that contains the test cases for the PullRequest scenarios.
  * <p/>
  * Implementors will need to override the abstract methods as required. If necessary you may need to provide a custom
  * implementation of {@link it.restart.com.atlassian.jira.plugins.dvcs.testClient.Dvcs} or {@link
- * it.restart.com.atlassian.jira.plugins.dvcs.testClient.PullRequestClient}.
+ * it.restart.com.atlassian.jira.plugins.dvcs.testClient.DvcsHostClient}.
  * <p/>
  * Also due to the coupling between this class and its implementors you should be wary of relying on the state of parent
  * member variables like {@link #dvcs} or {@link #getJiraTestedProduct()} which should be intialised during {@link
@@ -63,7 +66,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     protected static final String FORK_ACCOUNT_PASSWORD = System.getProperty("dvcsconnectortest.password");
 
     protected Dvcs dvcs;
-    protected PullRequestClient<T> pullRequestClient;
+    protected DvcsHostClient<T> dvcsHostClient;
 
     protected TimestampNameTestResource timestampNameTestResource = new TimestampNameTestResource();
     protected DvcsPRTestHelper dvcsPRTestHelper;
@@ -102,7 +105,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     /**
      * Setup prior to running a test case, implementing classes <b>MUST</b> associate the organisations in JIRA
      * <b>AND</b> initialise the following member variables on the parent: <ul> <li>PullRequestTestCases#dvcs</li>
-     * <li>PullRequestTestCases#pullRequestClient</li> </ul>
+     * <li>PullRequestTestCases#dvcsHostClient</li> </ul>
      */
     protected abstract void beforeEachTestInitialisation(JiraTestedProduct jiraTestedProduct);
 
@@ -153,7 +156,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         String fixBranchName = issueKey + "_fix";
         Collection<String> firstRoundCommits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
-        PullRequestClient.PullRequestDetails<T> pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
         String pullRequestLocation = pullRequestDetails.getLocation();
 
@@ -171,13 +174,13 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         Collection<String> secondRoundCommits = dvcsPRTestHelper.addMoreCommitsAndPush(repositoryName, fixBranchName, issueKey, 2);
 
         final String updatedPullRequestName = pullRequestName + "updated";
-        pullRequestDetails = pullRequestClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
+        pullRequestDetails = dvcsHostClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
                 updatedPullRequestName, "updated desc", dvcs.getDefaultBranchName());
-        pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
+        dvcsHostClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
 
         if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
         {
-            pullRequestClient.approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
+            dvcsHostClient.approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
 
             sleep(500);
 
@@ -185,7 +188,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
             asserter.assertPullRequestApproved(restPrRepository.getPullRequests().get(0));
         }
 
-        pullRequestClient.mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
+        dvcsHostClient.mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
 
         sleep(1000);
 
@@ -212,7 +215,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         String fixBranchName = issueKey + "_fix";
         Collection<String> commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
-        PullRequestClient.PullRequestDetails<T> pullRequestDetails = pullRequestClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
         String pullRequestLocation = pullRequestDetails.getLocation();
 
@@ -226,7 +229,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
 
-        pullRequestClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest());
+        dvcsHostClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest());
 
         restPrRepository = refreshSyncAndGetFirstPrRepository();
 
@@ -235,6 +238,53 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
 
         asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), commits);
+    }
+
+    @Test
+    public void testFork()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+        String fixBranchName = issueKey + "_fix";
+        Collection<String> commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
+
+        forkRepository(ACCOUNT_NAME, repositoryName, FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
+
+        dvcsPRTestHelper.addMoreCommitsAndPush(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, repositoryName, fixBranchName, issueKey, 2);
+
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openForkPullRequest(ACCOUNT_NAME, repositoryName, pullRequestName, "Open PR description",
+                fixBranchName, dvcs.getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
+        String pullRequestLocation = pullRequestDetails.getLocation();
+
+        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
+                fixBranchName, dvcs.getDefaultBranchName());
+
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
+    }
+
+    private void forkRepository(final String owner, final String repositoryName, final String forkOwner, final String forkPassword) {
+        dvcsHostClient.fork(owner, repositoryName, forkOwner, forkPassword);
+
+        getJiraTestedProduct().getTester().getDriver().waitUntil(new Function<WebDriver, Boolean>()
+        {
+            @Override
+            public Boolean apply(@Nullable final WebDriver input)
+            {
+                return dvcsHostClient.isRepositoryExists(forkOwner, repositoryName, forkPassword);
+            }
+        }, 5);
+
+        // waiting for fork repository to be available
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // nop
+        }
+
+        dvcs.createTestLocalRepository(forkOwner, repositoryName, forkOwner, forkPassword);
     }
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()

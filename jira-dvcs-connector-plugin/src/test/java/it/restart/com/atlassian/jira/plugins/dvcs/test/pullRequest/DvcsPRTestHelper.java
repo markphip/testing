@@ -29,11 +29,9 @@ public class DvcsPRTestHelper
 
     public Collection<String> createBranchAndCommits(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
     {
-        final Collection<String> commitResults = new ArrayList<String>();
+        createInitialCommits(repositoryName);
 
-        dvcs.addFile(this.accountName, repositoryName, "README.txt", "Hello World!".getBytes());
-        dvcs.commit(accountName, repositoryName, "Initial commit!", commitAuthor, commitAuthorEmail);
-        dvcs.push(accountName, repositoryName, accountName, password);
+        final Collection<String> commitResults = new ArrayList<String>();
 
         dvcs.createBranch(accountName, repositoryName, fixBranchName);
 
@@ -51,7 +49,18 @@ public class DvcsPRTestHelper
         return commitResults;
     }
 
+    public void createInitialCommits(final String repositoryName) {
+        dvcs.addFile(this.accountName, repositoryName, "README.txt", "Hello World!".getBytes());
+        dvcs.commit(accountName, repositoryName, "Initial commit!", commitAuthor, commitAuthorEmail);
+        dvcs.push(accountName, repositoryName, accountName, password);
+    }
+
     public Collection<String> addMoreCommitsAndPush(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
+    {
+        return addMoreCommitsAndPush(accountName, password, repositoryName, fixBranchName, issueKey, numberOfCommits);
+    }
+
+    public Collection<String> addMoreCommitsAndPush(final String accountName, final String password, final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
     {
         final Collection<String> commitResults = new ArrayList<String>();
         String fileName = issueKey + "_fix_UPDATED.txt";
