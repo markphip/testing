@@ -695,6 +695,7 @@ public class RepositoryServiceImpl implements RepositoryService
             {
                 log.warn("Failed to uninstall postcommit hook for repository id = " + repository.getId() + ", slug = "
                         + repository.getRepositoryUrl() + ". Synchronization is disabled");
+                return;
             }
 
             String postCommitUrl = getPostCommitUrl(repository);

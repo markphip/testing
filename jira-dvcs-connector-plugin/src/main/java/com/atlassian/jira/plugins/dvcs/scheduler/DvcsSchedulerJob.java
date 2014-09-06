@@ -48,7 +48,7 @@ public class DvcsSchedulerJob implements JobHandler
             }
             catch (SourceControlException.SynchronizationDisabled e)
             {
-                LOG.error("Repositories for organization {} ({}) cannot be synchronized. Synchronization is disabled.", organization.getName(), organization.getId());
+                LOG.warn("Repositories for organization {} ({}) cannot be synchronized. Synchronization is disabled.", organization.getName(), organization.getId());
             }
         }
     }
