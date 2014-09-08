@@ -54,14 +54,19 @@ public class RestPrRepositoryPRTestAsserter
         this.destinationBranchName = destinationBranchName;
     }
 
-    public void assertBasicPullRequestConfiguration(final RestPrRepository restPrRepository, final Collection<String> commits)
+    public void assertBasicPullRequestConfiguration(final RestPrRepository restPrRepository, final Collection<String> commits, final PullRequestStatus status)
     {
         Assert.assertEquals(restPrRepository.getPullRequests().size(), 1);
 
         RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
+        assertBasicPullRequestConfiguration(restPullRequest, commits, status);
+    }
+
+    public void assertBasicPullRequestConfiguration(final RestPullRequest restPullRequest , final Collection<String> commits, final PullRequestStatus status)
+    {
         Assert.assertTrue(pullRequestLocation.startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
-        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
+        Assert.assertEquals(restPullRequest.getStatus(), status.toString());
         Assert.assertEquals(restPullRequest.getAuthor().getUsername(), authorName);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
         final String expectedSourceRepositorySlug = sourceAccount + "/" + repositoryName;

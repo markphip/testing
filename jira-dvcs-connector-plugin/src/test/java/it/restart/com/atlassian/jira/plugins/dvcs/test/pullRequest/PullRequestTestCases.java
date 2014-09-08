@@ -7,6 +7,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestDevResponse;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.google.common.base.Function;
+import com.google.common.collect.Ordering;
 import it.restart.com.atlassian.jira.plugins.dvcs.JiraLoginPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPage;
@@ -24,6 +25,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.Nullable;
 
 /**
@@ -154,7 +156,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
-        Collection<String> firstRoundCommits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
+        Collection<String> firstRoundCommits = dvcsPRTestHelper.initAndCreateBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
         DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
@@ -168,7 +170,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
 
-        asserter.assertBasicPullRequestConfiguration(restPrRepository, firstRoundCommits);
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, firstRoundCommits, PullRequestStatus.OPEN);
 
         // We will check up on these later once there has been a status change and a full sync of the PR
         Collection<String> secondRoundCommits = dvcsPRTestHelper.addMoreCommitsAndPush(repositoryName, fixBranchName, issueKey, 2);
@@ -213,7 +215,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     {
         String pullRequestName = issueKey + ": Open PR";
         String fixBranchName = issueKey + "_fix";
-        Collection<String> commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
+        Collection<String> commits = dvcsPRTestHelper.initAndCreateBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
         DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
@@ -227,15 +229,13 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
 
-        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.OPEN);
 
         dvcsHostClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest());
 
         restPrRepository = refreshSyncAndGetFirstPrRepository();
 
-        final RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
-        Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.DECLINED.toString());
-        Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.DECLINED);
 
         asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), commits);
     }
@@ -244,23 +244,83 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     public void testFork()
     {
         String pullRequestName = issueKey + ": Open PR";
-        String fixBranchName = issueKey + "_fix";
-        Collection<String> commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
+        dvcsPRTestHelper.createInitialCommits(repositoryName);
 
         forkRepository(ACCOUNT_NAME, repositoryName, FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
 
-        dvcsPRTestHelper.addMoreCommitsAndPush(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, repositoryName, fixBranchName, issueKey, 2);
+        Collection<String> commits = dvcsPRTestHelper.createCommits(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD, repositoryName, dvcs.getDefaultBranchName(), issueKey, 2);
 
         DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openForkPullRequest(ACCOUNT_NAME, repositoryName, pullRequestName, "Open PR description",
-                fixBranchName, dvcs.getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
+                dvcs.getDefaultBranchName(), dvcs.getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         String pullRequestLocation = pullRequestDetails.getLocation();
 
         RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME, FORK_ACCOUNT_NAME,
-                fixBranchName, dvcs.getDefaultBranchName());
+                dvcs.getDefaultBranchName(), dvcs.getDefaultBranchName());
 
-        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
+        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.OPEN);
+    }
+
+    /**
+     * Test that "Multiple Pull Request" synchronization works.
+     */
+    @Test
+    public void testMultiplePullRequests()
+    {
+        String pullRequestName = issueKey + ": Open PR";
+
+        dvcsPRTestHelper.createInitialCommits(repositoryName);
+
+        // Create three branches
+
+        List<Collection<String>> commitsList = new ArrayList<Collection<String>>();
+        List<DvcsHostClient.PullRequestDetails<T>> pullRequestDetailsCollection = new ArrayList<DvcsHostClient.PullRequestDetails<T>>();
+
+        for (int i = 1; i <= 3; i++)
+        {
+            String branch = "branch" + i;
+            Collection<String> branchCommits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, branch, issueKey, 2);
+            commitsList.add(branchCommits);
+            dvcs.switchBranch(ACCOUNT_NAME, repositoryName, dvcs.getDefaultBranchName());
+        }
+
+        for (int i = 1; i <= 3; i++)
+        {
+            String branch = "branch" + i;
+            DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName + " " + branch, "Open PR description",
+                    branch, dvcs.getDefaultBranchName());
+            pullRequestDetailsCollection.add(pullRequestDetails);
+        }
+
+        dvcsHostClient.mergePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetailsCollection.get(1).getId());
+        dvcsHostClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetailsCollection.get(2).getPullRequest());
+
+        // Wait for remote system after creation of pullRequests
+        sleep(500);
+
+        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+
+        List<RestPullRequest> restPullRequests = Ordering.natural().onResultOf(new Function<RestPullRequest, Long>()
+        {
+            @Override
+            public Long apply(@Nullable final RestPullRequest restPullRequest)
+            {
+                return restPullRequest.getId();
+            }
+        }).sortedCopy(restPrRepository.getPullRequests());
+
+        Assert.assertEquals(restPullRequests.size(), 3);
+
+        PullRequestStatus[] expectedStatus = {PullRequestStatus.OPEN, PullRequestStatus.MERGED, PullRequestStatus.DECLINED};
+        for (int i = 1; i <= 3; i++)
+        {
+            DvcsHostClient.PullRequestDetails pullRequestDetails = pullRequestDetailsCollection.get(i - 1);
+            RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestDetails.getLocation(), pullRequestName + " branch" + i, ACCOUNT_NAME,
+                    "branch" + i, dvcs.getDefaultBranchName());
+
+            asserter.assertBasicPullRequestConfiguration(restPullRequests.get(i - 1), commitsList.get(i - 1), expectedStatus[i - 1]);
+        }
     }
 
     private void forkRepository(final String owner, final String repositoryName, final String forkOwner, final String forkPassword) {

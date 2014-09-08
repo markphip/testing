@@ -27,13 +27,30 @@ public class DvcsPRTestHelper
         this.password = password;
     }
 
-    public Collection<String> createBranchAndCommits(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
+    public Collection<String> initAndCreateBranchAndCommits(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
     {
         createInitialCommits(repositoryName);
 
-        final Collection<String> commitResults = new ArrayList<String>();
+        return createBranchAndCommits(repositoryName, fixBranchName, issueKey, numberOfCommits);
+    }
 
+    public Collection<String> createBranchAndCommits(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
+    {
         dvcs.createBranch(accountName, repositoryName, fixBranchName);
+
+        return createCommits(accountName, password, repositoryName, fixBranchName, issueKey, numberOfCommits);
+    }
+
+    public void createInitialCommits(final String repositoryName)
+    {
+        dvcs.addFile(accountName, repositoryName, "README.txt", "Hello World!".getBytes());
+        dvcs.commit(accountName, repositoryName, "Initial commit!", commitAuthor, commitAuthorEmail);
+        dvcs.push(accountName, repositoryName, accountName, password);
+    }
+
+    public Collection<String> createCommits(final String accountName, final String password, final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
+    {
+        final Collection<String> commitResults = new ArrayList<String>();
 
         String fileName = issueKey + "_fix.txt";
         for (int i = 0; i < numberOfCommits; i++)
@@ -47,12 +64,6 @@ public class DvcsPRTestHelper
         dvcs.push(accountName, repositoryName, accountName, password, fixBranchName, true);
 
         return commitResults;
-    }
-
-    public void createInitialCommits(final String repositoryName) {
-        dvcs.addFile(this.accountName, repositoryName, "README.txt", "Hello World!".getBytes());
-        dvcs.commit(accountName, repositoryName, "Initial commit!", commitAuthor, commitAuthorEmail);
-        dvcs.push(accountName, repositoryName, accountName, password);
     }
 
     public Collection<String> addMoreCommitsAndPush(final String repositoryName, final String fixBranchName, final String issueKey, final int numberOfCommits)
