@@ -23,6 +23,8 @@ public class RestPrRepositoryPRTestAsserter
     private String pullRequestLocation;
     private String pullRequestName;
     private String username;
+    private String authorName;
+    private String sourceAccount;
     private String fixBranchName;
     private String destinationBranchName;
 
@@ -33,6 +35,21 @@ public class RestPrRepositoryPRTestAsserter
         this.pullRequestLocation = pullRequestLocation;
         this.pullRequestName = pullRequestName;
         this.username = username;
+        this.authorName = username;
+        this.sourceAccount = username;
+        this.fixBranchName = fixBranchName;
+        this.destinationBranchName = destinationBranchName;
+    }
+
+    public RestPrRepositoryPRTestAsserter(final String repositoryName, final String pullRequestLocation, final String pullRequestName, final String username,
+            final String authorName, final String fixBranchName, final String destinationBranchName)
+    {
+        this.repositoryName = repositoryName;
+        this.pullRequestLocation = pullRequestLocation;
+        this.pullRequestName = pullRequestName;
+        this.username = username;
+        this.authorName = authorName;
+        this.sourceAccount = authorName;
         this.fixBranchName = fixBranchName;
         this.destinationBranchName = destinationBranchName;
     }
@@ -45,12 +62,13 @@ public class RestPrRepositoryPRTestAsserter
         Assert.assertTrue(pullRequestLocation.startsWith(restPullRequest.getUrl()));
         Assert.assertEquals(restPullRequest.getTitle(), pullRequestName);
         Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.OPEN.toString());
-        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), username);
+        Assert.assertEquals(restPullRequest.getAuthor().getUsername(), authorName);
         Assert.assertEquals(restPullRequest.getSource().getBranch(), fixBranchName);
-        final String expectedRepositorySlug = username + "/" + repositoryName;
-        Assert.assertEquals(restPullRequest.getSource().getRepository(), expectedRepositorySlug);
+        final String expectedSourceRepositorySlug = sourceAccount + "/" + repositoryName;
+        final String expectedDestinationRepositorySlug = username + "/" + repositoryName;
+        Assert.assertEquals(restPullRequest.getSource().getRepository(), expectedSourceRepositorySlug);
         Assert.assertEquals(restPullRequest.getDestination().getBranch(), destinationBranchName);
-        Assert.assertEquals(restPullRequest.getDestination().getRepository(), expectedRepositorySlug);
+        Assert.assertEquals(restPullRequest.getDestination().getRepository(), expectedDestinationRepositorySlug);
 
         assertCommitsMatch(restPullRequest, commits);
     }

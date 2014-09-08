@@ -104,8 +104,16 @@ public class BitbucketClient implements DvcsHostClient<BitbucketPullRequest>
         {
             RepositoryRemoteRestpoint repositoryService = repositoryInfo.getRepositoryService();
             BitbucketRepository testRepository = repositoryInfo.getRepository();
-            repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
+            try
+            {
+                repositoryService.removeRepository(testRepository.getOwner(), testRepository.getSlug());
+            }
+            catch (Exception e)
+            {
+
+            }
         }
+        testRepositories.clear();
     }
 
     @Override

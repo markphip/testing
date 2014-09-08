@@ -257,7 +257,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
 
-        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
+        RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME, FORK_ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
 
         asserter.assertBasicPullRequestConfiguration(restPrRepository, commits);
@@ -274,15 +274,6 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
                 return dvcsHostClient.isRepositoryExists(forkOwner, repositoryName, forkPassword);
             }
         }, 5);
-
-        // waiting for fork repository to be available
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            // nop
-        }
 
         dvcs.createTestLocalRepository(forkOwner, repositoryName, forkOwner, forkPassword);
     }
