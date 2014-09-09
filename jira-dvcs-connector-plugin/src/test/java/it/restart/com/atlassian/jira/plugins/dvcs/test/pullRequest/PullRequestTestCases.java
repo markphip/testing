@@ -323,6 +323,57 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         }
     }
 
+    /**
+     * Test that "Pull Request" synchronization in multiple repositories works.
+     */
+    @Test
+    public void testPullRequestsMultipleRepositories()
+    {
+        String anotherRepositoryName = timestampNameTestResource.randomName(getRepositoryNameSuffix(), EXPIRATION_DURATION_5_MIN);
+        addRepository(anotherRepositoryName);
+
+        String pullRequestName = issueKey + ": Open PR";
+
+        dvcsPRTestHelper.createInitialCommits(repositoryName);
+        dvcsPRTestHelper.createInitialCommits(anotherRepositoryName);
+
+        String[] repository1Commits = new String[2];
+        String[] repository2Commits = new String[2];
+
+        String fixBranch1 = "branch1";
+        Collection<String> branch1Commits = dvcsPRTestHelper.createBranchAndCommits(repositoryName, fixBranch1, issueKey, 2);
+
+        String fixBranch2 = "branch2";
+        Collection<String> branch2Commits = dvcsPRTestHelper.createBranchAndCommits(anotherRepositoryName, fixBranch2, issueKey, 2);
+
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails1 = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName + " " + repositoryName, "Open PR description",
+                fixBranch1, dvcs.getDefaultBranchName());
+
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails2 = dvcsHostClient.openPullRequest(ACCOUNT_NAME, anotherRepositoryName, PASSWORD, pullRequestName + " " + anotherRepositoryName, "Open PR description",
+                fixBranch1, dvcs.getDefaultBranchName());
+
+        List<RestPrRepository> restPrRepositories = refreshSyncAndGetFirstPrRepository(repositoryName, anotherRepositoryName);
+
+        RestPrRepositoryPRTestAsserter asserter1 = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestDetails1.getLocation(), pullRequestName + " " + repositoryName, ACCOUNT_NAME,
+                fixBranch1, dvcs.getDefaultBranchName());
+        asserter1.assertBasicPullRequestConfiguration(restPrRepositories.get(0), branch1Commits, PullRequestStatus.OPEN);
+
+        RestPrRepositoryPRTestAsserter asserter2 = new RestPrRepositoryPRTestAsserter(anotherRepositoryName, pullRequestDetails1.getLocation(), pullRequestName + " " + anotherRepositoryName, ACCOUNT_NAME,
+                fixBranch2, dvcs.getDefaultBranchName());
+        asserter2.assertBasicPullRequestConfiguration(restPrRepositories.get(1), branch2Commits, PullRequestStatus.OPEN);
+    }
+
+    private void addRepository(String repositoryName)
+    {
+        addRepository(ACCOUNT_NAME, PASSWORD, repositoryName);
+    }
+
+    private void addRepository(String accountName, String password, String repositoryName)
+    {
+        dvcsHostClient.createRepository(accountName, repositoryName, null, dvcs.getDvcsType());
+        dvcs.createTestLocalRepository(accountName, repositoryName, accountName, password);
+    }
+
     private void forkRepository(final String owner, final String repositoryName, final String forkOwner, final String forkPassword) {
         dvcsHostClient.fork(owner, repositoryName, forkOwner, forkPassword);
 
@@ -340,13 +391,18 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
+        return refreshSyncAndGetFirstPrRepository(repositoryName).get(0);
+    }
+
+    private List<RestPrRepository> refreshSyncAndGetFirstPrRepository(String... repositoryNames)
+    {
         AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
-        account.synchronizeRepository(repositoryName);
+        account.synchronizeRepositories(repositoryNames);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
 
-        Assert.assertEquals(response.getRepositories().size(), 1);
-        return response.getRepositories().get(0);
+        Assert.assertEquals(response.getRepositories().size(), repositoryNames.length);
+        return response.getRepositories();
     }
 
     protected AccountsPageAccount refreshAccount(final String accountName)
