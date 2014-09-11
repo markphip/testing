@@ -216,7 +216,7 @@ public class BranchDaoImpl implements BranchDao
             public List<BranchMapping> doInTransaction()
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
-                        Query.select("ID, *")
+                        Query.select()
                                 .alias(IssueToBranchMapping.class, "mapping")
                                 .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")

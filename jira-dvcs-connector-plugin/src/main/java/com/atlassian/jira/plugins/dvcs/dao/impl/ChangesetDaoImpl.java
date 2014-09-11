@@ -340,7 +340,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             public List<ChangesetMapping> doInTransaction()
             {
                 ChangesetMapping[] mappings = activeObjects.find(ChangesetMapping.class,
-                        Query.select("ID, *")
+                        Query.select()
                                 .alias(ChangesetMapping.class, "CHANGESET")
                                 .alias(RepositoryToChangesetMapping.class, "REPO")
                                 .join(RepositoryToChangesetMapping.class, "CHANGESET.ID = REPO." + RepositoryToChangesetMapping.CHANGESET_ID)
@@ -420,7 +420,7 @@ public class ChangesetDaoImpl implements ChangesetDao
 
     private Query createLatestChangesetsAvailableForSmartcommitQuery(int repositoryId)
     {
-        return Query.select("*")
+        return Query.select()
                 .from(ChangesetMapping.class)
                 .alias(ChangesetMapping.class, "chm")
                 .alias(RepositoryToChangesetMapping.class, "rtchm")
