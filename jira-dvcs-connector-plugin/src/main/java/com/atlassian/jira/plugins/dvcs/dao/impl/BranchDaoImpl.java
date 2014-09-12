@@ -216,7 +216,7 @@ public class BranchDaoImpl implements BranchDao
             public List<BranchMapping> doInTransaction()
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
-                        Query.select()
+                        Query.select("*")
                                 .alias(IssueToBranchMapping.class, "mapping")
                                 .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")
@@ -250,7 +250,7 @@ public class BranchDaoImpl implements BranchDao
             public List<BranchMapping> doInTransaction()
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
-                        Query.select()
+                        Query.select("*")
                                 .alias(IssueToBranchMapping.class, "mapping")
                                 .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")
@@ -284,7 +284,7 @@ public class BranchDaoImpl implements BranchDao
             public List<BranchMapping> doInTransaction()
             {
                 BranchMapping[] mappings = activeObjects.find(BranchMapping.class,
-                        Query.select()
+                        Query.select("*")
                                 .from(BranchMapping.class)
                                 .alias(BranchMapping.class, "branch")
                                 .alias(RepositoryMapping.class, "repo")
