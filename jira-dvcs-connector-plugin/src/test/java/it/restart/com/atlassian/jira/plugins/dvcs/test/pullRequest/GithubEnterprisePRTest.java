@@ -11,6 +11,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.GithubEnterpriseTests;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubClient;
+import it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
 import org.eclipse.egit.github.core.PullRequest;
 import org.testng.annotations.AfterClass;
@@ -48,7 +49,7 @@ public class GithubEnterprisePRTest extends PullRequestTestCases<PullRequest>
         repositoriesPageController.getPage().deleteAllOrganizations();
 
         RepositoriesPageController.AccountType accountType = RepositoriesPageController.AccountType.getGHEAccountType(GithubEnterpriseTests.GITHUB_ENTERPRISE_URL);
-        repositoriesPageController.addOrganization(accountType, GitHubTestSupport.USER, oAuthCredentials, false);
+        repositoriesPageController.addOrganization(accountType, IntegrationTestUserDetails.ACCOUNT_NAME, oAuthCredentials, false);
         repositoriesPageController.addOrganization(accountType, GitHubTestSupport.ORGANIZATION, oAuthCredentials, false);
     }
 
