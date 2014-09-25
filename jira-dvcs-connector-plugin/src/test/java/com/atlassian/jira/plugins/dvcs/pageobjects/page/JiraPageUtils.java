@@ -54,17 +54,17 @@ public class JiraPageUtils
         createIssueDialog.submit(DashboardPage.class);
     }
     
-    public static void checkSyncProcessSuccess()
+    public static void checkSyncProcessSuccess(JiraTestedProduct jira)
     {
         do
         {
             sleep(1000);
-        } while (!isSyncFinished());
+        } while (!isSyncFinished(jira));
     }
 
-    private static boolean isSyncFinished()
+    private static boolean isSyncFinished(JiraTestedProduct jira)
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint(jira).getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return false;

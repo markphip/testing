@@ -4,6 +4,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
+import com.atlassian.pageobjects.ProductInstance;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -27,6 +28,9 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 {
     @Inject
     PageBinder pageBinder;
+
+    @Inject
+    ProductInstance product;
 
     @Inject
     PageElementFinder elementFinder;

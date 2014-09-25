@@ -1,5 +1,6 @@
 package it.restart.com.atlassian.jira.plugins.dvcs.page.account;
 
+import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.RepositoriesLocalRestpoint;
@@ -29,6 +30,10 @@ public class AccountsPageAccountRepository extends WebDriverElement
 
     @Inject
     private PageElementFinder elementFinder;
+
+    @Inject
+    private JiraTestedProduct jira;
+
     /**
      * Enable checkbox - with responsibility to enable repository.
      *
@@ -139,7 +144,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      */
     public boolean isSyncing()
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint(jira).getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return true;

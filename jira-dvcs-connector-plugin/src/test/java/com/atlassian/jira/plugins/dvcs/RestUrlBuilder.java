@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs;
 
 import com.google.common.collect.Maps;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -11,10 +9,14 @@ public class RestUrlBuilder
 {
     private final String path;
     private final Map<String, String> params = Maps.newHashMap();
+    private final String baseUrl;
+    private String username = "admin";
+    private String password = "admin";
 
-    public RestUrlBuilder(String path)
+    public RestUrlBuilder(String baseUrl, String path)
     {
         this.path = path;
+        this.baseUrl = baseUrl;
     }
 
     public RestUrlBuilder add(String name, String value)
@@ -26,10 +28,10 @@ public class RestUrlBuilder
     public String build()
     {
         StringBuilder url = new StringBuilder();
-        url.append(getBaseUrlFast());
+        url.append(baseUrl);
         url.append(path);
         url.append(url.indexOf("?") != -1 ? "&" : "?");
-        url.append("os_username=admin&os_password=admin");
+        url.append("os_username=" + username + "&os_password=" + password);
         for (Entry<String, String> entry : params.entrySet())
         {
             url.append("&");
@@ -45,20 +47,16 @@ public class RestUrlBuilder
     {
         return build();
     }
-    
-    /**
-     * Fast way to get base url. (assuming it's http://hostname:2990/jira)
-     * @return
-     */
-    private String getBaseUrlFast()
+
+    public RestUrlBuilder username(final String username)
     {
-        try
-        {
-            String hostname = InetAddress.getLocalHost().getHostName();
-            return "http://" + hostname + ":2990/jira";
-        } catch (UnknownHostException e)
-        {
-            throw new RuntimeException(e);
-        }
+        this.username = username;
+        return this;
+    }
+
+    public RestUrlBuilder password(final String password)
+    {
+        this.password = password;
+        return this;
     }
 }

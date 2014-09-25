@@ -100,7 +100,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private boolean isSyncFinished()
     {
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint(jira).getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && !repository.getSync().isFinished()) {
                 return false;
@@ -112,7 +112,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
     private List<String> getSyncErrors()
     {
         List<String> errors = new ArrayList<String>();
-        RepositoryList repositories = new RepositoriesLocalRestpoint().getRepositories();
+        RepositoryList repositories = new RepositoriesLocalRestpoint(jira).getRepositories();
         for (Repository repository : repositories.getRepositories()) {
             if (repository.getSync() != null && repository.getSync().getError() != null) {
                 errors.add(repository.getSync().getError());

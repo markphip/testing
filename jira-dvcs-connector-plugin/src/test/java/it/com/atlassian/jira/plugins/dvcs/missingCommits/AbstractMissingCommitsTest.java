@@ -110,7 +110,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         pushToRemoteDvcsRepository(getSecondDvcsZipRepoPathToPush());
 
         simulatePostCommitHookCall();
-        JiraPageUtils.checkSyncProcessSuccess(); // to catch up with soft sync
+        JiraPageUtils.checkSyncProcessSuccess(jira); // to catch up with soft sync
 
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
 
