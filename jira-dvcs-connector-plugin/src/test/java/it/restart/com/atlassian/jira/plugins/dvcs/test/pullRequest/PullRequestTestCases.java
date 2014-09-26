@@ -169,7 +169,8 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         String fixBranchName = issueKey + "_fix";
         Collection<String> firstRoundCommits = dvcsPRTestHelper.initAndCreateBranchAndCommits(repositoryName, fixBranchName, issueKey, 2);
 
-        DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName, "Open PR description",
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails = dvcsHostClient.openPullRequest(ACCOUNT_NAME,
+                repositoryName, PASSWORD, pullRequestName, "Open PR description",
                 fixBranchName, dvcs.getDefaultBranchName());
         String pullRequestLocation = pullRequestDetails.getLocation();
 
@@ -362,19 +363,23 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         String fixBranch2 = "branch2";
         Collection<String> branch2Commits = dvcsPRTestHelper.createBranchAndCommits(anotherRepositoryName, fixBranch2, issueKey, 2);
 
-        DvcsHostClient.PullRequestDetails<T> pullRequestDetails1 = dvcsHostClient.openPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestName + " " + repositoryName, "Open PR description",
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails1 = dvcsHostClient.openPullRequest(ACCOUNT_NAME,
+                repositoryName, PASSWORD, pullRequestName + " " + repositoryName, "Open PR description",
                 fixBranch1, dvcs.getDefaultBranchName());
 
-        DvcsHostClient.PullRequestDetails<T> pullRequestDetails2 = dvcsHostClient.openPullRequest(ACCOUNT_NAME, anotherRepositoryName, PASSWORD, pullRequestName + " " + anotherRepositoryName, "Open PR description",
-                fixBranch1, dvcs.getDefaultBranchName());
+        DvcsHostClient.PullRequestDetails<T> pullRequestDetails2 = dvcsHostClient.openPullRequest(ACCOUNT_NAME,
+                anotherRepositoryName, PASSWORD, pullRequestName + " " + anotherRepositoryName, "Open PR description",
+                fixBranch2, dvcs.getDefaultBranchName());
 
         List<RestPrRepository> restPrRepositories = syncAndGetFirstPrRepository(repositoryName, anotherRepositoryName);
 
-        RestPrRepositoryPRTestAsserter asserter1 = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestDetails1.getLocation(), pullRequestName + " " + repositoryName, ACCOUNT_NAME,
+        RestPrRepositoryPRTestAsserter asserter1 = new RestPrRepositoryPRTestAsserter(repositoryName,
+                pullRequestDetails1.getLocation(), pullRequestName + " " + repositoryName, ACCOUNT_NAME,
                 fixBranch1, dvcs.getDefaultBranchName());
         asserter1.assertBasicPullRequestConfiguration(restPrRepositories.get(0), branch1Commits, PullRequestStatus.OPEN);
 
-        RestPrRepositoryPRTestAsserter asserter2 = new RestPrRepositoryPRTestAsserter(anotherRepositoryName, pullRequestDetails1.getLocation(), pullRequestName + " " + anotherRepositoryName, ACCOUNT_NAME,
+        RestPrRepositoryPRTestAsserter asserter2 = new RestPrRepositoryPRTestAsserter(anotherRepositoryName,
+                pullRequestDetails2.getLocation(), pullRequestName + " " + anotherRepositoryName, ACCOUNT_NAME,
                 fixBranch2, dvcs.getDefaultBranchName());
         asserter2.assertBasicPullRequestConfiguration(restPrRepositories.get(1), branch2Commits, PullRequestStatus.OPEN);
     }
@@ -387,7 +392,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private void addRepository(String accountName, String password, String repositoryName)
     {
-        dvcsHostClient.createRepository(accountName, repositoryName, null, dvcs.getDvcsType());
+        dvcsHostClient.createRepository(accountName, repositoryName, password, dvcs.getDvcsType());
         dvcs.createTestLocalRepository(accountName, repositoryName, accountName, password);
     }
 
