@@ -127,6 +127,9 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         repositoryName = timestampNameTestResource.randomName(getRepositoryNameSuffix(), EXPIRATION_DURATION_5_MIN);
         initLocalTestRepository();
         issueKey = addTestIssue(TEST_PROJECT_KEY, getTestIssueSummary());
+
+        // Now that we have created the repository make sure it appears on the page and kick off an initial sync
+        refreshAccountAndKickOffSync(ACCOUNT_NAME, repositoryName);
     }
 
     /**
@@ -173,7 +176,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         // Wait for remote system after creation of pullRequest
         sleep(500);
 
-        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+        RestPrRepository restPrRepository = syncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
@@ -199,7 +202,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
             sleep(500);
 
-            restPrRepository = refreshSyncAndGetFirstPrRepository();
+            restPrRepository = syncAndGetFirstPrRepository();
             asserter.assertPullRequestApproved(restPrRepository.getPullRequests().get(0));
         }
 
@@ -207,7 +210,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         sleep(1000);
 
-        restPrRepository = refreshSyncAndGetFirstPrRepository();
+        restPrRepository = syncAndGetFirstPrRepository();
 
         final RestPullRequest restPullRequest = restPrRepository.getPullRequests().get(0);
         Assert.assertEquals(restPullRequest.getStatus(), PullRequestStatus.MERGED.toString());
@@ -237,7 +240,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         // Wait for remote system after creation of pullRequest
         sleep(500);
 
-        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+        RestPrRepository restPrRepository = syncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME,
                 fixBranchName, dvcs.getDefaultBranchName());
@@ -246,7 +249,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         dvcsHostClient.declinePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest());
 
-        restPrRepository = refreshSyncAndGetFirstPrRepository();
+        restPrRepository = syncAndGetFirstPrRepository();
 
         asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.DECLINED);
 
@@ -267,7 +270,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
                 dvcs.getDefaultBranchName(), dvcs.getDefaultBranchName(), FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD);
         String pullRequestLocation = pullRequestDetails.getLocation();
 
-        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+        RestPrRepository restPrRepository = syncAndGetFirstPrRepository();
 
         RestPrRepositoryPRTestAsserter asserter = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestLocation, pullRequestName, ACCOUNT_NAME, FORK_ACCOUNT_NAME,
                 dvcs.getDefaultBranchName(), dvcs.getDefaultBranchName());
@@ -312,7 +315,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         // Wait for remote system after creation of pullRequests
         sleep(500);
 
-        RestPrRepository restPrRepository = refreshSyncAndGetFirstPrRepository();
+        RestPrRepository restPrRepository = syncAndGetFirstPrRepository();
 
         List<RestPullRequest> restPullRequests = Ordering.natural().onResultOf(new Function<RestPullRequest, Long>()
         {
@@ -365,7 +368,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         DvcsHostClient.PullRequestDetails<T> pullRequestDetails2 = dvcsHostClient.openPullRequest(ACCOUNT_NAME, anotherRepositoryName, PASSWORD, pullRequestName + " " + anotherRepositoryName, "Open PR description",
                 fixBranch1, dvcs.getDefaultBranchName());
 
-        List<RestPrRepository> restPrRepositories = refreshSyncAndGetFirstPrRepository(repositoryName, anotherRepositoryName);
+        List<RestPrRepository> restPrRepositories = syncAndGetFirstPrRepository(repositoryName, anotherRepositoryName);
 
         RestPrRepositoryPRTestAsserter asserter1 = new RestPrRepositoryPRTestAsserter(repositoryName, pullRequestDetails1.getLocation(), pullRequestName + " " + repositoryName, ACCOUNT_NAME,
                 fixBranch1, dvcs.getDefaultBranchName());
@@ -379,6 +382,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     private void addRepository(String repositoryName)
     {
         addRepository(ACCOUNT_NAME, PASSWORD, repositoryName);
+        refreshAccountAndKickOffSync(ACCOUNT_NAME, repositoryName);
     }
 
     private void addRepository(String accountName, String password, String repositoryName)
@@ -402,29 +406,30 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         dvcs.createTestLocalRepository(forkOwner, repositoryName, forkOwner, forkPassword);
     }
 
-    private RestPrRepository refreshSyncAndGetFirstPrRepository()
+    private RestPrRepository syncAndGetFirstPrRepository()
     {
-        return refreshSyncAndGetFirstPrRepository(repositoryName).get(0);
+        return syncAndGetFirstPrRepository(repositoryName).get(0);
     }
 
-    private List<RestPrRepository> refreshSyncAndGetFirstPrRepository(String... repositoryNames)
+    private List<RestPrRepository> syncAndGetFirstPrRepository(String... repositoryNames)
     {
-        AccountsPageAccount account = refreshAccount(ACCOUNT_NAME);
-        account.synchronizeRepositories(repositoryNames);
+        AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
+        AccountsPageAccount account = accountsPage.getAccount(getAccountType(), ACCOUNT_NAME);
+        account.synchronizeRepositories(true, repositoryNames);
 
         RestDevResponse<RestPrRepository> response = getPullRequestResponse(issueKey);
-
         Assert.assertEquals(response.getRepositories().size(), repositoryNames.length);
+
         return response.getRepositories();
     }
 
-    protected AccountsPageAccount refreshAccount(final String accountName)
+    private void refreshAccountAndKickOffSync(final String accountName, final String repositoryName)
     {
+
         AccountsPage accountsPage = getJiraTestedProduct().visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(getAccountType(), accountName);
         account.refresh();
-
-        return account;
+        accountsPage.getAccount(getAccountType(), accountName).synchronizeRepositories(false, repositoryName);
     }
 
     protected void sleep(final long millis)
