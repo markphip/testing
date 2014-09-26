@@ -255,8 +255,16 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
         restPrRepository = syncAndGetFirstPrRepository();
 
-        asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.DECLINED);
 
+        if (getAccountType() == BITBUCKET)
+        {
+            asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.DECLINED);
+        }
+        else
+        {
+            // Git hub pull requests can't be declined, you just close them.
+            asserter.assertBasicPullRequestConfiguration(restPrRepository, commits, PullRequestStatus.OPEN);
+        }
         asserter.assertCommitsMatch(restPrRepository.getPullRequests().get(0), commits);
     }
 

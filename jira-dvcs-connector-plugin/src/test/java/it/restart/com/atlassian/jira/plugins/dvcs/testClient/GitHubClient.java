@@ -50,7 +50,7 @@ public class GitHubClient implements DvcsHostClient<PullRequest>
     @Override
     public void approvePullRequest(final String owner, final String repositoryName, final String password, final Long pullRequestId)
     {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not Supported, use merge");
     }
 
     @Override
