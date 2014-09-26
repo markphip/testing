@@ -7,6 +7,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.RepositoriesPageController;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.MagicVisitor;
 import it.restart.com.atlassian.jira.plugins.dvcs.common.OAuth;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
+import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.page.account.AccountsPageAccount;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubClient;
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.GitHubDvcs;
@@ -32,6 +33,12 @@ public class GithubPRTest extends PullRequestTestCases<PullRequest>
         dvcsHostClient = new GitHubClient(gitHubTestSupport);
 
         addOrganizations(jiraTestedProduct);
+    }
+
+    @Override
+    protected void cleanupAfterClass()
+    {
+        new MagicVisitor(getJiraTestedProduct()).visit(GithubOAuthApplicationPage.class).removeConsumer(oAuth);
     }
 
     private void addOrganizations(final JiraTestedProduct jiraTestedProduct)
