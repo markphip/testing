@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
+
 public class ChangesetDaoImpl implements ChangesetDao
 {
     private static final Logger log = LoggerFactory.getLogger(ChangesetDaoImpl.class);
@@ -124,7 +126,7 @@ public class ChangesetDaoImpl implements ChangesetDao
                         .alias(ChangesetMapping.class, "c")
                         .where("not exists " +
                                 "(select 1 from " + queryHelper.getSqlTableName(RepositoryToChangesetMapping.TABLE_NAME) + " where c." +
-                                queryHelper.getSqlColumnName("ID") + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
+                                queryHelper.getSqlColumnName(ID) + " = " + queryHelper.getSqlColumnName(RepositoryToChangesetMapping.CHANGESET_ID) + ")");
 
                 log.debug("deleting orphaned changesets");
                 ActiveObjectsUtils.delete(activeObjects, ChangesetMapping.class, query);
