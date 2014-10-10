@@ -4,8 +4,10 @@ import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.QueryHelper;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.IssueToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToChangesetPrimitiveMapping;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.IssueToMappingFunction;
 import com.atlassian.jira.plugins.dvcs.dao.impl.GlobalFilterQueryWhereClauseBuilder.SqlAndParams;
@@ -18,6 +20,8 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import net.java.ao.EntityStreamCallback;
 import net.java.ao.Query;
@@ -33,11 +37,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import static com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils.ID;
 
@@ -56,33 +63,37 @@ public class ChangesetDaoImpl implements ChangesetDao
         this.transformer = new ChangesetTransformer(activeObjects, this);
     }
 
-    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId)
+    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId,
+            Map<Integer, OrganizationMapping> cachedOrganizationMappings, Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository)
     {
-        return transform(changesetMapping, defaultRepositoryId, null);
+        return transform(changesetMapping, defaultRepositoryId, null, cachedOrganizationMappings, changeSetToRepository);
     }
 
-    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId, String dvcsType)
+    private Changeset transform(ChangesetMapping changesetMapping, int defaultRepositoryId, String dvcsType,
+            Map<Integer, OrganizationMapping> cachedOrganizationMappings, Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository)
     {
-        return transformer.transform(changesetMapping, defaultRepositoryId, dvcsType);
+        return transformer.transform(changesetMapping, defaultRepositoryId, dvcsType, cachedOrganizationMappings,
+                changeSetToRepository);
     }
 
     private List<Changeset> transform(List<ChangesetMapping> changesetMappings)
     {
-        return transform(changesetMappings, 0, null);
+        return transform(changesetMappings, 0, null, new HashMap<ChangesetMapping, Set<RepositoryMapping>>());
     }
 
-    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType)
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, String dvcsType, Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository)
     {
-        return transform(changesetMappings, 0, dvcsType);
+        return transform(changesetMappings, 0, dvcsType, changeSetToRepository);
     }
 
-    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, int defaultRepositoryId, String dvcsType)
+    private List<Changeset> transform(List<ChangesetMapping> changesetMappings, int defaultRepositoryId, String dvcsType, Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository)
     {
         List<Changeset> changesets = new ArrayList<Changeset>();
+        Map<Integer, OrganizationMapping> organizationMappingCache = new HashMap<Integer, OrganizationMapping>();
 
         for (ChangesetMapping changesetMapping : changesetMappings)
         {
-            Changeset changeset = transform(changesetMapping, defaultRepositoryId, dvcsType);
+            Changeset changeset = transform(changesetMapping, defaultRepositoryId, dvcsType, organizationMappingCache, changeSetToRepository);
             if (changeset != null)
             {
                 changesets.add(changeset);
@@ -328,7 +339,7 @@ public class ChangesetDaoImpl implements ChangesetDao
             }
         });
 
-        final Changeset changeset = transform(changesetMapping, repositoryId);
+        final Changeset changeset = transform(changesetMapping, repositoryId, new HashMap<Integer, OrganizationMapping>(), new HashMap<ChangesetMapping, Set<RepositoryMapping>>());
 
         return changeset;
     }
@@ -344,9 +355,11 @@ public class ChangesetDaoImpl implements ChangesetDao
     @Override
     public List<Changeset> getByIssueKey(Iterable<String> issueKeys, String dvcsType, final boolean newestFirst)
     {
+        log.info("retrieving issue keys");
         List<ChangesetMapping> changesetMappings = getChangesetMappingsByIssueKey(issueKeys, newestFirst);
+        Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository = getRepositoryToChangesetMappingsByIssueKey(issueKeys, changesetMappings);
 
-        return transform(changesetMappings, dvcsType);
+        return transform(changesetMappings, dvcsType, changeSetToRepository);
     }
 
     @Override
@@ -394,6 +407,131 @@ public class ChangesetDaoImpl implements ChangesetDao
         });
 
         return changesetMappings;
+    }
+
+    private List<RepositoryToChangesetPrimitiveMapping> fetchRTOC(Iterable<String> issueKeys)
+    {
+
+        final GlobalFilter gf = new GlobalFilter();
+        gf.setInIssues(issueKeys);
+        final SqlAndParams baseWhereClause = new GlobalFilterQueryWhereClauseBuilder(gf).build();
+        log.info("starting to get rtoc");
+
+        return activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryToChangesetPrimitiveMapping>>()
+        {
+            @Override
+            public List<RepositoryToChangesetPrimitiveMapping> doInTransaction()
+            {
+                log.info("rtoc query where is " + baseWhereClause.getSql());
+                RepositoryToChangesetPrimitiveMapping[] mappings = activeObjects.find(RepositoryToChangesetPrimitiveMapping.class,
+                        Query.select()
+                                .alias(RepositoryToChangesetPrimitiveMapping.class, "RTOC")
+                                .alias(ChangesetMapping.class, "CHANGESET")
+                                .join(ChangesetMapping.class, "RTOC.CHANGESET_ID = CHANGESET.ID")
+                                .alias(IssueToChangesetMapping.class, "ISSUE")
+                                .join(IssueToChangesetMapping.class, "CHANGESET.ID = ISSUE." + IssueToChangesetMapping.CHANGESET_ID)
+                                .where(baseWhereClause.getSql(), baseWhereClause.getParams()));
+
+                return Arrays.asList(mappings);
+            }
+        });
+    }
+
+    private Collection<Integer> transformToIds(List<RepositoryToChangesetPrimitiveMapping> rtocMappings)
+    {
+        return Collections2.transform(rtocMappings, new Function<RepositoryToChangesetPrimitiveMapping, Integer>()
+        {
+            @Override
+            public Integer apply(@Nullable final RepositoryToChangesetPrimitiveMapping rtoc)
+            {
+                return rtoc.getRepositoryId();
+            }
+        });
+    }
+
+    private List<RepositoryMapping> fetchRepositoryMappings(final Collection<Integer> ids)
+    {
+        return activeObjects.executeInTransaction(new TransactionCallback<List<RepositoryMapping>>()
+        {
+            @Override
+            public List<RepositoryMapping> doInTransaction()
+            {
+//                StringBuilder whereBuilder = new StringBuilder("ID in (");
+
+                final HashSet<Integer> uniqueIds = new HashSet<Integer>(ids);
+//                Iterator<Integer> idIterator = uniqueIds.iterator();
+//                while (idIterator.hasNext())
+//                {
+//                    idIterator.next();
+//                    whereBuilder.append("?");
+//                    if (idIterator.hasNext())
+//                    {
+//                        whereBuilder.append(",");
+//                    }
+//                }
+//                whereBuilder.append(")");
+
+                log.info("this many ids {} reduced to {} ", ids.size(), uniqueIds.size());
+
+                if (ids.size() == 0)
+                {
+                    return new ArrayList<RepositoryMapping>();
+                }
+                String whereClause = ActiveObjectsUtils.renderListOperator("RM.ID", "IN", "OR", uniqueIds);
+
+                log.info("where clause is " + whereClause.toString());
+
+                RepositoryMapping[] mappings = activeObjects.find(RepositoryMapping.class,
+                        Query.select()
+                                .alias(RepositoryMapping.class, "RM")
+                                .where(whereClause.toString(), uniqueIds.toArray()));
+
+                return Arrays.asList(mappings);
+            }
+        });
+    }
+
+    private Map<ChangesetMapping, Set<RepositoryMapping>> buildRTOCMap(List<ChangesetMapping> changesetMappings,
+            List<RepositoryToChangesetPrimitiveMapping> rtocMappings, List<RepositoryMapping> repositoryMappings)
+    {
+        final Map<ChangesetMapping, Set<RepositoryMapping>> result = new HashMap<ChangesetMapping, Set<RepositoryMapping>>();
+
+        for (ChangesetMapping changesetMapping : changesetMappings)
+        {
+            for (RepositoryToChangesetPrimitiveMapping repositoryToChangesetMapping : rtocMappings)
+            {
+                if (changesetMapping.getID() == repositoryToChangesetMapping.getChangesetId())
+                {
+                    for (RepositoryMapping repositoryMapping : repositoryMappings)
+                    {
+                        if (repositoryMapping.getID() == repositoryToChangesetMapping.getRepositoryId())
+                        {
+                            if (result.get(changesetMapping) == null)
+                            {
+                                result.put(changesetMapping, new HashSet<RepositoryMapping>());
+                            }
+                            result.get(changesetMapping).add(repositoryMapping);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<ChangesetMapping, Set<RepositoryMapping>> getRepositoryToChangesetMappingsByIssueKey(Iterable<String> issueKeys, List<ChangesetMapping> changesetMappings)
+    {
+        final List<RepositoryToChangesetPrimitiveMapping> rtocMappings = fetchRTOC(issueKeys);
+
+        final Collection<Integer> ids = transformToIds(rtocMappings);
+
+        log.info("fetching repositories after finding this many mappings {} ", rtocMappings.size());
+
+        final List<RepositoryMapping> repositoryMappings = fetchRepositoryMappings(ids);
+
+        log.info("building map");
+
+        return buildRTOCMap(changesetMappings, rtocMappings, repositoryMappings);
     }
 
     @Override

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
@@ -28,6 +29,8 @@ public class RepositoryDaoImpl implements RepositoryDao
     private static final Logger log = LoggerFactory.getLogger(RepositoryDaoImpl.class);
 
     private final ActiveObjects activeObjects;
+
+    private Map<Integer, Repository> repositoryCache = new HashMap<Integer, Repository>();
 
     @Resource
     private RepositoryTransformer repositoryTransformer;
@@ -166,6 +169,12 @@ public class RepositoryDaoImpl implements RepositoryDao
     @Override
     public Repository get(final int repositoryId)
     {
+        Repository repository = repositoryCache.get(repositoryId);
+        if (repository != null)
+        {
+            return repository;
+        }
+
         RepositoryMapping repositoryMapping = activeObjects.executeInTransaction(new TransactionCallback<RepositoryMapping>()
         {
             @Override
@@ -182,8 +191,9 @@ public class RepositoryDaoImpl implements RepositoryDao
         }
         else
         {
-            return transform(repositoryMapping);
-
+            Repository transformedResult = transform(repositoryMapping);
+            repositoryCache.put(repositoryId, repository);
+            return transformedResult;
         }
     }
 

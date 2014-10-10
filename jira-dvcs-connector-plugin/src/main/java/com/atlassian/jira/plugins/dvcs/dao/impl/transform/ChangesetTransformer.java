@@ -20,8 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ChangesetTransformer
 {
@@ -29,13 +34,16 @@ public class ChangesetTransformer
     private final ActiveObjects activeObjects;
     private final ChangesetDao changesetDao;
 
+    private Map<Integer, OrganizationMapping> organizationMappingCache = new HashMap<Integer, OrganizationMapping>();
+
     public ChangesetTransformer(final ActiveObjects activeObjects, final ChangesetDao changesetDao)
     {
         this.activeObjects = activeObjects;
         this.changesetDao = changesetDao;
     }
 
-    public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType)
+    public Changeset transform(ChangesetMapping changesetMapping, int mainRepositoryId, String dvcsType,
+            Map<Integer, OrganizationMapping> cachedOrganizationMappings, Map<ChangesetMapping, Set<RepositoryMapping>> changeSetToRepository)
     {
 
         if (changesetMapping == null)
@@ -50,7 +58,14 @@ public class ChangesetTransformer
         List<Integer> repositories = changeset.getRepositoryIds();
         int firstRepository = 0;
 
-        for (RepositoryMapping repositoryMapping : changesetMapping.getRepositories())
+        Collection<RepositoryMapping> repositoryMappings = changeSetToRepository.get(changesetMapping);
+        if (repositoryMappings == null)
+        {
+            log.info("change set mapping for change set id {} is null falling back to old way ", changesetMapping.getID());
+            repositoryMappings = Arrays.asList(changesetMapping.getRepositories());
+        }
+
+        for (RepositoryMapping repositoryMapping : repositoryMappings)
         {
             if (repositoryMapping.isDeleted() || !repositoryMapping.isLinked())
             {
@@ -59,7 +74,19 @@ public class ChangesetTransformer
 
             if (!StringUtils.isEmpty(dvcsType))
             {
-                OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
+//                OrganizationMapping organizationMapping = cachedOrganizationMappings.get(repositoryMapping.getOrganizationId());
+                OrganizationMapping organizationMapping = organizationMappingCache.get(repositoryMapping.getOrganizationId());
+                if (organizationMapping == null)
+                {
+                    log.debug("Org mapping cache miss!! id {}", repositoryMapping.getOrganizationId());
+                    organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
+                    cachedOrganizationMappings.put(repositoryMapping.getOrganizationId(), organizationMapping);
+                    organizationMappingCache.put(repositoryMapping.getOrganizationId(), organizationMapping);
+                }
+                else
+                {
+                    log.debug("Org mapping cache hit for id {}", repositoryMapping.getOrganizationId());
+                }
 
                 if (!dvcsType.equals(organizationMapping.getDvcsType()))
                 {
