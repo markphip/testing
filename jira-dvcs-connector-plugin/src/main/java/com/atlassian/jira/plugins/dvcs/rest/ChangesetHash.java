@@ -14,6 +14,11 @@ public class ChangesetHash
         this.hash = hash;
     }
 
+    public String getHash()
+    {
+        return hash;
+    }
+
     public Set<String> getParents()
     {
         return parents;

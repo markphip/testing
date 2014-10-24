@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -53,7 +54,6 @@ public class QueryDSLResource
     {
         Integer repositoryId = new Integer(repositoryIdString);
         Collection<String> heads = getHeads(repositoryId);
-//        return "pocket!";
         final Connection connection = connectionProvider.borrowConnection();
 
         try
@@ -64,31 +64,32 @@ public class QueryDSLResource
             SQLQuery sql = select.from(mappingInstance)
                     .join(rtcMapping).on(mappingInstance.ID.eq(rtcMapping.CHANGESET_ID))
                     .where(rtcMapping.REPOSITORY_ID.eq(repositoryId));
-            List<Tuple> result = sql.list(mappingInstance.ID, mappingInstance.NODE, mappingInstance.PARENTS_DATA);
+            List<Tuple> queryResult = sql.list(mappingInstance.ID, mappingInstance.NODE, mappingInstance.PARENTS_DATA);
 
-            StringBuilder resultBuilder = new StringBuilder("result is: \n");
+            List<ChangesetHash> hashes = new ArrayList<ChangesetHash>();
 
-            for (Tuple tuple : result)
+            for (Tuple tuple : queryResult)
             {
-                String resultLine = String.format("result is %s, %s, %s", new Object[] {
-                        tuple.get(mappingInstance.ID), tuple.get(mappingInstance.NODE),
-                        tuple.get(mappingInstance.PARENTS_DATA)
-                });
-
-                resultBuilder.append(resultLine);
-                resultBuilder.append("\nParents:");
+                ChangesetHash hash = new ChangesetHash(tuple.get(mappingInstance.NODE));
 
                 String parents = tuple.get(mappingInstance.PARENTS_DATA);
                 JSONArray parentsJson = new JSONArray(parents);
                 for (int i = 0; i < parentsJson.length(); i++)
                 {
-                    resultBuilder.append(parentsJson.get(i));
-                    resultBuilder.append("|");
+                    hash.addParent((String) parentsJson.get(i));
                 }
-                resultBuilder.append("\n");
-                log.info(resultLine);
+                hashes.add(hash);
             }
-            return resultBuilder.toString();
+            TopoBuilder topoBuilder = new TopoBuilder();
+//            List<ChangesetHash> topoOrdered = topoBuilder.buildTopoOrder(heads, hashes);
+            List<String> topoOrdered = topoBuilder.buildTopoOrder(heads, hashes);
+            StringBuilder resultString = new StringBuilder();
+            for (String changesetHash : topoOrdered)
+            {
+                resultString.append(changesetHash);
+                resultString.append("\n");
+            }
+            return resultString.toString();
         }
         finally
         {
