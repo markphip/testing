@@ -8,10 +8,21 @@ import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.mysema.codegen.model.TypeCategory;
+import com.mysema.query.codegen.JavaTypeMappings;
+import com.mysema.query.sql.codegen.DefaultNamingStrategy;
+import com.mysema.query.sql.codegen.MetaDataExporter;
+import com.mysema.query.sql.codegen.NamingStrategy;
+import com.mysema.query.sql.codegen.OriginalNamingStrategy;
+import com.mysema.query.types.expr.TemporalExpression;
+import com.mysema.query.types.path.DateTimePath;
+import com.mysema.query.types.template.DateTemplate;
 import net.java.ao.test.converters.NameConverters;
 import net.java.ao.test.jdbc.NonTransactional;
 import org.junit.Test;
 
+import java.io.File;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -361,5 +372,52 @@ public class ChangesetQDSLGetByIssueKeyTest extends ChangesetQDSLDBTest
         List<Changeset> changeSets = changesetQDSL.getByIssueKey(ISSUE_KEYS, null, false);
 
         assertThat(changeSets.size(), equalTo(1));
+    }
+
+    @Test
+    @NonTransactional
+    public void testGenerateMapping() throws Exception
+    {
+        Connection connection = null;
+        try
+        {
+            connection = connectionProvider.borrowConnection();
+            MetaDataExporter exporter = new MetaDataExporter();
+            exporter.setPackageName("com.atlassian.jira.plugins.dvcs.querydsl.v3.gen");
+            exporter.setTargetFolder(new File("/Users/bmorgan/src/jira-dvcs-connector/jira-dvcs-connector-plugin/src/main/java/"));
+            exporter.setTableNamePattern("AO_E8B6CC_%");
+            exporter.setExportForeignKeys(false);
+            exporter.setExportPrimaryKeys(false);
+            NamingStrategy namingStrategy = new MyNamingStrategy();
+            exporter.setNamingStrategy(namingStrategy);
+            exporter.setTypeMappings(new JavaDateTypeMappings());
+            exporter.export(connection.getMetaData());
+        }
+        finally
+        {
+            if (connection != null)
+            {
+                connection.close();
+            }
+        }
+    }
+
+    private static class MyNamingStrategy extends OriginalNamingStrategy
+    {
+        private DefaultNamingStrategy defaultNamingStrategy = new DefaultNamingStrategy();
+        @Override
+        public String getClassName(final String tableName)
+        {
+            String minusPrefix = tableName.substring("AO_E8B6CC_".length(), tableName.length());
+            return defaultNamingStrategy.getClassName(minusPrefix);
+        }
+    }
+
+    private static class JavaDateTypeMappings extends JavaTypeMappings
+    {
+        public JavaDateTypeMappings() {
+            super();
+            register(TypeCategory.DATETIME,   TemporalExpression.class,   DateTimePath.class,   DateTemplate.class);
+        }
     }
 }
