@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
+import com.google.common.collect.ImmutableSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,8 +35,14 @@ public class RepositorySyncHelper
     }
 
     /**
-     * Returns a new RepositorySync object for the given repository. If {@code repository} is null or {@code syncFlags}
-     * does not indicate a soft sync then the returned RepositorySync will not capture (or store) events.
+     * Returns a new RepositorySync object for the given repository, which by default captures and stores all
+     * {@link SyncEvent}s.
+     *  
+     * If {@code repository} is null or the {@code eventsFeature} is disabled
+     * then the returned RepositorySync will not capture (or store) events.
+     * Otherwise, if {@code syncFlags} does not contain the SOFT_SYNC {@link SynchronizationFlag}, then we
+     * only capture events that will trigger a reindex of DevSummary, and we avoid capturing other events such as 
+     * those that trigger Automatic Issue Transitions.
      *
      * @param repository the Repository being synchronised
      * @param syncFlags synchronisation flags
@@ -45,11 +52,44 @@ public class RepositorySyncHelper
     public RepositorySync startSync(@Nullable Repository repository, @Nonnull EnumSet<SynchronizationFlag> syncFlags)
     {
         checkNotNull(syncFlags, "syncFlags");
-        if (eventsFeature.isEnabled() && repository != null  && syncFlags.contains(SOFT_SYNC))
-        {
-            return new CapturingRepositorySync(eventService, repository, !syncFlags.contains(WEBHOOK_SYNC), threadEvents.startCapturing());
-        }
 
+        if (eventsFeature.isEnabled() && repository != null)
+        {
+            return createRepositorySync(repository, syncFlags);
+        }
         return NULL_REPO_SYNC;
+    }
+
+    private RepositorySync createRepositorySync(
+            @Nullable Repository repository, 
+            @Nonnull EnumSet<SynchronizationFlag> syncFlags)
+    {
+        boolean isScheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
+        boolean isSoftSync = syncFlags.contains(SOFT_SYNC);
+        ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing(); // todo: remove side effect?
+        ImmutableSet<Class> eventsToCapture = emptySet();
+        
+        if (!isSoftSync)
+        {
+            eventsToCapture = getEventsToTriggerDevSummaryReindex();
+
+        }
+        
+        return new FilteringRepositorySync(
+                isScheduledSync, 
+                eventService, 
+                eventsToCapture, 
+                repository, 
+                threadEventsCaptor);
+    }
+    
+    private ImmutableSet<Class> getEventsToTriggerDevSummaryReindex()
+    {
+        return ImmutableSet.<Class>of(DevSummaryChangedEvent.class);
+    }
+    
+    private ImmutableSet<Class> emptySet()
+    {
+        return ImmutableSet.of();
     }
 }

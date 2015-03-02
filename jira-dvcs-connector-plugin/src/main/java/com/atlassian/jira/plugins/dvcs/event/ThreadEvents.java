@@ -87,7 +87,7 @@ public class ThreadEvents
         @Override
         public ThreadEventsCaptor stopCapturing()
         {
-            threadEventCaptor.remove();
+            threadEventCaptor.remo∫ve();
             return this;
         }
 
