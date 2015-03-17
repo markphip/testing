@@ -15,6 +15,7 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
@@ -27,22 +28,22 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * 
+ *
  * Listens to user events (just for <code>CREATED</code> type).
- * 
+ *
  * Handler methods run asynchronously and are safe to fail. That means that it
  * does not corrupt process of adding the user because of some unexpected error
  * at this place.
- * 
+ *
  * @see #onUserAddViaInterface(UserAddedEvent)
  * @see #onUserAddViaCrowd(UserEvent)
- * 
+ *
  * <br />
  * <br />
  *      Created on 21.6.2012, 14:07:34 <br />
  * <br />
  * @author jhocman@atlassian.com
- * 
+ *
  */
 public class DvcsAddUserListener
 {
@@ -54,7 +55,7 @@ public class DvcsAddUserListener
 
     /** BBC-957: Attribute key to recognise Service Desk Customers during user creation */
     private static final String SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY = "synch.servicedesk.requestor";
-    
+
     /** The event publisher. */
     private final EventPublisher eventPublisher;
 
@@ -67,12 +68,12 @@ public class DvcsAddUserListener
     private final UserManager userManager;
 
     private final GroupManager groupManager;
-    
+
     private final CrowdService crowd;
 
     /**
      * The Constructor.
-     * 
+     *
      * @param eventPublisher
      *            the event publisher
      * @param organizationService
@@ -93,30 +94,30 @@ public class DvcsAddUserListener
         this.userManager = userManager;
         this.groupManager = groupManager;
         this.crowd = crowd;
-        
+
     }
-    
+
     //---------------------------------------------------------------------------------------
     // Handler methods
     //---------------------------------------------------------------------------------------
 
     @EventListener
-    public void onUserAddViaInterface(final UserAddedEvent event) 
+    public void onUserAddViaInterface(final UserAddedEvent event)
     {
         if (event == null)
         {
             return;
         }
-        
+
         try
         {
             log.debug("Running onUserAddViaInterface ...");
-            
+
             String username = event.getRequestParameters().get("username")[0];
             String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
                     UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
-      
-            User user = userManager.getUser(username);
+
+            User user = userManager.getUserByName(username).getDirectoryUser();
 
             String userInvitations;
             if (organizationIdsAndGroupSlugs != null)
@@ -127,17 +128,17 @@ public class DvcsAddUserListener
             	eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
             } else
             {
-            	// setting blank String to be sure that the crowd will not return null 
+            	// setting blank String to be sure that the crowd will not return null
             	// https://sdog.jira.com/browse/BBC-432
             	userInvitations = " ";
             }
-            
+
             crowd.setUserAttribute(
                     user,
                     UI_USER_INVITATIONS_PARAM_NAME,
                     Collections.singleton(userInvitations)
                     );
-       
+
         } catch (UserNotFoundException e)
         {
             log.warn("UserNotFoundException : " + e.getMessage());
@@ -152,7 +153,7 @@ public class DvcsAddUserListener
         }
 
     }
-   
+
     /**
      * This way we are handling the google user from studio which has not been activated yet.
      * They will get Bitbucket invitation after the first successful login.
@@ -168,7 +169,7 @@ public class DvcsAddUserListener
         {
             return;
         }
-        
+
         safeExecute(new Runnable()
         {
             @Override
@@ -177,7 +178,7 @@ public class DvcsAddUserListener
                 Set attributeNames = event.getAttributeNames();
                 String loginCountAttName = "login.count";
 
-                if (attributeNames != null && 
+                if (attributeNames != null &&
                     attributeNames.contains(loginCountAttName) && attributeNames.size() == 1)
                 {
 
@@ -185,7 +186,7 @@ public class DvcsAddUserListener
                     log.debug("Got {} as the 'login.count' values.", count);
 
                     Iterator<String> countValueIterator = count.iterator();
-                    if (!countValueIterator.hasNext()) 
+                    if (!countValueIterator.hasNext())
                     {
                         return;
                     }
@@ -226,12 +227,12 @@ public class DvcsAddUserListener
 
             } else /* something has been chosen from UI */if (StringUtils.isNotBlank(uiChoice))
             {
-                new UserAddedViaInterfaceEventProcessor(uiChoice, event.getUser(), organizationService,
+                new UserAddedViaInterfaceEventProcessor(uiChoice, ApplicationUsers.from(event.getUser()), organizationService,
                         communicatorProvider, userManager, groupManager).run();
             }
         }
     }
-    
+
     //---------------------------------------------------------------------------------------
     // Handler methods end
     //---------------------------------------------------------------------------------------
@@ -240,7 +241,7 @@ public class DvcsAddUserListener
      * Wraps executorService.submit(task) method invocation with
      * <code>try-catch</code> block to ensure that no exception is propagated
      * up.
-     * 
+     *
      * @param task
      *            the task
      * @param onFailMessage
@@ -281,7 +282,7 @@ public class DvcsAddUserListener
     public void register() throws Exception
     {
         log.info("Attempting to register listener ... ");
-        
+
         eventPublisher.register(this);
 
     }

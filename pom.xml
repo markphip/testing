@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.42</version>
+        <version>3.0.88</version>
     </parent>
 
     <groupId>com.atlassian.jira.plugins</groupId>
@@ -52,7 +52,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <jira.compile.version>6.4-OD-16-003</jira.compile.version>
+        <jira.compile.version>7.0-20150317.201536</jira.compile.version>
         <!-- these two versions might be overwritten by test profiles -->
         <jira.version>${jira.compile.version}</jira.version>
         <jira.data.version>${jira.compile.version}</jira.data.version>
@@ -61,7 +61,7 @@
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
         <greenhopper.version>6.6.0-D20140904T040435</greenhopper.version>
-        <testkit.version>6.0.41</testkit.version>
+        <testkit.version>7.0.13</testkit.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
@@ -74,7 +74,7 @@
              leaving it to the base pom -->
         <!--<jdkLevel>1.7</jdkLevel>-->
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
-        <amps.version>5.0.14</amps.version>
+        <amps.version>5.0.4</amps.version>
 
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
@@ -407,38 +407,6 @@
             <id>release</id>
             <properties>
                 <skipITs>true</skipITs>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira52</id>
-            <properties>
-                <jira.version>5.2.1</jira.version>
-                <jira.data.version>5.2.1</jira.data.version>
-                <testkit.version>5.2-m33</testkit.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira6</id>
-            <properties>
-                <jira.version>6.0.6</jira.version>
-                <jira.data.version>6.0.6</jira.data.version>
-                <testkit.version>5.2-m33</testkit.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira61</id>
-            <properties>
-                <jira.version>6.1-OD-06</jira.version>
-                <jira.data.version>6.1-OD-06</jira.data.version>
-                <testkit.version>6.0.41</testkit.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira62</id>
-            <properties>
-                <jira.version>6.2.1</jira.version>
-                <jira.data.version>6.2.1</jira.data.version>
-                <testkit.version>6.0.41</testkit.version>
             </properties>
         </profile>
     </profiles>

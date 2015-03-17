@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -18,15 +18,15 @@ import java.util.Set;
 
 /**
  * The Class UserAddedExternallyEventProcessor.
- * 
+ *
  * {@link Runnable} processor that handles logic beside invitations for user
  * added to JIRA i.e. via crowd so not via user interface.
- * 
+ *
  * <br />
  * <br />
  * Created on 21.6.2012, 15:22:43 <br />
  * <br />
- * 
+ *
  * @author jhocman@atlassian.com
  */
 public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
@@ -44,7 +44,7 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
 
     /**
      * The Constructor.
-     * 
+     *
      * @param event
      *            the event
      * @param organizationService
@@ -71,8 +71,8 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
     {
 
         log.debug("Running UserAddedExternallyEventProcessor ...");
-        
-        User user = userManager.getUser(username);
+
+        ApplicationUser user = userManager.getUser(username);
 
         List<Organization> defaultOrganizations = organizationService.getAutoInvitionOrganizations();
 
@@ -103,7 +103,7 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
 
     /**
      * Extract slugs.
-     * 
+     *
      * @param groupSlugs
      *            the group slugs
      * @return the collection< string>

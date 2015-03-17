@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.crowd.search.EntityDescriptor;
 import com.atlassian.crowd.search.builder.QueryBuilder;
 import com.atlassian.crowd.search.builder.Restriction;
@@ -21,6 +20,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitCommands;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.collect.Lists;
@@ -98,7 +98,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		//
 		// Fetch user by email
 		//
-		List<User> users = getUserByEmailOrNull(authorEmail, authorName);
+		List<ApplicationUser> users = getUserByEmailOrNull(authorEmail, authorName);
 		if (users.isEmpty())
 		{
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
@@ -108,8 +108,8 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		    results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
 		    return results;
 		}
-		
-		User user = users.get(0);
+
+        ApplicationUser user = users.get(0);
 
 		//
 		// Authenticate user
@@ -134,7 +134,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		return results;
 	}
 
-	private void processCommands(CommitCommands commands, CommandsResults results, User user)
+	private void processCommands(CommitCommands commands, CommandsResults results, ApplicationUser user)
 	{
 		for (CommitCommands.CommitCommand command : commands.getCommands())
 		{
@@ -197,17 +197,17 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 		}
 	}
 
-	private List<User> getUserByEmailOrNull(String email, String name)
+	private List<ApplicationUser> getUserByEmailOrNull(String email, String name)
 	{
 		try
 		{
-		    List<User> users  = Lists.newArrayList();
-			EntityQuery<User> query = QueryBuilder.queryFor(User.class, EntityDescriptor.user())
+		    List<ApplicationUser> users  = Lists.newArrayList();
+			EntityQuery<ApplicationUser> query = QueryBuilder.queryFor(ApplicationUser.class, EntityDescriptor.user())
 					.with(Restriction.on(UserTermKeys.EMAIL).exactlyMatching(email)).returningAtMost(EntityQuery.ALL_RESULTS);
 
-			Iterable<User> user = crowdService.search(query);
-			Iterator<User> iterator = user.iterator();
-			User firstShouldBeOneUser = iterator.next();
+			Iterable<ApplicationUser> user = crowdService.search(query);
+			Iterator<ApplicationUser> iterator = user.iterator();
+            ApplicationUser firstShouldBeOneUser = iterator.next();
 			users.add(firstShouldBeOneUser);
 			log.debug("Found {} by email {}", new Object [] { firstShouldBeOneUser.getName(), firstShouldBeOneUser.getEmailAddress()});
 
@@ -216,7 +216,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 			    // try to find map user according the name
 				while (iterator.hasNext())
 				{
-				    User nextUser = iterator.next();
+                    ApplicationUser nextUser = iterator.next();
 				    if (nextUser.getName().equals(name))
 				    {
 				        return Collections.singletonList(nextUser);

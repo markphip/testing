@@ -1,11 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.base.Splitter;
 import org.apache.commons.collections.CollectionUtils;
@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
+ *
  * {@link Runnable} processor that handles logic beside
  * invitations for user added to JIRA via
  * user interface.
  *
- * 
+ *
  * <br /><br />
  * Created on 21.6.2012, 15:32:33
  * <br /><br />
@@ -35,7 +35,7 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
 
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";
-		
+
 	public static String EMAIL_PARAM = "email";
 
 	/** The Constant SPLITTER. */
@@ -43,13 +43,13 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 
 	/** The organization service. */
 	private final OrganizationService organizationService;
-	
+
 	/** The communicator provider. */
 	private final DvcsCommunicatorProvider communicatorProvider;
 
     private final String serializedGroupsUiChoice;
 
-    private final User user;
+    private final ApplicationUser user;
 
 	/**
 	 * Instantiates a new user added via interface event processor.
@@ -58,14 +58,14 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 	 * @param organizationService the organization service
 	 * @param communicatorProvider the communicator provider
 	 */
-	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, User user ,OrganizationService organizationService,
+	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, ApplicationUser user ,OrganizationService organizationService,
 			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
 	{
 	    super(userManager, groupManager);
-      
+
 	    this.serializedGroupsUiChoice = serializedGroupsUiChoice;
         this.user = user;
-	    
+
 		this.organizationService = organizationService;
 		this.communicatorProvider = communicatorProvider;
 	}
@@ -88,7 +88,7 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 
 		// log invite
 		logInvite(user, invitationsFor);
-		
+
 		// invite
 		invite(email, invitationsFor);
 
@@ -106,7 +106,7 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 		Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, Invitations>();
 
 		Iterable<String> organizationIdsAndGroupSlugs = Splitter.on(ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).split(serializedGroupsUiChoice);
-		
+
         for (String requestParamToken : organizationIdsAndGroupSlugs)
 		{
 
@@ -121,12 +121,12 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 			{
 				Invitations newInvitations = new Invitations();
 				newInvitations.organizaton = organizationService.get(orgId, false);
-				
-				if (newInvitations.organizaton == null) 
+
+				if (newInvitations.organizaton == null)
 				{
 				    continue;
 				}
-				
+
 				orgIdsToInvitations.put(orgId, newInvitations);
 				existingInvitations = newInvitations;
 			}

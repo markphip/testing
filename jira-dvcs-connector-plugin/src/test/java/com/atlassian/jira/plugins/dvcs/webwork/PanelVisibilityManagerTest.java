@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.PluginInformation;
@@ -48,7 +48,7 @@ public class PanelVisibilityManagerTest {
     private Issue issue;
 
     @Mock
-    private User user;
+    private ApplicationUser user;
 
     @BeforeClass
     public void initMocks()

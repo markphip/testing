@@ -1,10 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class PanelVisibilityManager
         this.featureManager = checkNotNull(featureManager);
     }
 
-    public boolean showPanel(Issue issue, User user)
+    public boolean showPanel(Issue issue, ApplicationUser user)
     {
         return (!pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) || !featureManager.isEnabled(LABS_OPT_IN) ||
                 // JIRA 6.1.x was installed with 0.x of the devsummary plugin, everything else after will want to hide this panel

@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits.handlers;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.issue.IssueService;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueInputParameters;
@@ -11,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.workflow.WorkflowManager;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
@@ -68,13 +68,13 @@ public class TransitionHandler implements CommandHandler<Issue>
     }
 
     @Override
-	public Either<CommitHookHandlerError, Issue> handle(User user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
-        
+	public Either<CommitHookHandlerError, Issue> handle(ApplicationUser user, MutableIssue issue, String commandName, List<String> args, Date commitDate) {
+
     	String cmd = commandName;
         final I18nHelper i18nHelper = jiraAuthenticationContext.getI18nHelper();
-    	
+
     	String comment = (args != null && args.size() == 1) ? args.get(0) : null;
-      
+
         if (cmd == null || cmd.equals("")) {
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_COMMAND_PROVIDED_TEMPLATE, issue.getKey())));
@@ -106,7 +106,7 @@ public class TransitionHandler implements CommandHandler<Issue>
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(MULTIPLE_ACTIONS_TEMPLATE, cmd, issue.getKey(), getIssueState(issue), validActionNames)));
         } else {
-            
+
             IssueService.TransitionValidationResult validation = matchingValidActions.iterator().next().validation;
             IssueService.IssueResult result = issueService.transition(user, validation);
             if (!result.isValid()) {
@@ -173,7 +173,7 @@ public class TransitionHandler implements CommandHandler<Issue>
 
     private Collection<ValidatedAction> getValidActions(
             Collection<ActionDescriptor> actionsToValidate,
-            User user,
+            ApplicationUser user,
             MutableIssue issue,
             IssueInputParameters parameters,
             String comment) {
@@ -193,6 +193,6 @@ public class TransitionHandler implements CommandHandler<Issue>
         }
         return validations;
     }
-    
+
 
 }

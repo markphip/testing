@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
 import com.atlassian.core.util.collection.EasyList;
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import com.google.common.collect.Sets;
 import org.mockito.ArgumentCaptor;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class UserAddedExternallyEventProcessorTest
 {
     @Mock
-    User userMock;
+    ApplicationUser userMock;
 
 	@Mock
 	OrganizationService organizationServiceMock;

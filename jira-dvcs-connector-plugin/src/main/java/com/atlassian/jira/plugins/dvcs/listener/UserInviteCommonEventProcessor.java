@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,11 @@ public class UserInviteCommonEventProcessor
 
     public void logInvite(String username, Collection<? extends Object> bitbucketGroups)
     {
-        User user = userManager.getUser(username);
+        ApplicationUser user = userManager.getUser(username);
         logInvite(user, bitbucketGroups);
     }
 
-    public void logInvite(User user, Collection<? extends Object> bitbucketGroups)
+    public void logInvite(ApplicationUser user, Collection<? extends Object> bitbucketGroups)
     {
 
         if (log.isDebugEnabled())

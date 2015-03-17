@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueTabPanel;
@@ -12,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.webwork.render.DefaultIssueAction;
 import com.atlassian.jira.plugins.dvcs.webwork.render.IssueActionFactory;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.templaterenderer.TemplateRenderer;
 import com.google.common.collect.ImmutableMap;
@@ -78,7 +78,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     }
 
     @Override
-    public List<IssueAction> getActions(Issue issue, User user)
+    public List<IssueAction> getActions(Issue issue, ApplicationUser user)
     {
         String issueKey = issue.getKey();
         Set<String> issueKeys = issueAndProjectKeyManager.getAllIssueKeys(issue);
@@ -97,7 +97,7 @@ public class DvcsActivityTabPanel extends AbstractIssueTabPanel
     }
 
     @Override
-    public boolean showPanel(Issue issue, User user)
+    public boolean showPanel(Issue issue, ApplicationUser user)
     {
         return permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)
                 && repositoryService.existsLinkedRepositories();
