@@ -2,7 +2,9 @@ package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 
+import java.util.Collection;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -11,14 +13,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 class CapturingRepositorySync implements RepositorySync
 {
-    private final Repository repository;
-    private final ThreadEventsCaptor threadEventCaptor;
     private final CarefulEventService eventService;
+    private final Collection<Class> eventsToCapture;
+    private final Repository repository;
     private final boolean scheduledSync;
+    private final ThreadEventsCaptor threadEventCaptor;
 
-    CapturingRepositorySync(@Nonnull CarefulEventService eventService, @Nonnull Repository repository, boolean scheduledSync, @Nonnull ThreadEventsCaptor threadEventCaptor)
+    CapturingRepositorySync(
+             @Nonnull CarefulEventService eventService,
+             @Nonnull Collection<Class> eventsToCapture,
+            @Nullable Repository repository,
+              boolean scheduledSync,
+             @Nonnull ThreadEventsCaptor threadEventCaptor)
     {
         this.eventService = checkNotNull(eventService, "eventService");
+        this.eventsToCapture = checkNotNull(eventsToCapture, "eventsToCapture");
         this.repository = checkNotNull(repository, "repository");
         this.scheduledSync = scheduledSync;
         this.threadEventCaptor = checkNotNull(threadEventCaptor, "threadEventsCaptor");
@@ -40,13 +49,26 @@ class CapturingRepositorySync implements RepositorySync
 
     private void storeEvents()
     {
-        threadEventCaptor.processEach(SyncEvent.class, new ThreadEventsCaptor.Closure<SyncEvent>()
+        for (Class eventType: eventsToCapture)
+        {
+            storeEventsOfType(eventType);
+        }
+    }
+
+    private void storeEventsOfType(Class eventType)
+    {
+        threadEventCaptor.processEach(eventType, new ThreadEventsCaptor.Closure<SyncEvent>()
         {
             @Override
             public void process(@Nonnull SyncEvent event)
             {
-                eventService.storeEvent(repository, event, scheduledSync);
+                storeEvent(event);
             }
         });
+    }
+
+    private void storeEvent(@Nonnull SyncEvent event)
+    {
+        eventService.storeEvent(repository, event, scheduledSync);
     }
 }

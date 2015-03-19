@@ -22,16 +22,19 @@ public class RepositorySyncHelper
 {
     private static RepositorySync NULL_REPO_SYNC = new NullRepositorySync();
 
-    private final ThreadEvents threadEvents;
     private final CarefulEventService eventService;
     private final EventsFeature eventsFeature;
+    private final ThreadEvents threadEvents;
 
     @Autowired
-    public RepositorySyncHelper(@Nonnull ThreadEvents threadEvents, @Nonnull CarefulEventService eventService, @Nonnull EventsFeature eventsFeature)
+    public RepositorySyncHelper(
+            @Nonnull CarefulEventService eventService,
+            @Nonnull EventsFeature eventsFeature,
+            @Nonnull ThreadEvents threadEvents)
     {
-        this.threadEvents = checkNotNull(threadEvents, "threadEvents");
         this.eventService = checkNotNull(eventService, "eventService");
         this.eventsFeature = checkNotNull(eventsFeature, "eventsFeature");
+        this.threadEvents = checkNotNull(threadEvents, "threadEvents");
     }
 
     /**
@@ -64,32 +67,37 @@ public class RepositorySyncHelper
             @Nullable Repository repository, 
             @Nonnull EnumSet<SynchronizationFlag> syncFlags)
     {
-        boolean isScheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
+        boolean scheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
         boolean isSoftSync = syncFlags.contains(SOFT_SYNC);
-        ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing(); // todo: remove side effect?
-        ImmutableSet<Class> eventsToCapture = emptySet();
+        ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing(); // todo: side effect?
+        ImmutableSet<Class> eventsToCapture;
         
-        if (!isSoftSync)
+        if (isSoftSync)
+        {
+            eventsToCapture = getEventsForSoftSync();
+        }
+        else
         {
             eventsToCapture = getEventsToTriggerDevSummaryReindex();
-
         }
-        
-        return new FilteringRepositorySync(
-                isScheduledSync, 
+
+        return new CapturingRepositorySync(
                 eventService, 
                 eventsToCapture, 
                 repository, 
+                scheduledSync,
                 threadEventsCaptor);
     }
-    
+
+    @Nonnull
+    private ImmutableSet<Class> getEventsForSoftSync()
+    {
+        return ImmutableSet.<Class>of(SyncEvent.class);
+    }
+
+    @Nonnull
     private ImmutableSet<Class> getEventsToTriggerDevSummaryReindex()
     {
         return ImmutableSet.<Class>of(DevSummaryChangedEvent.class);
-    }
-    
-    private ImmutableSet<Class> emptySet()
-    {
-        return ImmutableSet.of();
     }
 }

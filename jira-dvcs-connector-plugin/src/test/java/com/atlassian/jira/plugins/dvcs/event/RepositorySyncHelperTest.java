@@ -10,18 +10,24 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
+import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
 public class RepositorySyncHelperTest
 {
+    private final SyncEvent syncEvent = new TestEvent();
+    private final DevSummaryChangedEvent devSummaryChangedEvent = newDevSummaryChangedEvent();
+
     ThreadEvents threadEvents;
 
     @Mock
@@ -32,7 +38,7 @@ public class RepositorySyncHelperTest
 
     @Mock
     EventsFeature eventsFeature;
-
+    
     RepositorySyncHelper repoSyncHelper;
 
     @BeforeMethod
@@ -42,64 +48,129 @@ public class RepositorySyncHelperTest
         when(eventsFeature.isEnabled()).thenReturn(true);
 
         threadEvents = new ThreadEvents();
-        repoSyncHelper = new RepositorySyncHelper(threadEvents, eventService, eventsFeature);
+        repoSyncHelper = new RepositorySyncHelper(eventService, eventsFeature, threadEvents);
     }
 
     @Test
     public void finishingSyncShouldStopCapturingEvents() throws Exception
     {
+        // setup
         threadEvents = mock(ThreadEvents.class);
-        repoSyncHelper = new RepositorySyncHelper(threadEvents, eventService, eventsFeature);
-
+        repoSyncHelper = new RepositorySyncHelper(eventService, eventsFeature, threadEvents);
+        
         final ThreadEventsCaptor captor = mock(ThreadEventsCaptor.class);
         when(threadEvents.startCapturing()).thenReturn(captor);
 
+        // execute
         repoSyncHelper.startSync(repository, EnumSet.of(SOFT_SYNC)).finish();
+        
+        // check
         verify(captor).stopCapturing();
     }
 
     @Test
     public void returnedSyncDoesNotCaptureWhenRepositoryIsNull() throws Exception
     {
+        // setup
         RepositorySync sync = repoSyncHelper.startSync(null, EnumSet.of(SOFT_SYNC));
-        threadEvents.broadcast(new Object());
+        broadcastEvents();
 
+        // execute
         sync.finish();
+        
+        // check
         verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
     }
 
     @Test
-    public void returnedSyncDoesNotCaptureDuringNonSoftSync() throws Exception
+    public void returnedSyncOnlyCapturesDevSummaryChangedEventsDuringNonSoftSync() throws Exception
     {
+        // setup
         RepositorySync sync = repoSyncHelper.startSync(repository, SynchronizationFlag.NO_FLAGS);
-        threadEvents.broadcast(new Object());
+        broadcastEvents();
 
+        // execute
         sync.finish();
-        verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
+        
+        // check
+        verify(eventService).storeEvent(repository, devSummaryChangedEvent, true);
+        verify(eventService, times(1)).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
     }
 
     @Test
-    public void returnedSyncCapturesEventsWhenSoftSyncIsTrue() throws Exception
+    public void returnedSyncCapturesAllSyncEventsWhenSoftSyncIsTrue() throws Exception
     {
-        final SyncEvent event = new TestEvent();
-
+        // setup
         RepositorySync sync = repoSyncHelper.startSync(repository, EnumSet.of(SOFT_SYNC));
-        threadEvents.broadcast(event);
+        broadcastEvents();
 
+        // execute
         sync.finish();
-        verify(eventService).storeEvent(repository, event, true);
+
+        // check
+        verify(eventService).storeEvent(repository, syncEvent, true);
+        verify(eventService).storeEvent(repository, devSummaryChangedEvent, true);
+        verify(eventService, times(2)).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
     }
 
     @Test
     public void returnedSyncDoesNotCaptureWhenEventsFeatureIsDisabled() throws Exception
     {
+        // setup
         when(eventsFeature.isEnabled()).thenReturn(false);
-        final SyncEvent event = new TestEvent();
 
         RepositorySync sync = repoSyncHelper.startSync(repository, EnumSet.of(SOFT_SYNC));
-        threadEvents.broadcast(event);
+        broadcastEvents();
 
+        // execute
         sync.finish();
+
+        // check
         verify(eventService, never()).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
+    }
+
+    @Test
+    public void shouldTriggerScheduledSyncCaptureWhenWebhookFlagIsMissing() throws Exception
+    {
+        // setup
+        final boolean scheduledSync = true;
+
+        RepositorySync sync = repoSyncHelper.startSync(repository, SynchronizationFlag.NO_FLAGS);
+        broadcastEvents();
+
+        // execute
+        sync.finish();
+
+        // check
+        verify(eventService).storeEvent(repository, devSummaryChangedEvent, scheduledSync);
+        verify(eventService, times(1)).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
+    }
+
+    @Test
+    public void shouldNotTriggerScheduledSyncCaptureWhenWebhookFlagIsPresent() throws Exception
+    {
+        // setup
+        final boolean scheduledSync = false;
+
+        RepositorySync sync = repoSyncHelper.startSync(repository, EnumSet.of(WEBHOOK_SYNC));
+        broadcastEvents();
+
+        // execute
+        sync.finish();
+
+        // check
+        verify(eventService).storeEvent(repository, devSummaryChangedEvent, scheduledSync);
+        verify(eventService, times(1)).storeEvent(any(Repository.class), any(SyncEvent.class), anyBoolean());
+    }
+
+    private void broadcastEvents()
+    {
+        threadEvents.broadcast(syncEvent);
+        threadEvents.broadcast(devSummaryChangedEvent);
+    }
+
+    private DevSummaryChangedEvent newDevSummaryChangedEvent()
+    {
+        return new DevSummaryChangedEvent(0, "dvcsType", new HashSet<String>());
     }
 }
