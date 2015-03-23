@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Helper class for capturing/storing events produced during repository synchronisation.
@@ -27,6 +28,8 @@ class CapturingRepositorySync implements RepositorySync
             boolean scheduledSync,
             @Nonnull ThreadEventsCaptor threadEventCaptor)
     {
+        checkCaptureEventsAreOnlySyncEvents(eventsToCapture);
+        
         this.eventService = checkNotNull(eventService, "eventService");
         this.eventsToCapture = checkNotNull(ImmutableSet.copyOf(eventsToCapture), "eventsToCapture");
         this.repository = checkNotNull(repository, "repository");
@@ -45,6 +48,14 @@ class CapturingRepositorySync implements RepositorySync
         {
             // do this in a finally block to ensure we stop capturing on this thread
             threadEventCaptor.stopCapturing();
+        }
+    }
+    
+    private void checkCaptureEventsAreOnlySyncEvents(final Collection<Class> eventsToCapture) 
+    {
+        for (Class eventClass : eventsToCapture)
+        {
+            checkState(SyncEvent.class.isInstance(eventClass));
         }
     }
 
