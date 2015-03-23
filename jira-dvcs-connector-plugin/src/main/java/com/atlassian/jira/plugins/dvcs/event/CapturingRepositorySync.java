@@ -20,11 +20,11 @@ class CapturingRepositorySync implements RepositorySync
     private final ThreadEventsCaptor threadEventCaptor;
 
     CapturingRepositorySync(
-             @Nonnull CarefulEventService eventService,
-             @Nonnull Collection<Class> eventsToCapture,
+            @Nonnull CarefulEventService eventService,
+            @Nonnull Collection<Class> eventsToCapture,
             @Nullable Repository repository,
-              boolean scheduledSync,
-             @Nonnull ThreadEventsCaptor threadEventCaptor)
+            boolean scheduledSync,
+            @Nonnull ThreadEventsCaptor threadEventCaptor)
     {
         this.eventService = checkNotNull(eventService, "eventService");
         this.eventsToCapture = checkNotNull(eventsToCapture, "eventsToCapture");
