@@ -9,8 +9,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
@@ -38,7 +38,7 @@ public class RepositorySyncHelperTest
 
     @Mock
     EventsFeature eventsFeature;
-    
+
     RepositorySyncHelper repoSyncHelper;
 
     @BeforeMethod
@@ -171,6 +171,6 @@ public class RepositorySyncHelperTest
 
     private DevSummaryChangedEvent newDevSummaryChangedEvent()
     {
-        return new DevSummaryChangedEvent(0, "dvcsType", new HashSet<String>());
+        return new DevSummaryChangedEvent(0, "dvcsType", Collections.<String>emptySet());
     }
 }

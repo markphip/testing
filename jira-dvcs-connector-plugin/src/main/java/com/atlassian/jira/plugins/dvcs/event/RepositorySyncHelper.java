@@ -20,8 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Component
 public class RepositorySyncHelper
 {
-    private static RepositorySync NULL_REPO_SYNC = new NullRepositorySync();
-
+    private static final RepositorySync NULL_REPO_SYNC = new NullRepositorySync();
+    
+    private static final ImmutableSet<Class> EVENTS_FOR_SOFT_SYNC = ImmutableSet.<Class>of(SyncEvent.class);
+    private static final ImmutableSet<Class> EVENTS_TO_TRIGGER_DEV_SUMMARY_REINDEX = 
+            ImmutableSet.<Class>of(DevSummaryChangedEvent.class);
+    
     private final CarefulEventService eventService;
     private final EventsFeature eventsFeature;
     private final ThreadEvents threadEvents;
@@ -67,18 +71,18 @@ public class RepositorySyncHelper
             @Nullable Repository repository, 
             @Nonnull EnumSet<SynchronizationFlag> syncFlags)
     {
-        boolean scheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
-        boolean isSoftSync = syncFlags.contains(SOFT_SYNC);
-        ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing(); // todo: side effect?
-        ImmutableSet<Class> eventsToCapture;
+        final boolean scheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
+        final boolean isSoftSync = syncFlags.contains(SOFT_SYNC);
+        final ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing();
+        final ImmutableSet<Class> eventsToCapture;
         
         if (isSoftSync)
         {
-            eventsToCapture = getEventsForSoftSync();
+            eventsToCapture = EVENTS_FOR_SOFT_SYNC;
         }
         else
         {
-            eventsToCapture = getEventsToTriggerDevSummaryReindex();
+            eventsToCapture = EVENTS_TO_TRIGGER_DEV_SUMMARY_REINDEX;
         }
 
         return new CapturingRepositorySync(
@@ -87,17 +91,5 @@ public class RepositorySyncHelper
                 repository, 
                 scheduledSync,
                 threadEventsCaptor);
-    }
-
-    @Nonnull
-    private ImmutableSet<Class> getEventsForSoftSync()
-    {
-        return ImmutableSet.<Class>of(SyncEvent.class);
-    }
-
-    @Nonnull
-    private ImmutableSet<Class> getEventsToTriggerDevSummaryReindex()
-    {
-        return ImmutableSet.<Class>of(DevSummaryChangedEvent.class);
     }
 }

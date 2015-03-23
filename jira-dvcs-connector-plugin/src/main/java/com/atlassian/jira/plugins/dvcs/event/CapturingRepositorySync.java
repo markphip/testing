@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.atlassian.jira.plugins.dvcs.model.Repository;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;
 import javax.annotation.Nonnull;
@@ -27,7 +28,7 @@ class CapturingRepositorySync implements RepositorySync
             @Nonnull ThreadEventsCaptor threadEventCaptor)
     {
         this.eventService = checkNotNull(eventService, "eventService");
-        this.eventsToCapture = checkNotNull(eventsToCapture, "eventsToCapture");
+        this.eventsToCapture = checkNotNull(ImmutableSet.copyOf(eventsToCapture), "eventsToCapture");
         this.repository = checkNotNull(repository, "repository");
         this.scheduledSync = scheduledSync;
         this.threadEventCaptor = checkNotNull(threadEventCaptor, "threadEventsCaptor");
@@ -62,13 +63,8 @@ class CapturingRepositorySync implements RepositorySync
             @Override
             public void process(@Nonnull SyncEvent event)
             {
-                storeEvent(event);
+                eventService.storeEvent(repository, event, scheduledSync);
             }
         });
-    }
-
-    private void storeEvent(@Nonnull SyncEvent event)
-    {
-        eventService.storeEvent(repository, event, scheduledSync);
     }
 }
