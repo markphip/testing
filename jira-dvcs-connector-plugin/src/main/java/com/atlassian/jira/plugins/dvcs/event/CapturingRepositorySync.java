@@ -56,8 +56,9 @@ class CapturingRepositorySync implements RepositorySync
         }
     }
 
-    private void storeEventsOfType(Class eventType)
+    private void storeEventsOfType(@Nonnull final Class eventType)
     {
+        checkNotNull(eventType);
         threadEventCaptor.processEach(eventType, new ThreadEventsCaptor.Closure<SyncEvent>()
         {
             @Override
