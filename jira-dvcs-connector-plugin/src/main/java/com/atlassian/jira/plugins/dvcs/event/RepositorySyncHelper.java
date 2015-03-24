@@ -22,9 +22,10 @@ public class RepositorySyncHelper
 {
     private static final RepositorySync NULL_REPO_SYNC = new NullRepositorySync();
     
-    private static final ImmutableSet<Class> EVENTS_FOR_SOFT_SYNC = ImmutableSet.<Class>of(SyncEvent.class);
-    private static final ImmutableSet<Class> EVENTS_TO_TRIGGER_DEV_SUMMARY_REINDEX = 
-            ImmutableSet.<Class>of(DevSummaryChangedEvent.class);
+    private static final ImmutableSet<Class<? extends SyncEvent>> EVENTS_FOR_SOFT_SYNC = 
+            ImmutableSet.<Class<? extends SyncEvent>>of(SyncEvent.class);
+    private static final ImmutableSet<Class<? extends SyncEvent>> EVENTS_TO_TRIGGER_DEV_SUMMARY_REINDEX =
+            ImmutableSet.<Class<? extends SyncEvent>>of(DevSummaryChangedEvent.class);
     
     private final CarefulEventService eventService;
     private final EventsFeature eventsFeature;
@@ -74,7 +75,7 @@ public class RepositorySyncHelper
         final boolean scheduledSync = !syncFlags.contains(WEBHOOK_SYNC);
         final boolean isSoftSync = syncFlags.contains(SOFT_SYNC);
         final ThreadEventsCaptor threadEventsCaptor = threadEvents.startCapturing();
-        final ImmutableSet<Class> eventsToCapture;
+        final ImmutableSet<Class<? extends SyncEvent>> eventsToCapture;
         
         if (isSoftSync)
         {

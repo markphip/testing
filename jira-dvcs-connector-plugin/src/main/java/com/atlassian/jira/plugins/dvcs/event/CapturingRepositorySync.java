@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Helper class for capturing/storing events produced during repository synchronisation.
@@ -16,20 +15,18 @@ import static com.google.common.base.Preconditions.checkState;
 class CapturingRepositorySync implements RepositorySync
 {
     private final CarefulEventService eventService;
-    private final Collection<Class> eventsToCapture;
+    private final Collection<Class<? extends SyncEvent>> eventsToCapture;
     private final Repository repository;
     private final boolean scheduledSync;
     private final ThreadEventsCaptor threadEventCaptor;
 
     CapturingRepositorySync(
             @Nonnull CarefulEventService eventService,
-            @Nonnull Collection<Class> eventsToCapture,
+            @Nonnull Collection<Class<? extends SyncEvent>> eventsToCapture,
             @Nullable Repository repository,
             boolean scheduledSync,
             @Nonnull ThreadEventsCaptor threadEventCaptor)
     {
-        checkCaptureEventsAreOnlySyncEvents(eventsToCapture);
-        
         this.eventService = checkNotNull(eventService, "eventService");
         this.eventsToCapture = checkNotNull(ImmutableSet.copyOf(eventsToCapture), "eventsToCapture");
         this.repository = checkNotNull(repository, "repository");
@@ -50,30 +47,22 @@ class CapturingRepositorySync implements RepositorySync
             threadEventCaptor.stopCapturing();
         }
     }
-    
-    private void checkCaptureEventsAreOnlySyncEvents(final Collection<Class> eventsToCapture) 
-    {
-        for (Class eventClass : eventsToCapture)
-        {
-            checkState(SyncEvent.class.isInstance(eventClass));
-        }
-    }
 
     private void storeEvents()
     {
-        for (Class eventType: eventsToCapture)
+        for (Class<? extends SyncEvent> eventType: eventsToCapture)
         {
             storeEventsOfType(eventType);
         }
     }
 
-    private void storeEventsOfType(@Nonnull final Class eventType)
+    private void storeEventsOfType(@Nonnull final Class<? extends SyncEvent> eventType)
     {
         checkNotNull(eventType);
         threadEventCaptor.processEach(eventType, new ThreadEventsCaptor.Closure<SyncEvent>()
         {
             @Override
-            public void process(@Nonnull SyncEvent event)
+            public void process(@Nonnull final SyncEvent event)
             {
                 eventService.storeEvent(repository, event, scheduledSync);
             }
