@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * TODO implement sec. checks so int. account can not be i.e. deleted
+ *
  *
  * BitbucketAccountsConfigService
  *

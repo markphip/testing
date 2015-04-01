@@ -40,7 +40,10 @@ import com.google.gson.reflect.TypeToken;
  */
 public class BitbucketRemoteClient
 {
-    public static final String BITBUCKET_URL = "https://bitbucket.org";
+
+    public final static String BITBUCKET_TEST_URL_CONFIGURATION = "bitbucket_testing_url";
+    public final static String DEFAULT_BITBUCKET_URL = "https://bitbucket.org";
+    public final static String BITBUCKET_URL = System.getProperty(BITBUCKET_TEST_URL_CONFIGURATION, DEFAULT_BITBUCKET_URL);
     public static final String TEST_USER_AGENT = "jirabitbucketconnectortest";
 
     private AccountRemoteRestpoint accountRemoteRestpoint;
