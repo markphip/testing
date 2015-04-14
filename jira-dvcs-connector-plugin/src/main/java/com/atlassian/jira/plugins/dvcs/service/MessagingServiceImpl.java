@@ -105,6 +105,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Injected {@link MessageConsumer}-s dependency.
      */
+    @SuppressWarnings ("MismatchedReadAndWriteOfArray")
     @Resource
     private MessageConsumer<?>[] consumers;
 
@@ -117,12 +118,14 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Injected {@link MessagePayloadSerializer}-s dependency.
      */
+    @SuppressWarnings ("MismatchedReadAndWriteOfArray")
     @Resource
     private MessagePayloadSerializer<?>[] payloadSerializers;
 
     /**
      * Injected {@link MessageConsumer}-s dependency.
      */
+    @SuppressWarnings ("MismatchedReadAndWriteOfArray")
     @Resource
     private MessageConsumer<?>[] messageConsumers;
 
@@ -811,8 +814,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     /**
      * Ends the progress if there are no more messages currently queued for the given repository.
      *
-     * @param repository
-     * @param progress
+     * @param repository the repo we are syncing
+     * @param progress the progress of the sync
      * @return a boolean indicating whether sync progress was ended
      */
     private boolean endProgress(final Repository repository, Progress progress)
@@ -835,6 +838,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         flags.add(SynchronizationFlag.SOFT_SYNC);
                         try
                         {
+                            log.warn("Running again as a soft sync");
                             synchronizer.doSync(repository, flags);
                         }
                         catch (SourceControlException.SynchronizationDisabled e)
@@ -884,8 +888,8 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
      * not contain any errors. The returned Optional will contain the smart commits promise if smart commits processing
      * was attempted.
      *
-     * @param repository
-     * @param progress
+     * @param repository the repo we are syncing
+     * @param progress the progress of the sync
      * @return an Promise that completes when smart commits processing is done
      */
     @Nonnull
@@ -942,6 +946,7 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
     private static class MessageAddressLoader<P extends HasProgress> implements CacheLoader<IdKey<P>, MessageAddress<P>>
     {
         @Override
+        @Nonnull
         public MessageAddress<P> load(@Nonnull final IdKey<P> key)
         {
             log.debug("idToMessageAddress loading new item for key id: {} payloadType: {} ", key.id, key.payloadType);

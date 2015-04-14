@@ -229,7 +229,7 @@ function createAddOrganizationDialog(action) {
     });
 
     // First page
-    dialog.addHeader("Add New Account");
+    dialog.addHeader(AJS.I18n.getText("com.atlassian.jira.plugins.dvcs.account.add.new"));
 
     dialog.addPanel("", dvcs.connector.plugin.soy.addOrganizationDialog({
         isOnDemandLicense:dvcs.connector.plugin.onDemandLicense,

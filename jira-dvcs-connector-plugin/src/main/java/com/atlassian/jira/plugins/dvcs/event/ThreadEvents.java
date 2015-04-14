@@ -1,12 +1,17 @@
 package com.atlassian.jira.plugins.dvcs.event;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -69,11 +74,17 @@ public class ThreadEvents
 
     private final class ThreadEventsCaptorImpl implements ThreadEventsCaptor
     {
+        private static final int THRESHOLD = 30;
+        private int index = 0;
+        
         /**
          * Where we hold captured events until they are published or discarded.
          */
-        @Nonnull
         private List<Object> capturedEvents = Lists.newArrayList();
+        
+        private List<DevSummaryChangedEvent> devSummaryChangedEvents = Lists.newArrayList();
+        
+        private Set<String> devSummaryChangedEventsKeysSeen = Sets.newHashSet();
 
         /**
          * Creates a new ThreadEventsCapture and sets it as the active capture in the enclosing ThreadEvents.
@@ -103,6 +114,9 @@ public class ThreadEvents
             checkNotNull(eventClass, "eventClass");
             checkNotNull(closure, "closure");
 
+            logger.warn(devSummaryChangedEvents.toString());
+            capturedEvents.addAll(devSummaryChangedEvents);
+            clearDevSummaryChangedEvents();
             final List<?> all = ImmutableList.copyOf(capturedEvents);
             for (Object object : all)
             {
@@ -119,7 +133,14 @@ public class ThreadEvents
                 }
             }
 
-            logger.debug("Processed {} events of type {} with {}", new Object[] { all.size() - capturedEvents.size(), eventClass, closure });
+            logger.warn("Processed {} events of type {} with {}", new Object[] { all.size() - capturedEvents.size(), eventClass, closure });
+        }
+
+        private void clearDevSummaryChangedEvents()
+        {
+            devSummaryChangedEvents.clear();
+            devSummaryChangedEventsKeysSeen.clear();
+            index = 0;
         }
 
         /**
@@ -130,7 +151,78 @@ public class ThreadEvents
         void capture(final Object event)
         {
             logger.debug("Capturing event: {}", event);
-            capturedEvents.add(event);
+            
+            if (event instanceof DevSummaryChangedEvent)
+            {
+                addNewDevSummaryChangedEvent((DevSummaryChangedEvent) event);
+            }
+            else
+            {
+                capturedEvents.add(event);
+            }
+        }
+
+        private void addNewDevSummaryChangedEvent(@Nonnull final DevSummaryChangedEvent devSummaryChangedEvent)
+        {
+            final Set<String> unseenKeys = extractUnseenKeys(devSummaryChangedEvent.getIssueKeys());
+            
+            if (devSummaryChangedEvents.size() > 0 && roomToAddKeysToExistingEvent(unseenKeys.size()))
+            {
+                addUnseenIssueKeysToExistingEvent(unseenKeys);
+            }
+            else
+            {
+                addNewEventForUnseenIssueKeys(devSummaryChangedEvent, unseenKeys);
+            }
+            
+            devSummaryChangedEventsKeysSeen.addAll(unseenKeys);
+        }
+
+        private void addUnseenIssueKeysToExistingEvent(@Nonnull final Set<String> unseenKeys)
+        {
+            final DevSummaryChangedEvent existingEvent = devSummaryChangedEvents.get(index);
+            final Set<String> combinedKeys = Sets.newHashSet();
+            combinedKeys.addAll(unseenKeys);
+            combinedKeys.addAll(existingEvent.getIssueKeys());
+            devSummaryChangedEvents.set(index, eventCopyWithNewIssueKeys(existingEvent, combinedKeys));
+        }
+
+        private void addNewEventForUnseenIssueKeys(
+                @Nonnull final DevSummaryChangedEvent devSummaryChangedEvent,
+                @Nonnull final Set<String> unseenKeys)
+        {
+            final DevSummaryChangedEvent newEvent = eventCopyWithNewIssueKeys(devSummaryChangedEvent, unseenKeys);
+            devSummaryChangedEvents.add(newEvent);
+            if (index < devSummaryChangedEvents.size() - 1)
+            {
+                index += 1;
+            }
+        }
+
+        private boolean roomToAddKeysToExistingEvent(final int numKeysUnseen)
+        {
+            final int numKeysExisting = devSummaryChangedEvents.get(index).getIssueKeys().size();
+            return (numKeysExisting + numKeysUnseen) < THRESHOLD;
+        }
+
+        @Nonnull
+        private DevSummaryChangedEvent eventCopyWithNewIssueKeys(
+                @Nonnull final DevSummaryChangedEvent devSummaryChangedEvent,
+                @Nonnull final Set<String> newIssueKeys)
+        {
+            return new DevSummaryChangedEvent(
+                    devSummaryChangedEvent.getRepositoryId(),
+                    devSummaryChangedEvent.getDvcsType(),
+                    ImmutableSet.copyOf(newIssueKeys),
+                    new Date(devSummaryChangedEvent.getDate().getTime()));
+        }
+
+        @Nonnull
+        private Set<String> extractUnseenKeys(@Nonnull final Set<String> issueKeys) 
+        {
+            final Set<String> unseenKeys = new HashSet<String>(issueKeys);
+            unseenKeys.removeAll(devSummaryChangedEventsKeysSeen);
+            return unseenKeys;
         }
     }
 }

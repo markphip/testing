@@ -66,6 +66,7 @@ public abstract class MessageConsumerSupport<P extends HasProgress> implements M
             }
 
             Set<String> issues = linkedIssueService.getIssueKeys(changeset.getMessage());
+            LOGGER.warn("Processing cset with {} issues: {}", issues.size(), issues.toString());
             markChangesetForSmartCommit(repo, changeset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(changeset, issues);

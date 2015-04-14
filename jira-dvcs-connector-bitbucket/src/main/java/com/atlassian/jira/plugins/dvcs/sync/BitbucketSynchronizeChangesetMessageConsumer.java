@@ -17,6 +17,8 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.message.BitbucketSynchroniz
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.transformers.ChangesetTransformer;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -34,6 +36,7 @@ import javax.annotation.Resource;
 public class BitbucketSynchronizeChangesetMessageConsumer
         implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
+    private static final Logger log = LoggerFactory.getLogger(BitbucketSynchronizeChangesetMessageConsumer.class);
 
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
@@ -77,6 +80,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer
 
         for (BitbucketNewChangeset ncset : csets)
         {
+
             Repository repo = payload.getRepository();
             Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
             if (fromDB != null)
@@ -87,6 +91,8 @@ public class BitbucketSynchronizeChangesetMessageConsumer
             Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
+            
+            log.warn("Processing cset with {} issues on branch {}: {}", issues.size(), cset.getBranch(), issues.toString());
 
             MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
 

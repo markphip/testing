@@ -28,18 +28,12 @@ public class RepositorySyncHelperTest
     private final SyncEvent syncEvent = new TestEvent();
     private final DevSummaryChangedEvent devSummaryChangedEvent = newDevSummaryChangedEvent();
 
-    ThreadEvents threadEvents;
-
-    @Mock
-    CarefulEventService eventService;
-
-    @Mock
-    Repository repository;
-
-    @Mock
-    EventsFeature eventsFeature;
+    @Mock CarefulEventService eventService;
+    @Mock EventsFeature eventsFeature;
+    @Mock Repository repository;
 
     RepositorySyncHelper repoSyncHelper;
+    ThreadEvents threadEvents;
 
     @BeforeMethod
     public void setUp() throws Exception

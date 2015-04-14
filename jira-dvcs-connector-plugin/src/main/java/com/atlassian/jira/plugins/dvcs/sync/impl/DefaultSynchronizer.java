@@ -115,7 +115,8 @@ public class DefaultSynchronizer implements Synchronizer
     {
         DvcsCommunicator communicator = communicatorProvider.getCommunicator(repo.getDvcsType());
 
-        // We take a copy of the flags, so we can modify them as we want for this sync without others who reuse the flags being affected.
+        // We take a copy of the flags, so we can modify them as we want for this sync without others who reuse the
+        // flags being affected.
         EnumSet<SynchronizationFlag> flags = EnumSet.copyOf(flagsOrig);
 
         if (communicator.isSyncDisabled(repo, flags))

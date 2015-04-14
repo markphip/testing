@@ -56,7 +56,7 @@
 
   <body>
 
-         <h3>DVCS Accounts</h3>
+         <h3>$i18n.getText("com.atlassian.jira.plugins.dvcs.accounts")</h3>
 
         #if ($action.isOnDemandLicense())
             <p>Connect your <a href="https://confluence.atlassian.com/display/Cloud/Linking+a+bitbucket+or+GitHub+repository+with+JIRA" target="_blank">Bitbucket and GitHub accounts to JIRA Cloud</a> and link every commit with a bug or development task. Once configured, JIRA will query the repository searching commits for issue keys.</p>
