@@ -6,7 +6,6 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,9 +130,6 @@ public class EventServiceImpl implements EventService
     private void doDispatchEvents(final DispatchRequest dispatch)
     {
         final EventLimiter limiter = eventLimiterFactory.create();
-        final Stopwatch stopwatch = new Stopwatch();
-        
-        stopwatch.start();
         syncEventDao.streamAllByRepoId(dispatch.repoId(), new StreamCallback<SyncEventMapping>()
         {
             int dispatched = 0;
@@ -175,8 +171,6 @@ public class EventServiceImpl implements EventService
                 }
             }
         });
-        stopwatch.stop();
-        logger.warn("Dispatching events for repo {} took {} millis", dispatch.toString(), stopwatch.elapsedMillis());
 
         int dropped = limiter.getLimitExceededCount();
         if (dropped > 0)

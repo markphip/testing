@@ -838,7 +838,6 @@ public class MessagingServiceImpl implements MessagingService, DisposableBean
                         flags.add(SynchronizationFlag.SOFT_SYNC);
                         try
                         {
-                            log.warn("Running again as a soft sync");
                             synchronizer.doSync(repository, flags);
                         }
                         catch (SourceControlException.SynchronizationDisabled e)

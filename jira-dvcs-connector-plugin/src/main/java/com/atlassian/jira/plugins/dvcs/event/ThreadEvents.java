@@ -114,7 +114,6 @@ public class ThreadEvents
             checkNotNull(eventClass, "eventClass");
             checkNotNull(closure, "closure");
 
-            logger.warn(devSummaryChangedEvents.toString());
             capturedEvents.addAll(devSummaryChangedEvents);
             clearDevSummaryChangedEvents();
             final List<?> all = ImmutableList.copyOf(capturedEvents);
@@ -133,7 +132,7 @@ public class ThreadEvents
                 }
             }
 
-            logger.warn("Processed {} events of type {} with {}", new Object[] { all.size() - capturedEvents.size(), eventClass, closure });
+            logger.debug("Processed {} events of type {} with {}", new Object[] { all.size() - capturedEvents.size(), eventClass, closure });
         }
 
         private void clearDevSummaryChangedEvents()
