@@ -86,7 +86,7 @@ public class BitbucketSynchronizeChangesetMessageConsumer
             Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
-            
+
             MessageConsumerSupport.markChangesetForSmartCommit(repo, cset, softSync && CollectionUtils.isNotEmpty(issues));
 
             changesetService.create(cset, issues);
