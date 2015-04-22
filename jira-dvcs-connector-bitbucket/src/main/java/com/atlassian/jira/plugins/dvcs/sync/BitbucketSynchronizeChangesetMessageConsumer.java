@@ -34,6 +34,7 @@ import javax.annotation.Resource;
 public class BitbucketSynchronizeChangesetMessageConsumer
         implements MessageConsumer<BitbucketSynchronizeChangesetMessage>
 {
+
     private static final String ID = BitbucketSynchronizeChangesetMessageConsumer.class.getCanonicalName();
     public static final String KEY = BitbucketSynchronizeChangesetMessage.class.getCanonicalName();
 
