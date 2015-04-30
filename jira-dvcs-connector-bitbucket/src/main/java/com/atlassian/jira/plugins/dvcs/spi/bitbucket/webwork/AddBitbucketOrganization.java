@@ -10,6 +10,7 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
 import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
@@ -38,9 +39,9 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
  */
 @Scanned
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
-{
+{;
     private static final long serialVersionUID = 4366205447417138381L;
-
+    private static String visibleForTesting = "visibleForTesting";
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
     public static final String EVENT_TYPE_BITBUCKET = "bitbucket";
@@ -83,9 +84,17 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
 
         storeLatestOAuth();
+        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) == null){
+            // then continue
+            return redirectUserToBitbucket();
+        }else{
+            //your in a test so we are going to just skip the oauthdance
+            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+           return doAddOrganization();
+        }
 
-        // then continue
-        return redirectUserToBitbucket();
+
     }
 
     private String redirectUserToBitbucket()
@@ -111,13 +120,26 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     OAuthService createOAuthScribeService()
     {
+//        if(url.equals(BitbucketRemoteClient.DEFAULT_BITBUCKET_URL)){
+//            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, BitbucketRemoteClient.DEFAULT_BITBUCKET_URL);
+//            url = BitbucketRemoteClient.BITBUCKET_URL;
+//        }
         // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
-        String redirectBackUrl = ap.getBaseUrl()
-                + "/secure/admin/AddOrganizationProgressAction!default.jspa?organization="
-                + organization + "&autoLinking=" + getAutoLinking()
-                + "&url=" + url + "&autoSmartCommits="
-                + getAutoSmartCommits() + "&atl_token=" + getXsrfToken() + "&t=1"
-                + getSourceAsUrlParam();
+        String redirectBackUrl = new StringBuilder()
+                .append(ap.getBaseUrl())
+                .append("/secure/admin/AddOrganizationProgressAction!default.jspa?organization=")
+                .append(organization)
+                .append("&autoLinking=")
+                .append(getAutoLinking())
+                .append("&url=")
+                .append(url)
+                .append("&autoSmartCommits=")
+                .append(getAutoSmartCommits())
+                .append("&atl_token=")
+                .append(getXsrfToken())
+                .append("&t=1")
+                .append(getSourceAsUrlParam())
+                .toString();
 
         return createBitbucketOAuthScribeService(redirectBackUrl);
     }
@@ -205,6 +227,16 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
+//        if(url.equals(BitbucketRemoteClient.DEFAULT_BITBUCKET_URL)){
+//            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, BitbucketRemoteClient.DEFAULT_BITBUCKET_URL);
+//            url = BitbucketRemoteClient.BITBUCKET_URL;
+//        }
+
+        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) != null){
+            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+        }
+
         if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
         {
             addErrorMessage("Invalid request, missing url or organization/account information.");

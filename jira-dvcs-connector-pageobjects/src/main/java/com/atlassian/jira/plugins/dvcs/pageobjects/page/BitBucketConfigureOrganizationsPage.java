@@ -64,6 +64,35 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
         return this;
     }
 
+    public BitBucketConfigureOrganizationsPage addCtkServerOrganizationSuccessfully(String organizationAccount, OAuthCredentials oAuthCredentials, boolean autoSync, String username, String password)
+    {
+        linkRepositoryButton.click();
+        waitFormBecomeVisible();
+
+        dvcsTypeSelect.select(dvcsTypeSelect.getAllOptions().get(0));
+
+        if (!autoSync)
+        {
+            autoLinkNewRepos.click();
+        }
+
+        fillInDetailsAndSubmit(organizationAccount, oAuthCredentials);
+
+        if (isFormOpen().by(5, SECONDS))
+        {
+            // if form still open, assume it hits the weird clear text error, where some or all fields are cleared after filled in
+            //  just retry the filling and submit again.
+            fillInDetailsAndSubmit(organizationAccount, oAuthCredentials);
+        }
+
+        if (autoSync)
+        {
+            JiraPageUtils.checkSyncProcessSuccess(pageBinder);
+        }
+
+        return this;
+    }
+
     private void fillInDetailsAndSubmit(final String organizationAccount, final OAuthCredentials oAuthCredentials)
     {
         organization.clear().type(organizationAccount);
