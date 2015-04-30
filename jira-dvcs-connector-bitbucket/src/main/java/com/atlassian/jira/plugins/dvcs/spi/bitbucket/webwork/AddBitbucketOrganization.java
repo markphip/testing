@@ -39,9 +39,8 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
  */
 @Scanned
 public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
-{;
+{
     private static final long serialVersionUID = 4366205447417138381L;
-    private static String visibleForTesting = "visibleForTesting";
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
     public static final String EVENT_TYPE_BITBUCKET = "bitbucket";
@@ -51,17 +50,13 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private String organization;
     private String adminUsername;
     private String adminPassword;
-
     private String oauthBbClientId;
     private String oauthBbSecret;
+    private String accessToken = "";
 
     private final OrganizationService organizationService;
     private final HttpClientProvider httpClientProvider;
-
     private final com.atlassian.sal.api.ApplicationProperties ap;
-
-    private String accessToken = "";
-
     private final OAuthStore oAuthStore;
 
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
@@ -120,10 +115,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     OAuthService createOAuthScribeService()
     {
-//        if(url.equals(BitbucketRemoteClient.DEFAULT_BITBUCKET_URL)){
-//            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, BitbucketRemoteClient.DEFAULT_BITBUCKET_URL);
-//            url = BitbucketRemoteClient.BITBUCKET_URL;
-//        }
         // param "t" is holding information where to redirect from "wainting screen" (AddBitbucketOrganization, AddGithubOrganization ...)
         String redirectBackUrl = new StringBuilder()
                 .append(ap.getBaseUrl())
@@ -227,14 +218,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-//        if(url.equals(BitbucketRemoteClient.DEFAULT_BITBUCKET_URL)){
-//            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, BitbucketRemoteClient.DEFAULT_BITBUCKET_URL);
-//            url = BitbucketRemoteClient.BITBUCKET_URL;
-//        }
-
         if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) != null){
-            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
-            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+            setUrlAndKeyForCtkTesting();
         }
 
         if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
@@ -269,6 +254,11 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         {
             triggerAddFailedEvent(FAILED_REASON_VALIDATION);
         }
+    }
+
+    private void setUrlAndKeyForCtkTesting(){
+        url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+        accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
     }
 
     public String getAdminPassword()
