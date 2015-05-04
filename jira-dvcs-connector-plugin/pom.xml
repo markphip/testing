@@ -353,6 +353,10 @@
                             <groupId>com.atlassian.pocketknife</groupId>
                             <artifactId>atlassian-pocketknife-querydsl</artifactId>
                         </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.compat</groupId>
+                            <artifactId>jira-cross-compatibility-lib-bridge-factory</artifactId>
+                        </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
                 </configuration>
@@ -442,6 +446,7 @@
                         <Import-Package>
                             com.atlassian.jira.plugin.webfragment.conditions,
                             com.atlassian.activeobjects.external,
+                            com.atlassian.jira.software.api.conditions,
                             org.springframework.osgi.*;resolution:="optional",
                             org.eclipse.gemini.blueprint.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
