@@ -1,8 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
 import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
+import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
+import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -14,8 +16,11 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import com.sun.jersey.spi.container.ResourceFilter;
+import jdk.nashorn.internal.objects.Global;
 
 import javax.ws.rs.ext.Provider;
+
+import static com.atlassian.jira.permission.GlobalPermissionKey.ADMINISTER;
 
 /**
  * <p>This is a Jersey resource filter that, if the resource is marked by {@link AdminOnly} annotation,
@@ -28,13 +33,14 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
 {
     private final AbstractMethod abstractMethod;
     private final JiraAuthenticationContext authenticationContext;
-    private final PermissionManager permissionManager;
+    private final GlobalPermissionManager globalPermissionManager;
 
-    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext, PermissionManager permissionManager)
+    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext,
+            GlobalPermissionManager permissionManager)
     {
         this.abstractMethod = Preconditions.checkNotNull(abstractMethod);
         this.authenticationContext = Preconditions.checkNotNull(authenticationContext);
-        this.permissionManager = Preconditions.checkNotNull(permissionManager);
+        this.globalPermissionManager = Preconditions.checkNotNull(permissionManager);
     }
 
     public ContainerRequestFilter getRequestFilter()
@@ -72,6 +78,6 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
 
     private boolean isAdmin(ApplicationUser user)
     {
-        return permissionManager.hasPermission(Permissions.ADMINISTER, user);
+        return globalPermissionManager.hasPermission(ADMINISTER, user);
     }
 }

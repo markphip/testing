@@ -2,8 +2,10 @@ package com.atlassian.jira.plugins.dvcs.rest;
 
 import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
+import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.Permissions;
@@ -24,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.atlassian.jira.permission.GlobalPermissionKey.SYSTEM_ADMIN;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
@@ -35,15 +38,17 @@ public class DevSummaryChangedEventResource
 {
     private final DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
     private final FeatureManager featureManager;
-    private final PermissionManager permissionManager;
+    private final GlobalPermissionManager globalPermissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
-    public DevSummaryChangedEventResource(@ComponentImport final FeatureManager featureManager,
-            final PermissionManager permissionManager, final JiraAuthenticationContext authenticationContext,
+    public DevSummaryChangedEventResource(
+            @ComponentImport final FeatureManager featureManager,
+            final GlobalPermissionManager globalPermissionManager,
+            final JiraAuthenticationContext authenticationContext,
             final DevSummaryChangedEventServiceImpl devSummaryChangedEventService)
     {
         this.featureManager = checkNotNull(featureManager);
-        this.permissionManager = checkNotNull(permissionManager);
+        this.globalPermissionManager = checkNotNull(globalPermissionManager);
         this.authenticationContext = checkNotNull(authenticationContext);
         this.devSummaryChangedEventService = checkNotNull(devSummaryChangedEventService);
     }
@@ -53,7 +58,7 @@ public class DevSummaryChangedEventResource
     public Response startGeneration(@FormParam ("pageSize") @DefaultValue ("100") int pageSize)
     {
         ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
-        if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, user))
+        if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
         }
@@ -78,7 +83,7 @@ public class DevSummaryChangedEventResource
     public Response stopGeneration()
     {
         ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
-        if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, user))
+        if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
         }
@@ -92,7 +97,7 @@ public class DevSummaryChangedEventResource
     public Response generationStatus()
     {
         ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
-        if (!permissionManager.hasPermission(Permissions.SYSTEM_ADMIN, user))
+        if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
         }

@@ -4,8 +4,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
-import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
+import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.user.ApplicationUser;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -16,10 +15,10 @@ import org.testng.annotations.Test;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import static com.atlassian.jira.permission.GlobalPermissionKey.SYSTEM_ADMIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 
 public class DevSummaryChangedEventResourceTest
@@ -30,13 +29,16 @@ public class DevSummaryChangedEventResourceTest
     private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
 
     @Mock
-    private JiraAuthenticationContext authenticationContext;
+    private JiraAuthenticationContextBridge authenticationContext;
 
     @Mock
-    private PermissionManager permissionManager;
+    private GlobalPermissionManager globalPermissionManager;
 
     @Mock
     private FeatureManager featureManager;
+
+    @Mock
+    private UnifiedUser user;
 
     private DevSummaryChangedEventResource devSummaryChangedEventResource;
 
@@ -44,10 +46,11 @@ public class DevSummaryChangedEventResourceTest
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
-        devSummaryChangedEventResource = new DevSummaryChangedEventResource(featureManager, permissionManager,
+        devSummaryChangedEventResource = new DevSummaryChangedEventResource(featureManager, globalPermissionManager,
                 authenticationContext, devSummaryChangedEventService);
         ReflectionTestUtils.setField(devSummaryChangedEventResource, "devSummaryChangedEventService", devSummaryChangedEventService);
-        when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(true);
+        when(authenticationContext.getLoggedInUser()).thenReturn(user);
+        when(globalPermissionManager.hasPermission(SYSTEM_ADMIN, user)).thenReturn(true);
         when(featureManager.isOnDemand()).thenReturn(true);
     }
 
@@ -70,7 +73,7 @@ public class DevSummaryChangedEventResourceTest
     @Test
     public void testStartPrimingNonAdmin()
     {
-        when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
+        when(globalPermissionManager.hasPermission(SYSTEM_ADMIN, user)).thenReturn(false);
         Response response = devSummaryChangedEventResource.startGeneration(PAGE_SIZE);
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
@@ -94,7 +97,7 @@ public class DevSummaryChangedEventResourceTest
     @Test
     public void testStatusNonAdmin()
     {
-        when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
+        when(globalPermissionManager.hasPermission(SYSTEM_ADMIN, user)).thenReturn(false);
         Response response = devSummaryChangedEventResource.generationStatus();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }
@@ -110,7 +113,7 @@ public class DevSummaryChangedEventResourceTest
     @Test
     public void testStopNonAdmin()
     {
-        when(permissionManager.hasPermission(anyInt(), any(ApplicationUser.class))).thenReturn(false);
+        when(globalPermissionManager.hasPermission(SYSTEM_ADMIN, user)).thenReturn(false);
         Response response = devSummaryChangedEventResource.stopGeneration();
         assertThat(response.getStatus(), is(Status.UNAUTHORIZED.getStatusCode()));
     }

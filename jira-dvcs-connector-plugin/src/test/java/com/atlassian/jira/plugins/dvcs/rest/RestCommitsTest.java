@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
@@ -25,7 +24,6 @@ import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl;
 import com.atlassian.jira.project.MockProject;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
-import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.plugin.ProjectPermissionKey;
 import com.atlassian.jira.user.ApplicationUser;
@@ -96,16 +94,12 @@ public class RestCommitsTest
     private PermissionManager permissionManager;
 
     @Mock
-    private JiraAuthenticationContext jiraAuthenticationContext;
+    private JiraAuthenticationContextBridge jiraAuthenticationContext;
 
     private IssueAndProjectKeyManager issueAndProjectKeyManager;
 
     private int issueIdSequence;
     private int projectIdSequence;
-
-    private interface UnifiedUser extends User, ApplicationUser
-    {
-    }
 
     @Mock
     private UnifiedUser mockUser;
@@ -116,11 +110,14 @@ public class RestCommitsTest
         MockitoAnnotations.initMocks(this);
         when(mockUser.getName()).thenReturn(USER_NAME);
 
-        issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager, projectManager, permissionManager, jiraAuthenticationContext);
+        issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager,
+                projectManager, permissionManager, jiraAuthenticationContext);
 
         when(jiraAuthenticationContext.getLoggedInUser()).thenReturn(mockUser);
-        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(true);
-        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")), argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(false);
+        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")),
+                argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(true);
+        when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")),
+                argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(false);
 
         RepositoryBuilder repositoryBuilder = new RepositoryBuilder();
 
@@ -150,7 +147,8 @@ public class RestCommitsTest
         private HashMap<String, Boolean> issuePermission = new HashMap<String, Boolean>();
         private HashMap<Integer, Repository> repositories = new HashMap<Integer, Repository>();
 
-        public void addChangeset(int id, String issueKey, boolean merge, boolean hasPermission, int repositoryId, Integer... otherRepositoryIds)
+        public void addChangeset(int id, String issueKey, boolean merge, boolean hasPermission,
+                int repositoryId, Integer... otherRepositoryIds)
         {
             // setting data
             List<String> parents = new ArrayList<String>();
@@ -159,7 +157,9 @@ public class RestCommitsTest
             {
                 parents.add("ANOTHER_PARENT_OF_"+id);
             }
-            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id, "BRANCH", issueKey + " commit " + id, parents, Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id)), 1, "AUTHOR_EMAIL");
+            Changeset changeset = new Changeset(id,"0123456_NODE_" + id, "RAW_AUTHOR", "AUTHOR", new Date(), "RAW_NODE_"+id,
+                    "BRANCH", issueKey + " commit " + id, parents,
+                    Collections.singletonList(new ChangesetFile(ChangesetFileAction.ADDED, "FILE"+id)), 1, "AUTHOR_EMAIL");
             changeset.setRepositoryIds(Lists.asList(repositoryId, otherRepositoryIds));
 
             changesetToIssues.put(issueKey, changeset);
@@ -193,7 +193,8 @@ public class RestCommitsTest
                     String projectKey = issueKey.substring(0,issueKey.lastIndexOf('-'));
                     when(issueManager.getIssueObject(eq(issueKey))).thenReturn(mockIssue(++issueIdSequence,projectKey, issueKey));
                     when(issueManager.getAllIssueKeys(eq((long)issueIdSequence))).thenReturn(Collections.singleton(issueKey));
-                    when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new IssueArgumentMatcher(issueKey)), any(ApplicationUser.class))).thenReturn(issuePermission.get(issueKey));
+                    when(permissionManager.hasPermission(any(ProjectPermissionKey.class),
+                            argThat(new IssueArgumentMatcher(issueKey)), any(ApplicationUser.class))).thenReturn(issuePermission.get(issueKey));
                 }
 
                 when(changesetService.getByIssueKey((Iterable<String>) argThat(Matchers.<String>containsInAnyOrder(issueKey)), anyBoolean())).thenReturn(changesets);
@@ -356,3 +357,4 @@ class IssueArgumentMatcher extends ArgumentMatcher<Issue>
         return false;
     }
 }
+
