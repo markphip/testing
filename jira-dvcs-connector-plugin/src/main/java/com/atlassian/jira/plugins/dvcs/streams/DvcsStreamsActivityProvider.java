@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.streams;
 
+import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFile;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
@@ -14,7 +15,8 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
@@ -349,7 +351,9 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         @Override
         public boolean apply(@Nullable Project project)
         {
-            return project != null && permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, project, jiraAuthenticationContext.getLoggedInUser());
+            ApplicationUser user = ApplicationUserUtil.from(jiraAuthenticationContext.getLoggedInUser());
+            final boolean hasDevToolsPermission = permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, project, user);
+            return project != null && hasDevToolsPermission;
         }
     };
 
