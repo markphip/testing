@@ -1,13 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
 import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
-import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugins.rest.common.security.AuthenticationRequiredException;
 import com.google.common.base.Preconditions;
@@ -16,7 +13,6 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import com.sun.jersey.spi.container.ResourceFilter;
-import jdk.nashorn.internal.objects.Global;
 
 import javax.ws.rs.ext.Provider;
 
