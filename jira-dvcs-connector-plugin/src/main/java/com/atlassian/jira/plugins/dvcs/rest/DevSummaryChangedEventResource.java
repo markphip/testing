@@ -2,13 +2,10 @@ package com.atlassian.jira.plugins.dvcs.rest;
 
 import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.permission.GlobalPermissionKey;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
 import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 
