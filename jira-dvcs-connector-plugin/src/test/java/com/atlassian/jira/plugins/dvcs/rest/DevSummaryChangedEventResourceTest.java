@@ -5,7 +5,6 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
 import com.atlassian.jira.security.GlobalPermissionManager;
-import com.atlassian.jira.user.ApplicationUser;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -18,7 +17,6 @@ import javax.ws.rs.core.Response.Status;
 import static com.atlassian.jira.permission.GlobalPermissionKey.SYSTEM_ADMIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 public class DevSummaryChangedEventResourceTest

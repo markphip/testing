@@ -14,7 +14,6 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Container of single account of {@link AccountsPage}.

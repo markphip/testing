@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.scheduler;
 
-import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;

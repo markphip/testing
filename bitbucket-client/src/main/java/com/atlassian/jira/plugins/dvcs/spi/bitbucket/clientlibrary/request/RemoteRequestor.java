@@ -1,9 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request;
 
+import org.apache.http.entity.ContentType;
+
 import java.util.List;
 import java.util.Map;
-
-import org.apache.http.entity.ContentType;
 
 public interface RemoteRequestor
 {

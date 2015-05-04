@@ -1,12 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.github.api.model;
 
-import java.util.Date;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  * GitHub pull request.

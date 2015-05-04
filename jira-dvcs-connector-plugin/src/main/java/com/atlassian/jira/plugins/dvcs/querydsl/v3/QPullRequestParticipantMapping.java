@@ -2,17 +2,15 @@ package com.atlassian.jira.plugins.dvcs.querydsl.v3;
 
 import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.pocketknife.api.querydsl.SchemaProvider;
-import java.sql.Types;
-
-import static com.mysema.query.types.PathMetadataFactory.*;
-
-import com.mysema.query.types.path.*;
-
-import com.mysema.query.types.PathMetadata;
-import com.mysema.query.types.Path;
-
 import com.mysema.query.sql.ColumnMetadata;
 import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.types.path.BooleanPath;
+import com.mysema.query.types.path.NumberPath;
+import com.mysema.query.types.path.StringPath;
+
+import java.sql.Types;
+
+import static com.mysema.query.types.PathMetadataFactory.forVariable;
 
 /**
  *

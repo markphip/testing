@@ -1,11 +1,11 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 

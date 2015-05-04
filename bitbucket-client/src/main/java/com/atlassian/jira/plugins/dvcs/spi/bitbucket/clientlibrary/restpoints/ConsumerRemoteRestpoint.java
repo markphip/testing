@@ -9,7 +9,6 @@ import com.google.common.base.Preconditions;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
-
 import javax.annotation.Nonnull;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
