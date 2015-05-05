@@ -70,7 +70,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         // setup up OAuth from bitbucket
         oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
         // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
-        //jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass
