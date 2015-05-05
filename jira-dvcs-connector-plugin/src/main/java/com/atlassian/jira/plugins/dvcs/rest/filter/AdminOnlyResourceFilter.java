@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.rest.filter;
 
-import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.plugins.dvcs.rest.security.AdminOnly;
 import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.security.GlobalPermissionManager;
