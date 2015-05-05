@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
@@ -14,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import static com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions.VIEW_DEV_TOOLS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Matchers.eq;
@@ -74,7 +74,7 @@ public class PanelVisibilityManagerTest
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
+        when(permissionManager.hasPermission(VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -96,7 +96,7 @@ public class PanelVisibilityManagerTest
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
+        when(permissionManager.hasPermission(VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -118,7 +118,7 @@ public class PanelVisibilityManagerTest
         when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
+        when(permissionManager.hasPermission(VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
@@ -137,7 +137,7 @@ public class PanelVisibilityManagerTest
         when(fusionPluginInfo.getVersion()).thenReturn("1.0.1");
 
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
+        when(permissionManager.hasPermission(VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
 
         //when
         Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(false)));
@@ -151,7 +151,7 @@ public class PanelVisibilityManagerTest
 
         //given
         // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(false);
+        when(permissionManager.hasPermission(VIEW_DEV_TOOLS, issue, user)).thenReturn(false);
 
         // but all other settings tell the tab to show
         when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);

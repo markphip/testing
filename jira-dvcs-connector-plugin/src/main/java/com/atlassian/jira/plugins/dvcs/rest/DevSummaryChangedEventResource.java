@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.rest;
 import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
-import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
+import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventService;
 import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.user.ApplicationUser;
@@ -33,21 +33,21 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 @Path ("/event/dev-summary-changed")
 public class DevSummaryChangedEventResource
 {
-    private final DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
+    private final DevSummaryChangedEventService devSummaryChangedEventService;
     private final FeatureManager featureManager;
     private final GlobalPermissionManager globalPermissionManager;
     private final JiraAuthenticationContext authenticationContext;
 
     public DevSummaryChangedEventResource(
+            @ComponentImport final DevSummaryChangedEventService devSummaryChangedEventService,
             @ComponentImport final FeatureManager featureManager,
-            final GlobalPermissionManager globalPermissionManager,
-            final JiraAuthenticationContext authenticationContext,
-            final DevSummaryChangedEventServiceImpl devSummaryChangedEventService)
+            @ComponentImport final GlobalPermissionManager globalPermissionManager,
+            @ComponentImport final JiraAuthenticationContext authenticationContext)
     {
+        this.devSummaryChangedEventService = checkNotNull(devSummaryChangedEventService);
         this.featureManager = checkNotNull(featureManager);
         this.globalPermissionManager = checkNotNull(globalPermissionManager);
         this.authenticationContext = checkNotNull(authenticationContext);
-        this.devSummaryChangedEventService = checkNotNull(devSummaryChangedEventService);
     }
 
     @Produces (MediaType.TEXT_PLAIN)

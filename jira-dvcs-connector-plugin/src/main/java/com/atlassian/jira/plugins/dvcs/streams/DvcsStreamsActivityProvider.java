@@ -15,7 +15,6 @@ import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -61,6 +60,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
+import static com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions.VIEW_DEV_TOOLS;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Scanned
@@ -352,7 +352,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         public boolean apply(@Nullable Project project)
         {
             ApplicationUser user = ApplicationUserUtil.from(jiraAuthenticationContext.getLoggedInUser());
-            final boolean hasDevToolsPermission = permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, project, user);
+            final boolean hasDevToolsPermission = permissionManager.hasPermission(VIEW_DEV_TOOLS, project, user);
             return project != null && hasDevToolsPermission;
         }
     };

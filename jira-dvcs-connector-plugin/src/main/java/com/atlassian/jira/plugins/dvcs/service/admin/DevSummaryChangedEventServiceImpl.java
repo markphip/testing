@@ -31,7 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Service that manages generation of dev summary changed events, typically used for priming the dev summary cache.
  */
 @Component
-public class DevSummaryChangedEventServiceImpl
+public class DevSummaryChangedEventServiceImpl implements DevSummaryChangedEventService
 {
     private static final ThreadFactory THREAD_FACTORY =
             ThreadFactories.namedThreadFactory("DVCSConnector.DevSummaryChangedEventServiceImpl");

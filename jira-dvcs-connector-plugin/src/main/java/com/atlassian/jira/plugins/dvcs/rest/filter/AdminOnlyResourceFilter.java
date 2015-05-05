@@ -6,8 +6,9 @@ import com.atlassian.jira.plugins.dvcs.rest.security.AuthorizationException;
 import com.atlassian.jira.security.GlobalPermissionManager;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugins.rest.common.security.AuthenticationRequiredException;
-import com.google.common.base.Preconditions;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerRequestFilter;
@@ -17,6 +18,7 @@ import com.sun.jersey.spi.container.ResourceFilter;
 import javax.ws.rs.ext.Provider;
 
 import static com.atlassian.jira.permission.GlobalPermissionKey.ADMINISTER;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>This is a Jersey resource filter that, if the resource is marked by {@link AdminOnly} annotation,
@@ -24,6 +26,7 @@ import static com.atlassian.jira.permission.GlobalPermissionKey.ADMINISTER;
  * If the client is not authenticated then an {@link AuthenticationRequiredException} is thrown.
  * If the client is not admin user then an {@link AuthorizationException} is thrown</p>
  */
+@Scanned
 @Provider
 public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequestFilter
 {
@@ -31,12 +34,13 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
     private final JiraAuthenticationContext authenticationContext;
     private final GlobalPermissionManager globalPermissionManager;
 
-    public AdminOnlyResourceFilter(AbstractMethod abstractMethod, JiraAuthenticationContext authenticationContext,
-            GlobalPermissionManager permissionManager)
+    public AdminOnlyResourceFilter(AbstractMethod abstractMethod,
+            @ComponentImport GlobalPermissionManager permissionManager,
+            @ComponentImport JiraAuthenticationContext authenticationContext)
     {
-        this.abstractMethod = Preconditions.checkNotNull(abstractMethod);
-        this.authenticationContext = Preconditions.checkNotNull(authenticationContext);
-        this.globalPermissionManager = Preconditions.checkNotNull(permissionManager);
+        this.abstractMethod = checkNotNull(abstractMethod);
+        this.authenticationContext = checkNotNull(authenticationContext);
+        this.globalPermissionManager = checkNotNull(permissionManager);
     }
 
     public ContainerRequestFilter getRequestFilter()
