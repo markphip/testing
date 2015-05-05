@@ -25,8 +25,6 @@ import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagePayloadSerializer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
-import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.plugins.dvcs.smartcommits.SmartcommitsChangesetsProcessor;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.linker.BitbucketLinker;

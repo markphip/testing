@@ -9,21 +9,20 @@ import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import net.java.ao.Query;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.Assert;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
-
-import net.java.ao.Query;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;

@@ -5,6 +5,7 @@ import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventServiceImpl;
 import com.atlassian.jira.security.GlobalPermissionManager;
+import com.atlassian.jira.security.JiraAuthenticationContext;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -27,7 +28,7 @@ public class DevSummaryChangedEventResourceTest
     private DevSummaryChangedEventServiceImpl devSummaryChangedEventService;
 
     @Mock
-    private JiraAuthenticationContextBridge authenticationContext;
+    private JiraAuthenticationContext authenticationContext;
 
     @Mock
     private GlobalPermissionManager globalPermissionManager;
@@ -47,7 +48,7 @@ public class DevSummaryChangedEventResourceTest
         devSummaryChangedEventResource = new DevSummaryChangedEventResource(devSummaryChangedEventService, featureManager,
                 globalPermissionManager, authenticationContext);
         ReflectionTestUtils.setField(devSummaryChangedEventResource, "devSummaryChangedEventService", devSummaryChangedEventService);
-        when(authenticationContext.getLoggedInUser()).thenReturn(user);
+        when(authenticationContext.getUser()).thenReturn(user);
         when(globalPermissionManager.hasPermission(SYSTEM_ADMIN, user)).thenReturn(true);
         when(featureManager.isOnDemand()).thenReturn(true);
     }

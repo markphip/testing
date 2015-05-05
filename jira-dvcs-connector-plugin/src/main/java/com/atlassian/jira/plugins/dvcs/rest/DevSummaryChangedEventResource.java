@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.rest;
 
-import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryCachePrimingStatus;
 import com.atlassian.jira.plugins.dvcs.service.admin.DevSummaryChangedEventService;
@@ -54,7 +53,7 @@ public class DevSummaryChangedEventResource
     @POST
     public Response startGeneration(@FormParam ("pageSize") @DefaultValue ("100") int pageSize)
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
@@ -79,7 +78,7 @@ public class DevSummaryChangedEventResource
     @DELETE
     public Response stopGeneration()
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
@@ -93,7 +92,7 @@ public class DevSummaryChangedEventResource
     @GET
     public Response generationStatus()
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
