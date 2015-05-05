@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions.VIEW_DEV_TOOLS;
@@ -350,11 +351,15 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         @Override
         public boolean apply(@Nullable Project project)
         {
-            ApplicationUser user = jiraAuthenticationContext.getUser();
-            final boolean hasDevToolsPermission = permissionManager.hasPermission(VIEW_DEV_TOOLS, project, user);
-            return project != null && hasDevToolsPermission;
+           return project != null && userHasDevToolsPermission(project);
         }
     };
+
+    private boolean userHasDevToolsPermission(@Nonnull final Project project)
+    {
+        ApplicationUser user = jiraAuthenticationContext.getUser();
+        return permissionManager.hasPermission(VIEW_DEV_TOOLS, project, user);
+    }
 
     private final Function<Project, String> projectToProjectKey = new Function<Project, String>()
     {
