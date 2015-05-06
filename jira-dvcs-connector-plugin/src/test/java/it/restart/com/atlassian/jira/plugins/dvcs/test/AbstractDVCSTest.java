@@ -46,8 +46,8 @@ public abstract class AbstractDVCSTest
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
         jiraTestedProduct = TestedProductFactory.create(JiraTestedProduct.class);
-        jiraTestedProduct.backdoor().restoreDataFromResource("test-dvcs.zip");
         new JiraLoginPageController(jiraTestedProduct).login();
+        jiraTestedProduct.backdoor().restoreDataFromResource("test-dvcs.zip");
     }
 
     /**

@@ -46,9 +46,9 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
     @BeforeClass
     public void beforeClass()
     {
-        jira.backdoor().restoreDataFromResource("test-dvcs.zip");
-        // log in to JIRA 
+        // log in to JIRA
         new JiraLoginPageController(jira).login();
+        jira.backdoor().restoreDataFromResource("test-dvcs.zip");
         // log in to github enterprise
         new MagicVisitor(jira).visit(GithubLoginPage.class, GITHUB_ENTERPRISE_URL).doLogin();
 
