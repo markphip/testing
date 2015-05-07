@@ -57,7 +57,7 @@ public class AdminOnlyResourceFilter implements ResourceFilter, ContainerRequest
     {
         if ( isAdminNeeded() )
         {
-            ApplicationUser user = authenticationContext.getUser();
+            ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
             if  (user == null)
             {
                 throw new AuthenticationRequiredException();
