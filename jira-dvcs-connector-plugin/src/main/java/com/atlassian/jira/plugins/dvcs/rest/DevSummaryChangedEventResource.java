@@ -54,7 +54,7 @@ public class DevSummaryChangedEventResource
     @POST
     public Response startGeneration(@FormParam ("pageSize") @DefaultValue ("100") int pageSize)
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
@@ -79,7 +79,7 @@ public class DevSummaryChangedEventResource
     @DELETE
     public Response stopGeneration()
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);
@@ -93,7 +93,7 @@ public class DevSummaryChangedEventResource
     @GET
     public Response generationStatus()
     {
-        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
+        ApplicationUser user = authenticationContext.getUser();
         if (!globalPermissionManager.hasPermission(SYSTEM_ADMIN, user))
         {
             return response(Status.UNAUTHORIZED, null);

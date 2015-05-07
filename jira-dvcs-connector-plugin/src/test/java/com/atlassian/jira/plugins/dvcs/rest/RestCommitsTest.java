@@ -24,6 +24,7 @@ import com.atlassian.jira.plugins.dvcs.webwork.IssueAndProjectKeyManagerImpl;
 import com.atlassian.jira.project.MockProject;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.project.ProjectManager;
+import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.security.plugin.ProjectPermissionKey;
 import com.atlassian.jira.user.ApplicationUser;
@@ -94,7 +95,7 @@ public class RestCommitsTest
     private PermissionManager permissionManager;
 
     @Mock
-    private JiraAuthenticationContextBridge jiraAuthenticationContext;
+    private JiraAuthenticationContext jiraAuthenticationContext;
 
     private IssueAndProjectKeyManager issueAndProjectKeyManager;
 
@@ -102,7 +103,7 @@ public class RestCommitsTest
     private int projectIdSequence;
 
     @Mock
-    private UnifiedUser mockUser;
+    private ApplicationUser mockUser;
 
     @BeforeMethod (alwaysRun=true)
     public void setup()
@@ -113,7 +114,7 @@ public class RestCommitsTest
         issueAndProjectKeyManager = new IssueAndProjectKeyManagerImpl(issueManager, changeHistoryManager,
                 projectManager, permissionManager, jiraAuthenticationContext);
 
-        when(jiraAuthenticationContext.getLoggedInUser()).thenReturn(mockUser);
+        when(jiraAuthenticationContext.getUser()).thenReturn(mockUser);
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("TST")),
                 argThat(new UserArgumentMatcher(USER_NAME)))).thenReturn(true);
         when(permissionManager.hasPermission(any(ProjectPermissionKey.class), argThat(new ProjectArgumentMatcher("FORBIDDEN")),
