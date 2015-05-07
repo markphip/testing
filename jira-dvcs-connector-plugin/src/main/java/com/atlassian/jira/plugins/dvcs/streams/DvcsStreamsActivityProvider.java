@@ -351,7 +351,7 @@ public class DvcsStreamsActivityProvider implements StreamsActivityProvider
         @Override
         public boolean apply(@Nullable Project project)
         {
-            ApplicationUser user = ApplicationUserUtil.from(jiraAuthenticationContext.getLoggedInUser());
+            ApplicationUser user = jiraAuthenticationContext.getUser();
             final boolean hasDevToolsPermission = permissionManager.hasPermission(VIEW_DEV_TOOLS, project, user);
             return project != null && hasDevToolsPermission;
         }
