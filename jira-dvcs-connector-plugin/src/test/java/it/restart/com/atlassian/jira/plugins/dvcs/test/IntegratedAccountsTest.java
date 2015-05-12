@@ -2,11 +2,13 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.ondemand.JsonFileBasedAccountsConfigProvider;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount.AccountType;
@@ -15,9 +17,6 @@ import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
-import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPage;
 import it.util.TestAccounts;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
@@ -32,11 +31,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
-import javax.annotation.Nullable;
 
 /**
  * Tests integrated accounts functionality.
@@ -56,7 +55,9 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     /**
      * Access Jira instance.
      */
-    private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
+    private static JiraTestedProduct JIRA = TestedProductFactory.create(JiraTestedProduct.class);
+
+    private static BitbucketTestedProduct BITBUCKET = new BitbucketTestedProduct(JIRA.getTester());
 
     /**
      * Represents information of an integrated accounts.
@@ -123,11 +124,11 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     public void beforeTest()
     {
         // log in to JIRA
-        new JiraLoginPageController(jira).login();
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
+        new JiraLoginPageController(JIRA).login();
+        BITBUCKET.login(BB_ACCOUNT_NAME, PasswordUtil.getPassword(BB_ACCOUNT_NAME));
 
-        oAuthOriginal = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
-        oAuthNew = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
+        oAuthOriginal = BITBUCKET.visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
+        oAuthNew = BITBUCKET.visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).addConsumer();
 
         onDemandConfigurationPath = System.getProperty( //
                 JsonFileBasedAccountsConfigProvider.ENV_ONDEMAND_CONFIGURATION, // environment customization
@@ -141,8 +142,8 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     @AfterClass(alwaysRun = true)
     public void afterTestAlways()
     {
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthOriginal.applicationId);
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthNew.applicationId);
+        BITBUCKET.visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthOriginal.applicationId);
+        BITBUCKET.visit(BitbucketOAuthPage.class, BB_ACCOUNT_NAME).removeConsumer(oAuthNew.applicationId);
     }
 
     /**
@@ -152,7 +153,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     public void beforeMethod()
     {
         removeAllIntegratedAccounts();
-        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+        new RepositoriesPageController(JIRA).getPage().deleteAllOrganizations();
     }
 
     /**
@@ -162,7 +163,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     public void afterMethod()
     {
         removeAllIntegratedAccounts();
-        new RepositoriesPageController(jira).getPage().deleteAllOrganizations();
+        new RepositoriesPageController(JIRA).getPage().deleteAllOrganizations();
     }
 
     /**
@@ -171,18 +172,18 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     @Test
     public void testEditOAuth()
     {
-        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jira);
+        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(JIRA);
         repositoriesPageController.addOrganization(
                 RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
                 new OAuthCredentials(oAuthOriginal.key, oAuthOriginal.secret), false);
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.regenerate().regenerate(oAuthNew.key, oAuthNew.secret);
 
-        if (jira.getTester().getDriver().getCurrentUrl().startsWith("https://bitbucket.org/api/"))
+        if (JIRA.getTester().getDriver().getCurrentUrl().startsWith("https://bitbucket.org/api/"))
         {
-            jira.getPageBinder().bind(BitbucketGrantAccessPage.class).grantAccess();
+            JIRA.getPageBinder().bind(BitbucketGrantAccessPage.class).grantAccess();
         }
 
         AccountsPageAccountOAuthDialog oAuthDialog = account.regenerate();
@@ -199,7 +200,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         buildOnDemandProperties(new IntegratedAccount(ACCOUNT_NAME, oAuthOriginal.key, oAuthOriginal.secret));
         refreshIntegratedAccounts();
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
@@ -210,7 +211,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     @Test
     public void testSwitchToIntegratedAccount()
     {
-        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(jira);
+        RepositoriesPageController repositoriesPageController = new RepositoriesPageController(JIRA);
         repositoriesPageController.addOrganization(
                 RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
                 new OAuthCredentials(oAuthOriginal.key, oAuthOriginal.secret), false);
@@ -218,7 +219,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         buildOnDemandProperties(new IntegratedAccount(ACCOUNT_NAME, oAuthNew.key, oAuthNew.secret));
         refreshIntegratedAccounts();
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
+        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
@@ -230,18 +231,14 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         buildOnDemandProperties();
         refreshIntegratedAccounts();
-        new WebDriverWait(jira.getTester().getDriver(), 30).until(new Predicate<WebDriver>()
-        {
+        new WebDriverWait(JIRA.getTester().getDriver(), 30).until(new Predicate<WebDriver>() {
 
             @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                AccountsPage accountsPage = jira.visit(AccountsPage.class);
+            public boolean apply(@Nullable WebDriver input) {
+                AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
                 Iterator<AccountsPageAccount> accounts = accountsPage.getAccounts().iterator();
-                while (accounts.hasNext())
-                {
-                    if (accounts.next().isOnDemand())
-                    {
+                while (accounts.hasNext()) {
+                    if (accounts.next().isOnDemand()) {
                         return false;
                     }
                 }
@@ -259,7 +256,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         try
         {
-            String restUrl = jira.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reload";
+            String restUrl = JIRA.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reload";
             GetMethod getMethod = new GetMethod(restUrl);
             Assert.assertEquals(200, new HttpClient().executeMethod(getMethod));
 

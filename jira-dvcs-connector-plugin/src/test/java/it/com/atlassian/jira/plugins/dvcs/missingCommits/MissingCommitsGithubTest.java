@@ -95,9 +95,9 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
         // log in to github
-        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
+        new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from github
-        return new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
+        return new MagicVisitor(JIRA).visit(GithubOAuthPage.class).addConsumer(JIRA.getProductInstance().getBaseUrl());
     }
 
     @Override
@@ -179,7 +179,7 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         finally
         {
             // log out from github
-            new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
+            new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogout();
         }
     }
 
@@ -191,6 +191,6 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
 
     private void removeConsumer(final String applicationUrl)
     {
-        new MagicVisitor(jira).visit(applicationUrl, GithubOAuthPage.class).removeConsumer();
+        new MagicVisitor(JIRA).visit(applicationUrl, GithubOAuthPage.class).removeConsumer();
     }
 }

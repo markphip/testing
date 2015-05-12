@@ -1,9 +1,8 @@
 package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
@@ -22,6 +21,8 @@ public abstract class AbstractBitbucketMissingCommitsTest
         extends AbstractMissingCommitsTest<BitBucketConfigureOrganizationsPage>
 {
     protected static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
+
+    protected static final BitbucketTestedProduct BIT_BUCKET = new BitbucketTestedProduct(JIRA.getTester());
 
     @BeforeClass
     public static void setup()
@@ -61,10 +62,10 @@ public abstract class AbstractBitbucketMissingCommitsTest
     @Override
     OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
-        // log in to Bitbucket
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
-        // setup up OAuth from bitbucket
-        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).addConsumer();
+        // log in to Bitbucket and set up OAuth
+        return BIT_BUCKET
+                .loginAndGoTo(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD, BitbucketOAuthPage.class, DVCS_REPO_OWNER)
+                .addConsumer();
     }
 
     @Override
@@ -74,14 +75,12 @@ public abstract class AbstractBitbucketMissingCommitsTest
         {
             if (oAuth != null)
             {
-                // remove OAuth in bitbucket
                 removeConsumer(oAuth.applicationId);
             }
         }
         finally
         {
-            // log out from bitbucket
-            new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
+            BIT_BUCKET.logout();
         }
     }
 
@@ -108,6 +107,6 @@ public abstract class AbstractBitbucketMissingCommitsTest
 
     private void removeConsumer(final String applicationId)
     {
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(applicationId);
+        BIT_BUCKET.visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(applicationId);
     }
 }

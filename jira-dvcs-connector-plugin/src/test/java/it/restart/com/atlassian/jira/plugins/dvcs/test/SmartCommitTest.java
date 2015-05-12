@@ -3,6 +3,7 @@ package it.restart.com.atlassian.jira.plugins.dvcs.test;
 import com.atlassian.jira.functest.framework.backdoor.Backdoor;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.TimeTrackingAdminPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
@@ -41,6 +42,8 @@ public class SmartCommitTest extends AbstractDVCSTest
 
     private String repositoryName;
 
+    private BitbucketTestedProduct bitbucket;
+
     private RepositoryTestHelper repositoryTestHelper;
 
     @BeforeClass
@@ -49,7 +52,8 @@ public class SmartCommitTest extends AbstractDVCSTest
         getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
-        repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct());
+        repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
+                new BitbucketTestedProduct(getJiraTestedProduct().getTester()));
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         TimeTrackingAdminPage timePage = getJiraTestedProduct().goTo(TimeTrackingAdminPage.class);

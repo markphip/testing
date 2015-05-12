@@ -42,6 +42,7 @@ import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUse
  */
 public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 {
+
     protected static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
     protected static final String TEST_PROJECT_KEY = "TST";
 
