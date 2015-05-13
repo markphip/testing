@@ -7,17 +7,16 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
-import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import org.junit.Assert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
+
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 
 /**
  * Represents repository table row of {@link AccountsPageAccountRepository}.
@@ -127,7 +126,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
             // check that dialog appears
             try
             {
-                Poller.waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
+                waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
                 linkingRepositoryDialog.clickOk();
             }
             catch (AssertionError e)
@@ -138,26 +137,16 @@ public class AccountsPageAccountRepository extends WebDriverElement
                 }
             }
 
-            new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
-            {
-
-                @Override
-                public boolean apply(@Nullable WebDriver input)
-                {
-                    return synchronizationButton.isVisible();
-                }
-
-            });
+            waitUntilTrue(synchronizationButton.withTimeout(TimeoutType.PAGE_LOAD).timed().isVisible());
         }
     }
 
     /**
      * @return True if synchronization is currently in progress.
      */
-    public boolean isSyncing()
+    public TimedCondition isSyncing()
     {
-        System.out.println("SYNC SELECTOR: " + synchronizationIcon.find(By.cssSelector(".running")).isPresent());
-        return synchronizationIcon.hasClass("running");
+        return synchronizationIcon.withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
     }
 
     /**
@@ -182,16 +171,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
     private void syncAndWaitForFinish()
     {
         synchronizationButton.click();
-        new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
-        {
-
-            @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                return !isSyncing();
-            }
-
-        });
+        waitUntilFalse(isSyncing());
     }
 
     public void synchronizeWithNoWait()
@@ -209,16 +189,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
         synchronizationButton.javascript().execute(script);
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
-        new WebDriverWait(driver, 15).until(new Predicate<WebDriver>()
-        {
-
-            @Override
-            public boolean apply(@Nullable WebDriver input)
-            {
-                return !isSyncing();
-            }
-
-        });
+        waitUntilFalse(isSyncing());
     }
 
     public String getMessage()

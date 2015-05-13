@@ -67,9 +67,10 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         JIRA.backdoor().restoreDataFromResource(TEST_DATA);
         // log in to JIRA
         new JiraLoginPageController(JIRA).login();
-        // log in to Bitbucket and add OAuth
+
         oAuth = BIT_BUCKET.loginAndGoTo(JIRA_BB_CONNECTOR_ACCOUNT, PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT),
                 BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).addConsumer();
+
         JIRA.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 

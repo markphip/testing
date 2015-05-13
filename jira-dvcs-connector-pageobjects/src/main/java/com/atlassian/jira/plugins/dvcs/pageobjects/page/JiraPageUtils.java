@@ -11,9 +11,14 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import com.atlassian.pageobjects.PageBinder;
+import com.atlassian.pageobjects.elements.query.Conditions;
+import com.atlassian.pageobjects.elements.query.TimedCondition;
+import com.atlassian.pageobjects.elements.query.TimedQuery;
+import com.google.common.collect.Lists;
 
-import java.util.Iterator;
 import java.util.List;
+
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 
 /**
  * @author Martin Skurla
@@ -33,7 +38,7 @@ public class JiraPageUtils
     public static void deleteProject(JiraTestedProduct jira, String projectKey)
     {
         ProjectSummaryPageTab projectSummaryPageTab = jira.getPageBinder().navigateToAndBind(ProjectSummaryPageTab.class,
-                                                                                             projectKey);
+                projectKey);
         long projectId = projectSummaryPageTab.getProjectId();
 
         jira.getPageBinder().navigateToAndBind(DeleteProjectPage.class, projectId).submitConfirm();
@@ -60,28 +65,23 @@ public class JiraPageUtils
     
     public static void checkSyncProcessSuccess(PageBinder pageBinder)
     {
-        do
-        {
-            sleep(1000);
-        } while (!isSyncFinished(pageBinder));
+        waitUntilFalse(isSyncing(pageBinder));
     }
 
-    private static boolean isSyncFinished(PageBinder pageBinder)
+    private static TimedCondition isSyncing(PageBinder pageBinder)
     {
         AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        Iterator<AccountsPageAccount> accounts = accountsPage.getAccounts().iterator();
-        while (accounts.hasNext())
+        List<TimedQuery<Boolean>> syncStatus = Lists.newArrayList();
+
+        for (AccountsPageAccount account : accountsPage.getAccounts())
         {
-            List<AccountsPageAccountRepository> repos = accounts.next().getRepositories();
-            for (AccountsPageAccountRepository repo : repos)
+            for (AccountsPageAccountRepository repository : account.getRepositories())
             {
-                if (repo.isSyncing())
-                {
-                    return false;
-                }
+                syncStatus.add(repository.isSyncing());
             }
         }
-        return true;
+
+        return Conditions.or(syncStatus);
     }
 
     private static void sleep(long milis)

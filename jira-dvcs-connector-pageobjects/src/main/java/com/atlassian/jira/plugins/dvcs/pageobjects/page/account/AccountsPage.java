@@ -19,21 +19,12 @@ public class AccountsPage implements Page
     @Inject
     protected AtlassianWebDriver driver;
 
-    /**
-     * Injected {@link PageElementFinder} dependency.
-     */
     @Inject
     private PageElementFinder pageElementFinder;
 
-    /**
-     * Reference to all accounts.
-     */
     @ElementBy (className = "dvcs-orgdata-container", pageElementClass = AccountsPageAccount.class)
     private Iterable<AccountsPageAccount> accounts;
 
-    /**
-     * @return All accounts available on page.
-     */
     public Iterable<AccountsPageAccount> getAccounts()
     {
         return accounts;
