@@ -4,7 +4,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
@@ -95,7 +95,7 @@ public abstract class RepositoryTestHelper<T extends TestedProduct<WebDriverTest
         }
     }
 
-    public abstract AccountsPageAccount.AccountType getAccountType();
+    public abstract Account.AccountType getAccountType();
 
     public Dvcs getDvcs()
     {

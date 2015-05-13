@@ -3,7 +3,7 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -184,9 +184,9 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     }
 
     @Override
-    protected AccountsPageAccount.AccountType getAccountType()
+    protected Account.AccountType getAccountType()
     {
-        return AccountsPageAccount.AccountType.GIT_HUB;
+        return Account.AccountType.GIT_HUB;
     }
 
     private void removeConsumer(final String applicationUrl)

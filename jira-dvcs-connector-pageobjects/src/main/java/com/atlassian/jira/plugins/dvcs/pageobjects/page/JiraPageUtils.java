@@ -7,9 +7,9 @@ import com.atlassian.jira.pageobjects.pages.DashboardPage;
 import com.atlassian.jira.pageobjects.project.DeleteProjectPage;
 import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
@@ -73,9 +73,9 @@ public class JiraPageUtils
         AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
         List<TimedQuery<Boolean>> syncStatus = Lists.newArrayList();
 
-        for (AccountsPageAccount account : accountsPage.getAccounts())
+        for (Account account : accountsPage.getAccounts())
         {
-            for (AccountsPageAccountRepository repository : account.getRepositories())
+            for (AccountRepository repository : account.getRepositories())
             {
                 syncStatus.add(repository.isSyncing());
             }

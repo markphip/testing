@@ -8,12 +8,12 @@ import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
 /**
- * Controls dialog of {@link AccountsPageAccount}.
+ * Controls dialog of {@link Account}.
  *
  * @author Stanislav Dvorscak
  *
  */
-public class AccountsPageAccountControlsDialog extends WebDriverElement
+public class AccountControlsDialog extends WebDriverElement
 {
 
     /**
@@ -35,7 +35,7 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
      * @param parent
      * @param timeoutType
      */
-    public AccountsPageAccountControlsDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
+    public AccountControlsDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
     {
         super(locator, parent, timeoutType);
     }
@@ -46,7 +46,7 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
      * @param locator
      * @param parent
      */
-    public AccountsPageAccountControlsDialog(By locator, WebDriverLocatable parent)
+    public AccountControlsDialog(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
     }
@@ -56,7 +56,7 @@ public class AccountsPageAccountControlsDialog extends WebDriverElement
      *
      * @param locator
      */
-    public AccountsPageAccountControlsDialog(By locator)
+    public AccountControlsDialog(By locator)
     {
         super(locator);
     }

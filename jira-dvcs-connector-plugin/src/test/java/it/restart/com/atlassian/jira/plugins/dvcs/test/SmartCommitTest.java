@@ -5,8 +5,8 @@ import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.TimeTrackingAdminPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
 import com.atlassian.jira.testkit.client.restclient.Comment;
 import com.atlassian.jira.testkit.client.restclient.Issue;
 import com.atlassian.jira.testkit.client.restclient.Status;
@@ -96,14 +96,14 @@ public class SmartCommitTest extends AbstractDVCSTest
         addCommit(dvcs, ignoredSmartCommitMessage);
 
         // The first sync of the account will not trigger smart commits.
-        AccountsPage.syncAccount(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
+        AccountsPage.syncAccount(getJiraTestedProduct(), Account.AccountType.BITBUCKET,
                 ACCOUNT_NAME, repositoryName, true);
 
         String commentText = "this is my comment";
         String timeSpent = "2d 2h 2m";
         String smartCommitMessage = issueKey + " #Resolve #time " + timeSpent + " #comment " + commentText;
         addCommit(dvcs, smartCommitMessage);
-        AccountsPage.syncAccount(getJiraTestedProduct(), AccountsPageAccount.AccountType.BITBUCKET,
+        AccountsPage.syncAccount(getJiraTestedProduct(), Account.AccountType.BITBUCKET,
                 ACCOUNT_NAME, repositoryName, false);
 
         boolean issueIsResolved = false;

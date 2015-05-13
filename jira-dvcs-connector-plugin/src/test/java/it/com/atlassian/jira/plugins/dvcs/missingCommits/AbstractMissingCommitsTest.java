@@ -8,8 +8,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizatio
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -103,7 +103,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
         JIRA.getTester().gotoUrl(JIRA.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
         configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        AccountsPageAccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
+        AccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
 
         assertThat(repository.getMessage()).doesNotContain(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE);
 
@@ -143,7 +143,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         return true;
     }
 
-    protected abstract AccountsPageAccount.AccountType getAccountType();
+    protected abstract Account.AccountType getAccountType();
 
     public String getGitCommand()
     {

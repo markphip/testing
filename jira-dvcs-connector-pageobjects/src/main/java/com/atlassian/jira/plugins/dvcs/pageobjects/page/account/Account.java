@@ -9,12 +9,11 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
-import java.util.List;
 import javax.inject.Inject;
+import java.util.List;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Container of single account of {@link AccountsPage}.
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertFalse;
  * @author Stanislav Dvorscak
  * 
  */
-public class AccountsPageAccount extends WebDriverElement
+public class Account extends WebDriverElement
 {
 
     /**
@@ -78,12 +77,12 @@ public class AccountsPageAccount extends WebDriverElement
     private PageElement controlsButton;
 
     /**
-     * Reference to {@link AccountsPageAccountOAuthDialog}.
+     * Reference to {@link AccountOAuthDialog}.
      * 
      * @see #regenerate()
      */
     @ElementBy(xpath = "//div[contains(concat(' ', @class, ' '), ' dialog-components ')]")
-    private AccountsPageAccountOAuthDialog oAuthDialog;
+    private AccountOAuthDialog oAuthDialog;
 
     /**
      * @see #isOnDemand()
@@ -96,7 +95,7 @@ public class AccountsPageAccount extends WebDriverElement
      * 
      * @param locator
      */
-    public AccountsPageAccount(By locator)
+    public Account(By locator)
     {
         super(locator);
     }
@@ -107,7 +106,7 @@ public class AccountsPageAccount extends WebDriverElement
      * @param locatable
      * @param timeoutType
      */
-    public AccountsPageAccount(WebDriverLocatable locatable, TimeoutType timeoutType)
+    public Account(WebDriverLocatable locatable, TimeoutType timeoutType)
     {
         super(locatable, timeoutType);
     }
@@ -119,10 +118,10 @@ public class AccountsPageAccount extends WebDriverElement
      *            name of repository
      * @return resolved repository
      */
-    public AccountsPageAccountRepository getRepository(String repositoryName)
+    public AccountRepository getRepository(String repositoryName)
     {
         return find(By.xpath("table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"),
-                AccountsPageAccountRepository.class);
+                AccountRepository.class);
     }
 
     /**
@@ -130,10 +129,10 @@ public class AccountsPageAccount extends WebDriverElement
      *
      * @return resolved repositories
      */
-    public List<AccountsPageAccountRepository> getRepositories()
+    public List<AccountRepository> getRepositories()
     {
         return findAll(By.xpath("table/tbody/tr[contains(concat(' ', @class, ' '), ' dvcs-repo-row ')]"),
-                AccountsPageAccountRepository.class);
+                AccountRepository.class);
     }
 
     /**
@@ -167,16 +166,16 @@ public class AccountsPageAccount extends WebDriverElement
      * 
      * @return OAuth dialog
      */
-    public AccountsPageAccountOAuthDialog regenerate()
+    public AccountOAuthDialog regenerate()
     {
         controlsButton.click();
         findControlDialog().regenerate();
         return oAuthDialog;
     }
 
-    public AccountsPageAccountRepository enableRepository(String repositoryName, boolean noAdminPermission)
+    public AccountRepository enableRepository(String repositoryName, boolean noAdminPermission)
     {
-        AccountsPageAccountRepository repository = getRepository(repositoryName);
+        AccountRepository repository = getRepository(repositoryName);
 
         repository.enable(noAdminPermission);
 
@@ -186,10 +185,10 @@ public class AccountsPageAccount extends WebDriverElement
     /**
      * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
      */
-    private AccountsPageAccountControlsDialog findControlDialog()
+    private AccountControlsDialog findControlDialog()
     {
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
-        return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
+        return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
     }
 
     /**
@@ -198,9 +197,9 @@ public class AccountsPageAccount extends WebDriverElement
      * @param repositoryName name of the repository to be synchronized
      * @return page object of the repository
      */
-    public AccountsPageAccountRepository synchronizeRepository(String repositoryName)
+    public AccountRepository synchronizeRepository(String repositoryName)
     {
-        AccountsPageAccountRepository repository = getRepository(repositoryName);
+        AccountRepository repository = getRepository(repositoryName);
 
         if (!repository.isEnabled())
         {
@@ -218,9 +217,9 @@ public class AccountsPageAccount extends WebDriverElement
      * @param repositoryName name of the repository to be synchronized
      * @return page object of the repository
      */
-    public AccountsPageAccountRepository fullSynchronizeRepository(String repositoryName)
+    public AccountRepository fullSynchronizeRepository(String repositoryName)
     {
-        AccountsPageAccountRepository repository = getRepository(repositoryName);
+        AccountRepository repository = getRepository(repositoryName);
         if (!repository.isEnabled())
         {
             repository.enable();
@@ -239,7 +238,7 @@ public class AccountsPageAccount extends WebDriverElement
     {
         for (String repositoryName : repositoryNames)
         {
-            AccountsPageAccountRepository repository = getRepository(repositoryName);
+            AccountRepository repository = getRepository(repositoryName);
             repository.enable();
             repository.synchronizeWithNoWait();
         }

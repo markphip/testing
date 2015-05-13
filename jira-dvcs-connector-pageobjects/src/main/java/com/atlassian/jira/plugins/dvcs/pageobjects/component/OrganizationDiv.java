@@ -1,6 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountControlsDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -11,9 +11,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.openqa.selenium.By;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.by;
 import static org.hamcrest.Matchers.is;
@@ -142,10 +142,10 @@ public class OrganizationDiv
         Poller.waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
 
-    private AccountsPageAccountControlsDialog findControlDialog()
+    private AccountControlsDialog findControlDialog()
     {
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
-        return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
+        return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
     }
 
     public void sync()

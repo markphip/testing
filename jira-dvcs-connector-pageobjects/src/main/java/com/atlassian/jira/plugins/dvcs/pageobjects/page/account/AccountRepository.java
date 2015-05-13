@@ -19,12 +19,12 @@ import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 
 /**
- * Represents repository table row of {@link AccountsPageAccountRepository}.
+ * Represents repository table row of {@link Account}.
  *
  * @author Stanislav Dvorscak
  *
  */
-public class AccountsPageAccountRepository extends WebDriverElement
+public class AccountRepository extends WebDriverElement
 {
 
     @Inject
@@ -69,7 +69,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      * @param locator
      * @param parent
      */
-    public AccountsPageAccountRepository(By locator, WebDriverLocatable parent)
+    public AccountRepository(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
     }
@@ -80,7 +80,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      * @param locator
      * @param timeoutType
      */
-    public AccountsPageAccountRepository(By locator, TimeoutType timeoutType)
+    public AccountRepository(By locator, TimeoutType timeoutType)
     {
         super(locator, timeoutType);
     }
@@ -91,7 +91,7 @@ public class AccountsPageAccountRepository extends WebDriverElement
      * @param locatable
      * @param timeoutType
      */
-    public AccountsPageAccountRepository(WebDriverLocatable locatable, TimeoutType timeoutType)
+    public AccountRepository(WebDriverLocatable locatable, TimeoutType timeoutType)
     {
         super(locatable, timeoutType);
     }

@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -10,15 +13,12 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
@@ -83,10 +83,10 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return list;
     }
 
-    public AccountsPageAccount getOrganization(AccountsPageAccount.AccountType accountType, String accountName)
+    public Account getOrganization(Account.AccountType accountType, String accountName)
     {
         AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        Account account = accountsPage.getAccount(accountType, accountName);
 
         return account;
     }
@@ -204,14 +204,14 @@ public abstract class BaseConfigureOrganizationsPage implements Page
      * @param accountType type of account
      * @param accountName account name
      * @param repositoryName repository name
-     * @return {@link com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository} element
+     * @return {@link AccountRepository} element
      */
-    public AccountsPageAccountRepository enableAndSyncRepository(AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
+    public AccountRepository enableAndSyncRepository(Account.AccountType accountType, String accountName, String repositoryName)
     {
         AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        Account account = accountsPage.getAccount(accountType, accountName);
 
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
+        AccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
 

@@ -4,7 +4,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.BitbucketRepositoriesRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
@@ -91,9 +91,9 @@ public abstract class AbstractBitbucketMissingCommitsTest
     }
 
     @Override
-    protected AccountsPageAccount.AccountType getAccountType()
+    protected Account.AccountType getAccountType()
     {
-        return AccountsPageAccount.AccountType.BITBUCKET;
+        return Account.AccountType.BITBUCKET;
     }
 
     private void removeRepository(String name)

@@ -16,9 +16,9 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -314,7 +314,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
-        AccountsPageAccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
+        AccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -327,7 +327,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        AccountsPageAccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
+        AccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -341,9 +341,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
 
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        for (AccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
         }
@@ -356,8 +356,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, ACCOUNT_NAME);
+        for (AccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
             Assert.assertFalse(repository.hasWarning());
@@ -438,20 +438,20 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     /**
      * enable a repo under the {@link IntegrationTestUserDetails#ACCOUNT_NAME} account.
      */
-    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String repositoryName)
+    private AccountRepository enableRepositoryAsAdmin(final String repositoryName)
     {
         return enableRepositoryAsAdmin(ACCOUNT_NAME, repositoryName);
     }
 
-    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String accountName, final String repositoryName)
+    private AccountRepository enableRepositoryAsAdmin(final String accountName, final String repositoryName)
     {
         return enableRepository(accountName, repositoryName, false);
     }
 
-    private AccountsPageAccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
+    private AccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
     {
         AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, accountName);
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, accountName);
         return account.enableRepository(repositoryName, noAdminPermission);
     }
 

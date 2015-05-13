@@ -14,12 +14,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import javax.annotation.Nullable;
 
 /**
- * Represents dialog, which is fired on {@link AccountsPageAccount#regenerate()}.
+ * Represents dialog, which is fired on {@link Account#regenerate()}.
  * 
  * @author Stanislav Dvorscak
  * 
  */
-public class AccountsPageAccountOAuthDialog extends WebDriverElement
+public class AccountOAuthDialog extends WebDriverElement
 {
 
     /**
@@ -47,7 +47,7 @@ public class AccountsPageAccountOAuthDialog extends WebDriverElement
      * @param parent
      * @param timeoutType
      */
-    public AccountsPageAccountOAuthDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
+    public AccountOAuthDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
     {
         super(locator, parent, timeoutType);
     }
@@ -90,7 +90,7 @@ public class AccountsPageAccountOAuthDialog extends WebDriverElement
                 @Override
                 public Boolean apply(@Nullable WebDriver driver)
                 {
-                    return !AccountsPageAccountOAuthDialog.this.isPresent();
+                    return !AccountOAuthDialog.this.isPresent();
                 }
 
             });

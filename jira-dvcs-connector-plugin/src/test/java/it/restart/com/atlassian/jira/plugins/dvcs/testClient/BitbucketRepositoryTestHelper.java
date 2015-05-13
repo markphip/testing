@@ -7,7 +7,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
@@ -111,8 +111,8 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper<Bitbucke
     }
 
     @Override
-    public AccountsPageAccount.AccountType getAccountType()
+    public Account.AccountType getAccountType()
     {
-        return AccountsPageAccount.AccountType.BITBUCKET;
+        return Account.AccountType.BITBUCKET;
     }
 }

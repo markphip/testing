@@ -9,9 +9,9 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -32,8 +32,8 @@ import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntries
 import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType.getGHEAccountType;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.REPOSITORY_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
-import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
+import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements BasicTests
@@ -203,8 +203,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         rpc.addOrganization(accountType, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
-        AccountsPageAccountRepository repository = account.enableRepository("testemptyrepo", true);
+        Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
+        AccountRepository repository = account.enableRepository("testemptyrepo", true);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -219,8 +219,8 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
-        AccountsPageAccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
+        Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
+        AccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
 
         // check that repository is enabled
         Assert.assertTrue(repository.isEnabled());
@@ -235,9 +235,9 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         rpc.addOrganization(accountType, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
+        Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB_ENTERPRISE, DVCS_CONNECTOR_TEST_ACCOUNT);
 
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        for (AccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
         }
@@ -251,9 +251,9 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         rpc.addOrganization(accountType, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
+        Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB_ENTERPRISE, ACCOUNT_NAME);
 
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        for (AccountRepository repository : account.getRepositories())
         {
             Assert.assertTrue(repository.isEnabled());
             Assert.assertFalse(repository.hasWarning());

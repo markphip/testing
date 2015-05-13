@@ -22,10 +22,10 @@ public class AccountsPage implements Page
     @Inject
     private PageElementFinder pageElementFinder;
 
-    @ElementBy (className = "dvcs-orgdata-container", pageElementClass = AccountsPageAccount.class)
-    private Iterable<AccountsPageAccount> accounts;
+    @ElementBy (className = "dvcs-orgdata-container", pageElementClass = Account.class)
+    private Iterable<Account> accounts;
 
-    public Iterable<AccountsPageAccount> getAccounts()
+    public Iterable<Account> getAccounts()
     {
         return accounts;
     }
@@ -37,11 +37,11 @@ public class AccountsPage implements Page
      * @param accountName name of account
      * @return founded account element
      */
-    public AccountsPageAccount getAccount(AccountsPageAccount.AccountType accountType, String accountName)
+    public Account getAccount(Account.AccountType accountType, String accountName)
     {
         return pageElementFinder.find(
                 By.xpath("//h4[contains(concat(' ', @class, ' '), '" + accountType.getLogoClassName() + "')]/a[text() = '" + accountName
-                        + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]"), AccountsPageAccount.class);
+                        + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]"), Account.class);
     }
 
     /**
@@ -53,12 +53,12 @@ public class AccountsPage implements Page
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
 
-    public static AccountsPageAccount syncAccount(JiraTestedProduct jiraTestedProduct,
-            AccountsPageAccount.AccountType accountType, String accountName, String repositoryName,
+    public static Account syncAccount(JiraTestedProduct jiraTestedProduct,
+            Account.AccountType accountType, String accountName, String repositoryName,
             boolean refresh)
     {
         AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        Account account = accountsPage.getAccount(accountType, accountName);
         if (refresh)
         {
             account.refresh();
