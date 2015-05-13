@@ -1,18 +1,18 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.AbstractComponentPageObject;
+import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.WebDriverElement;
-import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Poller;
-import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
-import java.util.List;
 
+import static com.atlassian.jira.pageobjects.framework.elements.PageElements.bind;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.google.common.collect.Iterables.transform;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -21,9 +21,8 @@ import static org.hamcrest.Matchers.is;
  * @author Stanislav Dvorscak
  * 
  */
-public class Account extends WebDriverElement
+public class Account extends AbstractComponentPageObject
 {
-
     /**
      * Type of account.
      * 
@@ -69,6 +68,9 @@ public class Account extends WebDriverElement
 
     @Inject
     private PageElementFinder elementFinder;
+
+    @Inject
+    private PageBinder pageBinder;
     
     /**
      * Reference to "Controls" button.
@@ -90,25 +92,8 @@ public class Account extends WebDriverElement
     @ElementBy(xpath = ".//span[@title='OnDemand']")
     private PageElement onDemandDecorator;
 
-    /**
-     * Constructor.
-     * 
-     * @param locator
-     */
-    public Account(By locator)
-    {
-        super(locator);
-    }
-
-    /**
-     * Constructor.
-     * 
-     * @param locatable
-     * @param timeoutType
-     */
-    public Account(WebDriverLocatable locatable, TimeoutType timeoutType)
-    {
-        super(locatable, timeoutType);
+    public Account(PageElement container) {
+        super(container);
     }
 
     /**
@@ -120,8 +105,10 @@ public class Account extends WebDriverElement
      */
     public AccountRepository getRepository(String repositoryName)
     {
-        return find(By.xpath("table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"),
-                AccountRepository.class);
+        return pageBinder.bind(
+                AccountRepository.class,
+                find(By.xpath("table/tbody/tr/td[@class='dvcs-org-reponame']/a[text()='" + repositoryName + "']/ancestor::tr"))
+        );
     }
 
     /**
@@ -129,10 +116,10 @@ public class Account extends WebDriverElement
      *
      * @return resolved repositories
      */
-    public List<AccountRepository> getRepositories()
+    public Iterable<AccountRepository> getRepositories()
     {
-        return findAll(By.xpath("table/tbody/tr[contains(concat(' ', @class, ' '), ' dvcs-repo-row ')]"),
-                AccountRepository.class);
+        return transform(findAll(By.className("dvcs-repo-row")),
+                bind(pageBinder, AccountRepository.class));
     }
 
     /**

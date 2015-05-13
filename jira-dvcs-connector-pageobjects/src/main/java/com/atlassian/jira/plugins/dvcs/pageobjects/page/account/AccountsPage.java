@@ -2,12 +2,14 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
-import com.atlassian.pageobjects.elements.ElementBy;
+import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.webdriver.AtlassianWebDriver;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
+
+import static com.atlassian.jira.pageobjects.framework.elements.PageElements.bind;
+import static com.google.common.collect.Iterables.transform;
 
 /**
  * Holds available DVCS accounts.
@@ -17,17 +19,21 @@ import javax.inject.Inject;
 public class AccountsPage implements Page
 {
     @Inject
-    protected AtlassianWebDriver driver;
+    protected PageElementFinder pageElementFinder;
 
     @Inject
-    private PageElementFinder pageElementFinder;
+    protected PageBinder pageBinder;
 
-    @ElementBy (className = "dvcs-orgdata-container", pageElementClass = Account.class)
-    private Iterable<Account> accounts;
+    @Override
+    public String getUrl()
+    {
+        return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
+    }
 
     public Iterable<Account> getAccounts()
     {
-        return accounts;
+        return transform(pageElementFinder.findAll(By.className("dvcs-orgdata-container")),
+                bind(pageBinder, Account.class));
     }
 
     /**
@@ -39,18 +45,9 @@ public class AccountsPage implements Page
      */
     public Account getAccount(Account.AccountType accountType, String accountName)
     {
-        return pageElementFinder.find(
+        return pageBinder.bind(Account.class, pageElementFinder.find(
                 By.xpath("//h4[contains(concat(' ', @class, ' '), '" + accountType.getLogoClassName() + "')]/a[text() = '" + accountName
-                        + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]"), Account.class);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getUrl()
-    {
-        return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
+                        + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]")));
     }
 
     public static Account syncAccount(JiraTestedProduct jiraTestedProduct,

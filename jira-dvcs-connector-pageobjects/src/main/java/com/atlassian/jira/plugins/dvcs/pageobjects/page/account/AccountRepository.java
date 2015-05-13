@@ -1,10 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.AbstractComponentPageObject;
+import com.atlassian.pageobjects.elements.CheckboxElement;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.WebDriverCheckboxElement;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
@@ -24,7 +25,7 @@ import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
  * @author Stanislav Dvorscak
  *
  */
-public class AccountRepository extends WebDriverElement
+public class AccountRepository extends AbstractComponentPageObject
 {
 
     @Inject
@@ -33,76 +34,33 @@ public class AccountRepository extends WebDriverElement
     @Inject
     private JiraTestedProduct jiraTestedProduct;
 
-    /**
-     * Enable checkbox - with responsibility to enable repository.
-     *
-     * @see #isEnabled()
-     * @see #enable()
-     */
-    @ElementBy(xpath = "td[contains(concat(' ', @class, ' '), ' dvcs-autolink-repo ')]/input[@type='checkbox']")
-    private WebDriverCheckboxElement enableCheckbox;
-
-    /**
-     * Synchronization icon - holds information if synchronization is currently in progress.
-     */
-    @ElementBy(xpath = "td[4]/div/a/span")
-    private PageElement synchronizationIcon;
-
-    @ElementBy(cssSelector = ".repo_sync_error_msg")
-    private PageElement repoSynchErrorMsg;
-
-    /**
-     * Synchronization button - fire synchronization process.
-     */
-    @ElementBy(xpath = "td[contains(concat(' ', @class, ' '), ' dvcs-sync-repo ')]//a")
-    private PageElement synchronizationButton;
-
-    @ElementBy(xpath = "td[3]/div")
-    private PageElement message;
-
-    @ElementBy(xpath = "td[@class='dvcs-org-reponame']/span[starts-with(@id,'error_status_icon_')]")
-    private PageElement warningIcon;
-
-    /**
-     * Constructor.
-     *
-     * @param locator
-     * @param parent
-     */
-    public AccountRepository(By locator, WebDriverLocatable parent)
-    {
-        super(locator, parent);
+    public AccountRepository(PageElement container) {
+        super(container);
     }
 
-    /**
-     * Constructor
-     *
-     * @param locator
-     * @param timeoutType
-     */
-    public AccountRepository(By locator, TimeoutType timeoutType)
+    public int getId()
     {
-        super(locator, timeoutType);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param locatable
-     * @param timeoutType
-     */
-    public AccountRepository(WebDriverLocatable locatable, TimeoutType timeoutType)
-    {
-        super(locatable, timeoutType);
+        return Integer.parseInt(container.getAttribute("id").substring("dvcs-repo-row-".length()));
     }
 
     /**
      * @return is repository enabled?
      */
-    @Override
     public boolean isEnabled()
     {
-        return enableCheckbox.isSelected();
+        return getEnableCheckbox().isSelected();
+    }
+
+    public String getMessage()
+    {
+        return getSynchronizationMessageElement().getText();
+    }
+
+    public boolean hasWarning()
+    {
+        return getWarningIconElement().hasClass("admin_permission")
+                && getWarningIconElement().hasClass("aui-iconfont-warning")
+                && getWarningIconElement().isVisible();
     }
 
     /**
@@ -119,7 +77,7 @@ public class AccountRepository extends WebDriverElement
     {
         if (!isEnabled())
         {
-            enableCheckbox.check();
+            getEnableCheckbox().check();
 
             LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
 
@@ -137,7 +95,7 @@ public class AccountRepository extends WebDriverElement
                 }
             }
 
-            waitUntilTrue(synchronizationButton.withTimeout(TimeoutType.PAGE_LOAD).timed().isVisible());
+            waitUntilTrue(getSynchronizationButton().withTimeout(TimeoutType.PAGE_LOAD).timed().isVisible());
         }
     }
 
@@ -146,7 +104,7 @@ public class AccountRepository extends WebDriverElement
      */
     public TimedCondition isSyncing()
     {
-        return synchronizationIcon.withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
+        return getSynchronizationIcon().withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
     }
 
     /**
@@ -165,18 +123,18 @@ public class AccountRepository extends WebDriverElement
 
     private boolean hasRepoSyncError()
     {
-        return !Strings.isNullOrEmpty(repoSynchErrorMsg.timed().getText().now());
+        return !Strings.isNullOrEmpty(getSynchronizationErrorMessageElement().timed().getText().now());
     }
 
     private void syncAndWaitForFinish()
     {
-        synchronizationButton.click();
+        getSynchronizationButton().click();
         waitUntilFalse(isSyncing());
     }
 
     public void synchronizeWithNoWait()
     {
-        synchronizationButton.click();
+        getSynchronizationButton().click();
     }
 
     /**
@@ -184,27 +142,42 @@ public class AccountRepository extends WebDriverElement
      */
     public void fullSynchronize()
     {
-        String script = synchronizationButton.getAttribute("onclick");
+        String script = getSynchronizationButton().getAttribute("onclick");
         script = script.replace("event", "{shiftKey: true}");
-        synchronizationButton.javascript().execute(script);
+        getSynchronizationButton().javascript().execute(script);
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
         waitUntilFalse(isSyncing());
     }
 
-    public String getMessage()
+    protected CheckboxElement getEnableCheckbox()
     {
-        return message.getText();
+        return container.find(By.id("repo_autolink_check" + getId()), CheckboxElement.class);
     }
 
-    public int getId()
+    protected PageElement getSynchronizationButton()
     {
-        return Integer.parseInt(getAttribute("id").substring("dvcs-repo-row-".length()));
+        return container.find(By.id("jira-dvcs-connector-forceSyncDialog-" + getId()));
     }
 
-    public boolean hasWarning()
+    protected PageElement getSynchronizationIcon()
     {
-        return warningIcon.hasClass("admin_permission") && warningIcon.hasClass("aui-iconfont-warning") && warningIcon.isVisible();
+        return container.find(By.id("syncrepoicon_" + getId()));
+    }
+
+    protected PageElement getSynchronizationMessageElement()
+    {
+        return container.find(By.id("sync_status_message_" + getId()));
+    }
+
+    protected PageElement getSynchronizationErrorMessageElement()
+    {
+        return container.find(By.id("sync_error_message_" + getId()));
+    }
+
+    protected PageElement getWarningIconElement()
+    {
+        return container.find(By.id("error_status_icon_" + getId()));
     }
 
     public static class ForceSyncDialog extends WebDriverElement
