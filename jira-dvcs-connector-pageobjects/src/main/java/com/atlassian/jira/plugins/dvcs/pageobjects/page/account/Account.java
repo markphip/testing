@@ -35,12 +35,6 @@ public class Account extends AbstractComponentPageObject
     protected PageElement header;
 
     /**
-     * Reference to "Controls" button.
-     */
-    @ElementBy(xpath = ".//button[contains(concat(' ', @class, ' '), ' aui-dropdown2-trigger ')]")
-    private PageElement controlsButton;
-
-    /**
      * Reference to {@link AccountOAuthDialog}.
      * 
      * @see #regenerate()
@@ -124,7 +118,7 @@ public class Account extends AbstractComponentPageObject
      */
     public void refresh()
     {
-        controlsButton.click();
+        getControlsButton().click();
         findControlDialog().refresh();
         // wait for popup to show up
         try
@@ -145,7 +139,7 @@ public class Account extends AbstractComponentPageObject
      */
     public AccountOAuthDialog regenerate()
     {
-        controlsButton.click();
+        getControlsButton().click();
         findControlDialog().regenerate();
         return oAuthDialog;
     }
@@ -217,14 +211,14 @@ public class Account extends AbstractComponentPageObject
         return header.find(By.tagName("h4"));
     }
 
-    // TODO
+    protected PageElement getControlsButton()
+    {
+        return header.find(By.tagName("button"));
+    }
 
-    /**
-     * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
-     */
     private AccountControlsDialog findControlDialog()
     {
-        String dropDownMenuId = controlsButton.getAttribute("aria-owns");
+        String dropDownMenuId = getControlsButton().getAttribute("aria-owns");
         return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
     }
 
