@@ -4,6 +4,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElementFinder;
+import com.google.common.collect.Iterables;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
@@ -36,18 +37,9 @@ public class AccountsPage implements Page
                 bind(pageBinder, Account.class));
     }
 
-    /**
-     * Constructor.
-     *
-     * @param accountType type of account
-     * @param accountName name of account
-     * @return founded account element
-     */
     public Account getAccount(Account.AccountType accountType, String accountName)
     {
-        return pageBinder.bind(Account.class, pageElementFinder.find(
-                By.xpath("//h4[contains(concat(' ', @class, ' '), '" + accountType.getLogoClassName() + "')]/a[text() = '" + accountName
-                        + "']/ancestor::div[contains(concat(' ', @class, ' '), 'dvcs-orgdata-container')]")));
+        return Iterables.find(getAccounts(), Account.matches(accountName, accountType));
     }
 
     public static Account syncAccount(JiraTestedProduct jiraTestedProduct,

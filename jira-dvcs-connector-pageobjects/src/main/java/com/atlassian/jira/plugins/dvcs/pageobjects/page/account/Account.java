@@ -6,12 +6,14 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
 
 import static com.atlassian.jira.pageobjects.framework.elements.PageElements.bind;
 import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.transform;
 import static org.hamcrest.Matchers.is;
 
@@ -23,55 +25,15 @@ import static org.hamcrest.Matchers.is;
  */
 public class Account extends AbstractComponentPageObject
 {
-    /**
-     * Type of account.
-     * 
-     * @author Stanislav Dvorscak
-     * 
-     */
-    public enum AccountType
-    {
-        /**
-         * GitHub account type.
-         */
-        GIT_HUB("githubLogo"), GIT_HUB_ENTERPRISE("githubeLogo"),
-
-        /**
-         * Bitbucket account type.
-         */
-        BITBUCKET("bitbucketLogo");
-
-        /**
-         * @see #getLogoClassName()
-         */
-        private String logoClassName;
-
-        /**
-         * Constructor.
-         * 
-         * @param logoClassName
-         *            {@link #getLogoClassName()}
-         */
-        private AccountType(String logoClassName)
-        {
-            this.logoClassName = logoClassName;
-        }
-
-        /**
-         * @return CSS class name of logo
-         */
-        public String getLogoClassName()
-        {
-            return logoClassName;
-        }
-    }
-
     @Inject
     private PageElementFinder elementFinder;
 
     @Inject
     private PageBinder pageBinder;
-    
+
+    @ElementBy(className = "dvcs-header-container")
+    protected PageElement header;
+
     /**
      * Reference to "Controls" button.
      */
@@ -96,9 +58,36 @@ public class Account extends AbstractComponentPageObject
         super(container);
     }
 
+    public static Predicate<Account> matches(final String name, final AccountType accountType)
+    {
+        return new Predicate<Account>()
+        {
+            @Override
+            public boolean apply(Account account)
+            {
+                return account.getName().equals(name) && account.getAccountType() == accountType;
+            }
+        };
+    }
+
+    public int getId()
+    {
+        return Integer.parseInt(container.getAttribute("id").substring("dvcs-orgdata-container-".length()));
+    }
+
+    public String getName()
+    {
+        return getNameHeader().find(By.tagName("a")).getText();
+    }
+
+    public AccountType getAccountType()
+    {
+        return AccountType.forLogo(getNameHeader().getAttribute("class"));
+    }
+
     /**
      * Resolves repository for provided name.
-     * 
+     *
      * @param repositoryName
      *            name of repository
      * @return resolved repository
@@ -141,7 +130,8 @@ public class Account extends AbstractComponentPageObject
         try
         {
             Poller.waitUntilTrue(find(By.id("refreshing-account-dialog")).timed().isVisible());
-        } catch (AssertionError e)
+        }
+        catch (AssertionError e)
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
@@ -150,7 +140,7 @@ public class Account extends AbstractComponentPageObject
 
     /**
      * Regenerates account OAuth.
-     * 
+     *
      * @return OAuth dialog
      */
     public AccountOAuthDialog regenerate()
@@ -167,15 +157,6 @@ public class Account extends AbstractComponentPageObject
         repository.enable(noAdminPermission);
 
         return repository;
-    }
-    
-    /**
-     * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
-     */
-    private AccountControlsDialog findControlDialog()
-    {
-        String dropDownMenuId = controlsButton.getAttribute("aria-owns");
-        return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
     }
 
     /**
@@ -228,6 +209,78 @@ public class Account extends AbstractComponentPageObject
             AccountRepository repository = getRepository(repositoryName);
             repository.enable();
             repository.synchronizeWithNoWait();
+        }
+    }
+
+    protected PageElement getNameHeader()
+    {
+        return header.find(By.tagName("h4"));
+    }
+
+    // TODO
+
+    /**
+     * @return "Controls" dialog, which appeared after {@link #controlsButton} fire.
+     */
+    private AccountControlsDialog findControlDialog()
+    {
+        String dropDownMenuId = controlsButton.getAttribute("aria-owns");
+        return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
+    }
+
+    /**
+     * Type of account.
+     *
+     * @author Stanislav Dvorscak
+     *
+     */
+    public enum AccountType
+    {
+        /**
+         * GitHub account type.
+         */
+        GIT_HUB("githubLogo"), GIT_HUB_ENTERPRISE("githubeLogo"),
+
+        /**
+         * Bitbucket account type.
+         */
+        BITBUCKET("bitbucketLogo");
+
+        /**
+         * @see #getLogoClassName()
+         */
+        private String logoClassName;
+
+        /**
+         * Constructor.
+         *
+         * @param logoClassName
+         *            {@link #getLogoClassName()}
+         */
+        private AccountType(String logoClassName)
+        {
+            this.logoClassName = logoClassName;
+        }
+
+        /**
+         * @return CSS class name of logo
+         */
+        public String getLogoClassName()
+        {
+            return logoClassName;
+        }
+
+        static AccountType forLogo(String classAttributeValue)
+        {
+            checkNotNull(classAttributeValue, "classAttributeValue");
+            for (AccountType accountType : values())
+            {
+                if (classAttributeValue.contains(accountType.logoClassName))
+                {
+                    return accountType;
+                }
+            }
+            throw new IllegalArgumentException("Unrecognized logo class: " + classAttributeValue);
         }
     }
 }
