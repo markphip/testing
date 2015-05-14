@@ -46,6 +46,7 @@ import java.util.List;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
@@ -272,18 +273,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
     }
 
-    // code copied from WindowSizeRule from atlassian-selenium,
-    // will be reworked to have a proper TestNG implementation of the WindowSize annotation
-    private void setSize(Dimension dimension)
-    {
-        final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
-
-        support.getDriver().manage().window().setPosition(new Point(0, 0));
-        support.getDriver().manage().window().setSize(dimension);
-        // _not_ a mistake... don't ask
-        support.getDriver().manage().window().setSize(dimension);
-    }
-
     @Test
     public void moveIssue_ShouldKeepAlsoCommits()
     {
@@ -331,7 +320,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         // check that repository is enabled
         waitUntilTrue(repository.isEnabled());
-        waitUntilTrue(repository.hasWarning());
+        waitUntilFalse(repository.hasWarning());
     }
 
     @Override
@@ -360,13 +349,32 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         for (AccountRepository repository : account.getRepositories())
         {
             waitUntilTrue(repository.isEnabled());
-            waitUntilTrue(repository.hasWarning());
+            waitUntilFalse(repository.hasWarning());
         }
+    }
+
+    @Test
+    public void testFullSync()
+    {
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        enableRepositoryAsAdmin("public-hg-repo").fullSynchronize();
     }
 
     //-------------------------------------------------------------------
     //--------- these methods should go to some common utility/class ----
     //-------------------------------------------------------------------
+
+    // code copied from WindowSizeRule from atlassian-selenium,
+    // will be reworked to have a proper TestNG implementation of the WindowSize annotation
+    private void setSize(Dimension dimension)
+    {
+        final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
+
+        support.getDriver().manage().window().setPosition(new Point(0, 0));
+        support.getDriver().manage().window().setSize(dimension);
+        // _not_ a mistake... don't ask
+        support.getDriver().manage().window().setSize(dimension);
+    }
 
     private OAuthCredentials getOAuthCredentials()
     {
@@ -401,7 +409,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     private OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
-
         RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         try
         {
@@ -413,7 +420,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
             return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync);
         }
     }
-
 
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
     {

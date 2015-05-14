@@ -2,18 +2,22 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.AbstractComponentPageObject;
+import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.CheckboxElement;
 import com.atlassian.pageobjects.elements.DataAttributeFinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.PageElementActions;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Conditions;
+import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -31,12 +35,17 @@ import static org.hamcrest.Matchers.not;
  */
 public class AccountRepository extends AbstractComponentPageObject
 {
-
     @Inject
     private PageElementFinder elementFinder;
 
     @Inject
+    private PageBinder pageBinder;
+
+    @Inject
     private JiraTestedProduct jiraTestedProduct;
+
+    @Inject
+    private PageElementActions actions;
 
     public AccountRepository(PageElement container) {
         super(container);
@@ -152,14 +161,18 @@ public class AccountRepository extends AbstractComponentPageObject
      */
     public AccountRepository fullSynchronize()
     {
-        String script = getSynchronizationButton().getAttribute("onclick");
-        script = script.replace("event", "{shiftKey: true}");
-        getSynchronizationButton().javascript().execute(script);
-        ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
+        actions.keyDown(Keys.LEFT_SHIFT).click(getSynchronizationButton()).perform();
+
+        ForceSyncDialog forceSyncDialog = getForceSyncDialog();
+        Poller.waitUntilTrue(forceSyncDialog.isOpen());
         forceSyncDialog.fullSync();
         waitUntilFalse(isSyncing());
 
         return this;
+    }
+
+    protected ForceSyncDialog getForceSyncDialog() {
+        return pageBinder.bind(ForceSyncDialog.class, elementFinder.find(By.className("forceSyncDialog")));
     }
 
     protected CheckboxElement getEnableCheckbox()
@@ -218,46 +231,27 @@ public class AccountRepository extends AbstractComponentPageObject
         waitUntilFalse(isSyncing());
     }
 
-    public static class ForceSyncDialog extends WebDriverElement
+    public static class ForceSyncDialog extends AbstractComponentPageObject
     {
-        @ElementBy(xpath = "//a[@class='aui-button']")
+        @ElementBy(className = "full-sync-trigger")
         private PageElement fullSyncButton;
 
-        public ForceSyncDialog(final By locator)
-        {
-            super(locator);
-        }
-
-        public ForceSyncDialog(final By locator, final TimeoutType timeoutType)
-        {
-            super(locator, timeoutType);
-        }
-
-        public ForceSyncDialog(final By locator, final WebDriverLocatable parent)
-        {
-            super(locator, parent);
-        }
-
-        public ForceSyncDialog(final By locator, final WebDriverLocatable parent, final TimeoutType timeoutType)
-        {
-            super(locator, parent, timeoutType);
-        }
-
-        public ForceSyncDialog(final WebDriverLocatable locatable, final TimeoutType timeoutType)
-        {
-            super(locatable, timeoutType);
+        public ForceSyncDialog(PageElement container) {
+            super(container);
         }
 
         public void fullSync()
         {
             fullSyncButton.click();
+            Poller.waitUntilFalse(isOpen());
+        }
+
+        public TimedCondition isOpen()
+        {
+            return container.timed().isVisible();
         }
     }
 
-    /**
-     * Page class for linking repository dialog
-     *
-     */
     public static class LinkingRepositoryDialog extends WebDriverElement
     {
         @ElementBy (xpath = "//div[@class='dialog-button-panel']/button")
