@@ -8,16 +8,19 @@ import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
+import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
+import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
-import com.google.common.base.Strings;
-import org.junit.Assert;
 import org.openqa.selenium.By;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Represents repository table row of {@link Account}.
@@ -46,21 +49,46 @@ public class AccountRepository extends AbstractComponentPageObject
     /**
      * @return is repository enabled?
      */
-    public boolean isEnabled()
+    public TimedCondition isEnabled()
     {
-        return getEnableCheckbox().isSelected();
+        return Conditions.and(
+                getEnableCheckbox().timed().isSelected(),
+                getSynchronizationButton().timed().isVisible()
+        );
     }
 
-    public String getMessage()
+    public TimedQuery<String> getMessage()
     {
-        return getSynchronizationMessageElement().getText();
+        return getSynchronizationMessageElement().timed().getText();
     }
 
-    public boolean hasWarning()
+    public TimedCondition hasWarning()
     {
-        return getWarningIconElement().hasClass("admin_permission")
-                && getWarningIconElement().hasClass("aui-iconfont-warning")
-                && getWarningIconElement().isVisible();
+        return Conditions.and(
+                getWarningIconElement().timed().isVisible(),
+                getWarningIconElement().timed().hasClass("admin_permission"),
+                getWarningIconElement().timed().hasClass("aui-iconfont-warning")
+        );
+    }
+
+    /**
+     * @return True if synchronization is currently in progress.
+     */
+    @Nonnull
+    public TimedCondition isSyncing()
+    {
+        return getSynchronizationIcon().withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
+    }
+
+    public TimedCondition hasRepositorySyncError()
+    {
+        return Conditions.forMatcher(getRepositorySyncError(), not(isEmptyOrNullString()));
+    }
+
+    @Nonnull
+    public TimedQuery<String> getRepositorySyncError()
+    {
+        return getSynchronizationErrorMessageElement().timed().getText();
     }
 
     /**
@@ -68,79 +96,60 @@ public class AccountRepository extends AbstractComponentPageObject
      *
      * @see #isEnabled()
      */
-    public void enable()
+    public AccountRepository enable()
     {
-        enable(false);
+        return enable(false);
     }
 
-    public void enable(boolean forceNoAdminPermissionCheck)
+    public AccountRepository enable(boolean forceNoAdminPermissionCheck)
     {
-        if (!isEnabled())
+        if (!isEnabled().now())
         {
             getEnableCheckbox().check();
-
-            LinkingRepositoryDialog linkingRepositoryDialog = elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
-
-            // check that dialog appears
-            try
-            {
-                waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
-                linkingRepositoryDialog.clickOk();
-            }
-            catch (AssertionError e)
-            {
-                if (forceNoAdminPermissionCheck)
-                {
-                    throw new AssertionError("DVCS Webhhook registration dialog expected, but not present");
-                }
-            }
-
-            waitUntilTrue(getSynchronizationButton().withTimeout(TimeoutType.PAGE_LOAD).timed().isVisible());
+            LinkingRepositoryDialog linkingRepositoryDialog = getLinkRepositoryDialog();
+            approveLinkRepository(forceNoAdminPermissionCheck, linkingRepositoryDialog);
+            waitUntilTrue(isEnabled());
         }
+
+        return this;
     }
 
     /**
-     * @return True if synchronization is currently in progress.
+     * Triggers synchronization and waits for the result. Re-tries if the synchronization failed on the first attempt.
+     *
+     * @return this repository
      */
-    public TimedCondition isSyncing()
-    {
-        return getSynchronizationIcon().withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
-    }
-
-    /**
-     * Fires synchronization button.
-     */
-    public void synchronize()
+    public AccountRepository synchronize()
     {
         syncAndWaitForFinish();
-        if (hasRepoSyncError())
+        if (hasRepositorySyncError().now())
         {
             // retrying synchronization once
             syncAndWaitForFinish();
         }
-        Assert.assertFalse("Synchronization failed", hasRepoSyncError());
-    }
+        waitUntilFalse("Synchronization failed", hasRepositorySyncError());
 
-    private boolean hasRepoSyncError()
-    {
-        return !Strings.isNullOrEmpty(getSynchronizationErrorMessageElement().timed().getText().now());
-    }
-
-    private void syncAndWaitForFinish()
-    {
-        getSynchronizationButton().click();
-        waitUntilFalse(isSyncing());
-    }
-
-    public void synchronizeWithNoWait()
-    {
-        getSynchronizationButton().click();
+        return this;
     }
 
     /**
-     * Fires full synchronization
+     * Triggers synchronization without waiting for and/or checking the results of it.
+     *
+     * @return this repository
      */
-    public void fullSynchronize()
+    public AccountRepository triggerSynchronization()
+    {
+        getSynchronizationButton().click();
+
+        return this;
+    }
+
+    /**
+     * Triggers full synchronization.
+     *
+     * @return this repository
+     */
+    public AccountRepository fullSynchronize()
     {
         String script = getSynchronizationButton().getAttribute("onclick");
         script = script.replace("event", "{shiftKey: true}");
@@ -148,11 +157,17 @@ public class AccountRepository extends AbstractComponentPageObject
         ForceSyncDialog forceSyncDialog = elementFinder.find(By.xpath("//div[contains(concat(' ', @class, ' '), ' forceSyncDialog ')]"), ForceSyncDialog.class);
         forceSyncDialog.fullSync();
         waitUntilFalse(isSyncing());
+
+        return this;
     }
 
     protected CheckboxElement getEnableCheckbox()
     {
-        return container.find(By.id("repo_autolink_check" + getId()), CheckboxElement.class);
+        return container.find(By.id("repo_autolink_check" + getId()), CheckboxElement.class, TimeoutType.PAGE_LOAD);
+    }
+
+    protected LinkingRepositoryDialog getLinkRepositoryDialog() {
+        return elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
     }
 
     protected PageElement getSynchronizationButton()
@@ -178,6 +193,28 @@ public class AccountRepository extends AbstractComponentPageObject
     protected PageElement getWarningIconElement()
     {
         return container.find(By.id("error_status_icon_" + getId()));
+    }
+
+    private void approveLinkRepository(boolean forceNoAdminPermissionCheck, LinkingRepositoryDialog linkingRepositoryDialog) {
+        // check that dialog appears
+        try
+        {
+            waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
+            linkingRepositoryDialog.clickOk();
+        }
+        catch (AssertionError e)
+        {
+            if (forceNoAdminPermissionCheck)
+            {
+                throw new AssertionError("DVCS Webhhook registration dialog expected, but not present");
+            }
+        }
+    }
+
+    private void syncAndWaitForFinish()
+    {
+        triggerSynchronization();
+        waitUntilFalse(isSyncing());
     }
 
     public static class ForceSyncDialog extends WebDriverElement

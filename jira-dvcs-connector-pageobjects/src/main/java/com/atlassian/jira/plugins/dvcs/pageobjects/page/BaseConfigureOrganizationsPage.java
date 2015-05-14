@@ -215,12 +215,6 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         repository.enable();
         repository.synchronize();
 
-        // if synchronization fails, let's try again
-        if (repository.getMessage().contains(SYNC_FAILED_MESSAGE))
-        {
-            repository.synchronize();
-        }
-
         return repository;
     }
 }

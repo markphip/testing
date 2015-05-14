@@ -28,9 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static java.lang.Thread.sleep;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * @author Martin Skurla
@@ -105,7 +108,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
         AccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
 
-        assertThat(repository.getMessage()).doesNotContain(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE);
+        waitUntil(repository.getMessage(), not(containsString(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE)));
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 

@@ -161,16 +161,7 @@ public class Account extends AbstractComponentPageObject
      */
     public AccountRepository synchronizeRepository(String repositoryName)
     {
-        AccountRepository repository = getRepository(repositoryName);
-
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-        }
-
-        repository.synchronize();
-
-        return repository;
+        return getRepository(repositoryName).enable().synchronize();
     }
 
     /**
@@ -182,13 +173,7 @@ public class Account extends AbstractComponentPageObject
     public AccountRepository fullSynchronizeRepository(String repositoryName)
     {
         AccountRepository repository = getRepository(repositoryName);
-        if (!repository.isEnabled())
-        {
-            repository.enable();
-        }
-        repository.fullSynchronize();
-
-        return repository;
+        return repository.enable().fullSynchronize();
     }
 
     /**
@@ -202,7 +187,7 @@ public class Account extends AbstractComponentPageObject
         {
             AccountRepository repository = getRepository(repositoryName);
             repository.enable();
-            repository.synchronizeWithNoWait();
+            repository.triggerSynchronization();
         }
     }
 

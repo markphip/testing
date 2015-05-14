@@ -36,7 +36,6 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -47,6 +46,7 @@ import java.util.List;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
@@ -317,8 +317,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         AccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
 
         // check that repository is enabled
-        Assert.assertTrue(repository.isEnabled());
-        Assert.assertTrue(repository.hasWarning());
+        waitUntilTrue(repository.isEnabled());
+        waitUntilTrue(repository.hasWarning());
     }
 
     @Override
@@ -330,8 +330,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         AccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
 
         // check that repository is enabled
-        Assert.assertTrue(repository.isEnabled());
-        Assert.assertFalse(repository.hasWarning());
+        waitUntilTrue(repository.isEnabled());
+        waitUntilTrue(repository.hasWarning());
     }
 
     @Override
@@ -345,7 +345,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         for (AccountRepository repository : account.getRepositories())
         {
-            Assert.assertTrue(repository.isEnabled());
+            waitUntilTrue(repository.isEnabled());
         }
     }
 
@@ -359,8 +359,8 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, ACCOUNT_NAME);
         for (AccountRepository repository : account.getRepositories())
         {
-            Assert.assertTrue(repository.isEnabled());
-            Assert.assertFalse(repository.hasWarning());
+            waitUntilTrue(repository.isEnabled());
+            waitUntilTrue(repository.hasWarning());
         }
     }
 
