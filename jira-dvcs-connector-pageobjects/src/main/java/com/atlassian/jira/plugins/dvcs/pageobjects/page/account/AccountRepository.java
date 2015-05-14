@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.AbstractComponentPageObject;
 import com.atlassian.pageobjects.elements.CheckboxElement;
+import com.atlassian.pageobjects.elements.DataAttributeFinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -43,7 +44,7 @@ public class AccountRepository extends AbstractComponentPageObject
 
     public int getId()
     {
-        return Integer.parseInt(container.getAttribute("id").substring("dvcs-repo-row-".length()));
+        return Integer.parseInt(DataAttributeFinder.query(container).getDataAttribute("id"));
     }
 
     /**
