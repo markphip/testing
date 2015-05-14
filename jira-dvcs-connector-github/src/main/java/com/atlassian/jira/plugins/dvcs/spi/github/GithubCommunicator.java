@@ -710,4 +710,10 @@ public class GithubCommunicator implements DvcsCommunicator
             throw new GithubRateLimitExceededException(rateLimit);
         }
     }
+
+    @Override
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
+    {
+
+    }
 }

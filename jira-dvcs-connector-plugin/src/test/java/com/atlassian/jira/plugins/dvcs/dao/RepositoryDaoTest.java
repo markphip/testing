@@ -3,7 +3,6 @@ package com.atlassian.jira.plugins.dvcs.dao;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToProjectMapping;
 import com.atlassian.jira.plugins.dvcs.dao.impl.RepositoryDaoImpl;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -17,20 +16,15 @@ import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.Assert;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
-
-import net.java.ao.Query;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,8 +44,6 @@ public class RepositoryDaoTest
     @Mock
     private RepositoryMapping repositoryMapping;
 
-    private String[] sampleProjectKeys = { "TEST", "ASDF", "PROJ" };
-
     // tested object
     private RepositoryDao repositoryDao;
 
@@ -69,6 +61,7 @@ public class RepositoryDaoTest
     @Test
     public void testSave()
     {
+
         Repository sampleRepository = createSampleRepository();
         when(activeObjects.get(eq(OrganizationMapping.class), eq(1))).thenReturn(
                 organizationMapping);
@@ -138,16 +131,8 @@ public class RepositoryDaoTest
         verify(repositoryMapping).setLastCommitDate(eq(SAMPLE_DATE));
         verify(repositoryMapping).setLinked(eq(true));
         verify(repositoryMapping).setDeleted(eq(true));
-        verify(repositoryMapping).save();
-    }
 
-    @Test
-    public void testGetPreviouslyLinkedProjects()
-    {
-        RepositoryToProjectMapping[] sampleMappings = createSampleMappings();
-        when(activeObjects.find(eq(RepositoryToProjectMapping.class), any(Query.class))).thenReturn(
-                sampleMappings);
-        Assert.assertEquals(repositoryDao.getPreviouslyLinkedProjects(1), Arrays.asList(sampleProjectKeys));
+        verify(repositoryMapping).save();
     }
 
     private Repository createSampleRepository()
@@ -163,16 +148,4 @@ public class RepositoryDaoTest
         return repository;
     }
 
-    private RepositoryToProjectMapping[] createSampleMappings()
-    {
-        RepositoryToProjectMapping[] sampleMappings = new RepositoryToProjectMapping[3];
-
-        for (int i = 0; i < 3; i++)
-        {
-            sampleMappings[i] = mock(RepositoryToProjectMapping.class);
-            when(sampleMappings[i].getProjectKey()).thenReturn(sampleProjectKeys[i]);
-            when(sampleMappings[i].getRepository()).thenReturn(repositoryMapping);
-        }
-        return sampleMappings;
-    }
 }

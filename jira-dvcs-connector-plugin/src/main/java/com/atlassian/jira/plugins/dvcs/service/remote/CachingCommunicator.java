@@ -259,6 +259,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     }
 
     @Override
+    public void linkRepositoryIncremental(Repository repository, Set<String> withPossibleNewProjectkeys)
+    {
+        delegate.linkRepositoryIncremental(repository, withPossibleNewProjectkeys);
+    }
+
+    @Override
     public DvcsUser getTokenOwner(Organization organization)
     {
         return delegate.getTokenOwner(organization);
