@@ -45,11 +45,12 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
     private final ApplicationProperties applicationProperties;
-    RepositoryService repositoryService;
+    @Autowired
+    private RepositoryService repositoryService;
 
     @Autowired
     public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
-            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager, RepositoryService repositoryService)
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager)
     {
         this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
         this.projectManager = checkNotNull(projectManager);
