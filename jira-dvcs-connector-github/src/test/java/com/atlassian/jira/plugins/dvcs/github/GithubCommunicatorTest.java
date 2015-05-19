@@ -109,8 +109,6 @@ public class GithubCommunicatorTest
     @Mock
     private GitHubEventService gitHubEventService;
     @Mock
-    private GitHubClient gitHubClient;
-    @Mock
     private UserServiceFactory userServiceFactory;
     @Spy
     private GithubClientWithTimeout gitHubClient = new GithubClientWithTimeout("localhost", 8080, "http");
@@ -265,8 +263,8 @@ public class GithubCommunicatorTest
             }
         }).when(gitHubClient).getRateLimit();
 
-        when(repositoryMock.getSlug()).thenReturn("SLUG");
-        when(repositoryMock.getOrgName()).thenReturn("ORG");
+        when(repository.getSlug()).thenReturn("SLUG");
+        when(repository.getOrgName()).thenReturn("ORG");
     }
 
     @Test
@@ -354,16 +352,16 @@ public class GithubCommunicatorTest
     @Test
     public void getChangesetShouldHitGithubRateLimit() throws ResponseException, IOException
     {
-        when(commitServiceMock.getCommit(any(IRepositoryIdProvider.class), anyString())).thenThrow(new RequestException(requestError, 403));
+        when(commitService.getCommit(any(IRepositoryIdProvider.class), anyString())).thenThrow(new RequestException(requestError, 403));
         try
         {
-            communicator.getChangeset(repositoryMock, "abcde");
+            communicator.getChangeset(repository, "abcde");
             fail("GithubRateLimitExceededException expected");
         }
         catch (GithubRateLimitExceededException e)
         {
             assertThat(e.getRateLimit()).isSameAs(rateLimit);
-            verify(commitServiceMock).getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString());
+            verify(commitService).getCommit(Matchers.<IRepositoryIdProvider>anyObject(), anyString());
         }
     }
 
@@ -372,8 +370,8 @@ public class GithubCommunicatorTest
     {
         try
         {
-            when(repositoryServiceMock.getBranches(any(IRepositoryIdProvider.class))).thenThrow(new RequestException(requestError, 403));
-            communicator.getBranches(repositoryMock);
+            when(repositoryService.getBranches(any(IRepositoryIdProvider.class))).thenThrow(new RequestException(requestError, 403));
+            communicator.getBranches(repository);
             fail("GithubRateLimitExceededException expected");
         }
         catch (GithubRateLimitExceededException e)
