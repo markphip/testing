@@ -13,6 +13,7 @@ import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
 import com.atlassian.sal.api.UrlMode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -44,7 +45,9 @@ public class BitbucketLinkerImpl implements BitbucketLinker
 
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ProjectManager projectManager;
+
     private final ApplicationProperties applicationProperties;
+
     @Autowired
     private RepositoryService repositoryService;
 
@@ -56,6 +59,15 @@ public class BitbucketLinkerImpl implements BitbucketLinker
         this.projectManager = checkNotNull(projectManager);
         this.repositoryService = checkNotNull(repositoryService);
         this.applicationProperties = checkNotNull(applicationProperties);
+    }
+
+    @VisibleForTesting
+    public BitbucketLinkerImpl(BitbucketClientBuilderFactory bitbucketClientBuilderFactory,
+            @ComponentImport ApplicationProperties applicationProperties, @ComponentImport ProjectManager projectManager,
+            final RepositoryService repositoryService)
+    {
+        this(bitbucketClientBuilderFactory, applicationProperties, projectManager);
+        this.repositoryService = repositoryService;
     }
 
     /**
