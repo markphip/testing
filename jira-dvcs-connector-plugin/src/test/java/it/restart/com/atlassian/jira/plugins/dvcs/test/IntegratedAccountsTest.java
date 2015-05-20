@@ -15,27 +15,24 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountOAuthDial
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
-import com.google.common.base.Predicate;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.util.TestAccounts;
-import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.json.JSONException;
 import org.json.JSONWriter;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests integrated accounts functionality.
@@ -187,8 +184,8 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         }
 
         AccountOAuthDialog oAuthDialog = account.regenerate();
-        Assert.assertEquals(oAuthNew.key, oAuthDialog.getKey());
-        Assert.assertEquals(oAuthNew.secret, oAuthDialog.getSecret());
+        assertEquals(oAuthNew.key, oAuthDialog.getKey());
+        assertEquals(oAuthNew.secret, oAuthDialog.getSecret());
     }
 
     /**
@@ -202,7 +199,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 
         AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
         Account account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
+        assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
 
     /**
@@ -221,7 +218,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 
         AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
         Account account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
-        Assert.assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
+        assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
 
     /**
@@ -231,22 +228,13 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         buildOnDemandProperties();
         refreshIntegratedAccounts();
-        new WebDriverWait(JIRA.getTester().getDriver(), 30).until(new Predicate<WebDriver>() {
 
-            @Override
-            public boolean apply(@Nullable WebDriver input) {
-                AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
-                Iterator<Account> accounts = accountsPage.getAccounts().iterator();
-                while (accounts.hasNext()) {
-                    if (accounts.next().isOnDemand()) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-        });
+        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        Iterator<Account> accounts = accountsPage.getAccounts().iterator();
+        while (accounts.hasNext())
+        {
+            assertFalse(accounts.next().isOnDemand());
+        }
     }
 
     /**
@@ -256,22 +244,12 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
     {
         try
         {
-            String restUrl = JIRA.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reload";
+            String restUrl = JIRA.getProductInstance().getBaseUrl() + "/rest/bitbucket/1.0/integrated-accounts/reloadSync";
             GetMethod getMethod = new GetMethod(restUrl);
-            Assert.assertEquals(200, new HttpClient().executeMethod(getMethod));
-
-            try
-            {
-                Thread.sleep(5000);
-            } catch (InterruptedException e)
-            {
-                throw new RuntimeException(e);
-
-            }
+            assertEquals(200, new HttpClient().executeMethod(getMethod));
         } catch (IOException e)
         {
             throw new RuntimeException(e);
-
         }
     }
 

@@ -12,8 +12,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>3.1.3-SNAPSHOT</version>
-
+    <version>3.3.1-SNAPSHOT</version>
     <licenses>
         <license>
             <name>BSD 2-Clause License</name>
@@ -52,29 +51,17 @@
     <packaging>pom</packaging>
 
     <properties>
-        <!-- jira 6 variables -->
-        <jira6.version>6.4-OD-16-005</jira6.version>
-        <jira6.software.version>0.29-D20150428T010945</jira6.software.version>
-        <jira6.testkit.version>6.4.9</jira6.testkit.version>
-        <!-- end -->
-        <!-- jira7 variables -->
-        <jira7.version>7.0-20150504.154833</jira7.version>
-        <jira7.software.version>1.15</jira7.software.version>
-        <jira7.testkit.version>7.0.32</jira7.testkit.version>
-        <greenhopper7.version>6.7-breakit-6</greenhopper7.version>
-        <!-- end -->
-        <jira.compile.version>${jira6.version}</jira.compile.version>
-        <jira.software.version>${jira6.software.version}</jira.software.version>
-        <testkit.version>${jira6.testkit.version}</testkit.version>
-        <greenhopper6.version>6.6.0-D20140904T040435</greenhopper6.version>
+        <jira.compile.version>6.5-OD-03-002</jira.compile.version>
+        <jira.software.version>0.29-D20150428T010945</jira.software.version>
+        <testkit.version>6.4.9</testkit.version>
+        <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <!-- these two versions might be overwritten by test profiles -->
-        <jira.version>${jira.compile.version}</jira.version>
-        <jira.data.version>${jira.compile.version}</jira.data.version>
-        <!-- these two versions might be overwritten by test profiles -->
+        <jira.version>6.5-OD-03-002</jira.version>
+        <jira.data.version>6.5-OD-03-002</jira.data.version>
         <ao.version>0.28.9</ao.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <streams.version>5.3.14</streams.version>
-        <greenhopper.version>${greenhopper6.version}</greenhopper.version>
+        <greenhopper.version>6.7-breakit-6</greenhopper.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
@@ -96,11 +83,6 @@
         <pocketknife.version>0.67</pocketknife.version>
         <querydsl.version>3.5.0</querydsl.version>
 
-        <sonar.jdbc.url>jdbc:mysql://fusion.dyn.syd.atlassian.com:3306/sonar</sonar.jdbc.url>
-        <sonar.jdbc.driver>com.mysql.jdbc.Driver</sonar.jdbc.driver>
-        <sonar.jdbc.username>sonar</sonar.jdbc.username>
-        <sonar.jdbc.password>sonar</sonar.jdbc.password>
-        <sonar.host.url>http://fusion.dyn.syd.atlassian.com:9000</sonar.host.url>
     </properties>
 
     <build>
@@ -511,19 +493,23 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>${jira7.version}</jira.compile.version>
-                <jira.software.version>${jira7.software.version}</jira.software.version>
-                <testkit.version>${jira7.testkit.version}</testkit.version>
+                <jira.compile.version>7.0-OD-02-207</jira.compile.version>
+                <jira.version>7.0-OD-02-207</jira.version>
+                <jira.data.version>7.0-OD-02-207</jira.data.version>
+                <jira.software.version>1.15</jira.software.version>
+                <testkit.version>7.0.32</testkit.version>
+                <greenhopper.version>6.7-breakit-6</greenhopper.version>
+                <jira.data.path></jira.data.path>
             </properties>
         </profile>
         <profile>
             <id>sonar</id>
             <properties>
-                <sonar.jdbc.url>jdbc:mysql://fusion.dyn.syd.atlassian.com:3306/sonar</sonar.jdbc.url>
-                <sonar.jdbc.driver>com.mysql.jdbc.Driver</sonar.jdbc.driver>
+                <sonar.jdbc.url>jdbc:postgresql://sonarqube-db.internal.atlassian.com/sonar</sonar.jdbc.url>
+                <sonar.jdbc.driver>org.postgresql.Driver</sonar.jdbc.driver>
                 <sonar.jdbc.username>sonar</sonar.jdbc.username>
                 <sonar.jdbc.password>sonar</sonar.jdbc.password>
-                <sonar.host.url>http://fusion.dyn.syd.atlassian.com:9000</sonar.host.url>
+                <sonar.host.url>http://ec402.prod.inf.atlassian.com:9000/</sonar.host.url>
             </properties>
             <!-- Exclude test modules so they don't affect the overall metrics for DevStatus -->
             <modules>
@@ -540,6 +526,13 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>sonar-maven-plugin</artifactId>
                         <version>2.5</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.postgresql</groupId>
+                                <artifactId>postgresql</artifactId>
+                                <version>9.4-1201-jdbc41</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.jacoco</groupId>

@@ -1,8 +1,14 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import org.openqa.selenium.By;
+
+import static com.atlassian.pageobjects.elements.query.Conditions.and;
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.Matchers.is;
 
 public class RepositoryDiv
 {
@@ -13,7 +19,6 @@ public class RepositoryDiv
     {
         this.rootElement = rootElement;
         this.syncRadio = rootElement != null? rootElement.find(By.className("radio")) : null;
-
     }
 
     public String getMessage()
@@ -50,9 +55,22 @@ public class RepositoryDiv
     {
         if (syncRadio != null)
         {
-            Poller.waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
-            syncRadio.click();
+            waitUntilTrue("Sync radio should always be enabled", syncRadio.timed().isEnabled());
+            if (!syncRadio.isSelected())
+            {
+                syncRadio.click();
+                waitUntilTrue(syncRadio.timed().isSelected());
+            }
         }
+    }
+
+    public void sync()
+    {
+        final PageElement syncIcon = getSyncIcon();
+        waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isEnabled(), syncIcon.timed().isVisible()));
+        syncIcon.click();
+        waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
+        waitUntil(syncIcon.timed().hasClass("running"), is(false), by(60, SECONDS));
     }
 
 }
