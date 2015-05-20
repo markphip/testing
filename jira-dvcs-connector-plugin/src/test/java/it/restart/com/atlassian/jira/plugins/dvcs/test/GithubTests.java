@@ -17,7 +17,6 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
-import com.atlassian.pageobjects.elements.query.Poller;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
@@ -29,6 +28,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.GITHUB_API_URL;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.REPOSITORY_NAME;
@@ -227,7 +227,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
         // check that repository is enabled
         waitUntilTrue(repository.isEnabled());
-        waitUntilTrue(repository.hasWarning());
+        waitUntilFalse(repository.hasWarning());
     }
 
     @Test
@@ -261,7 +261,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         for (AccountRepository repository : account.getRepositories())
         {
             waitUntilTrue(repository.isEnabled());
-            Poller.waitUntilFalse(repository.hasWarning());
+            waitUntilFalse(repository.hasWarning());
         }
     }
 
