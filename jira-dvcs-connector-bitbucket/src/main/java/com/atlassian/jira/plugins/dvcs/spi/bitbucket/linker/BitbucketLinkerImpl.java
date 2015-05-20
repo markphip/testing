@@ -57,7 +57,6 @@ public class BitbucketLinkerImpl implements BitbucketLinker
     {
         this.bitbucketClientBuilderFactory = checkNotNull(bitbucketClientBuilderFactory);
         this.projectManager = checkNotNull(projectManager);
-        this.repositoryService = checkNotNull(repositoryService);
         this.applicationProperties = checkNotNull(applicationProperties);
     }
 
