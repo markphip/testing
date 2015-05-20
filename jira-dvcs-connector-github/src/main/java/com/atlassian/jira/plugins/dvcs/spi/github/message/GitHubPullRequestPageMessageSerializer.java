@@ -10,6 +10,8 @@ import java.util.Set;
 
 /**
  * {@link GitHubPullRequestPageMessage} message serializer.
+ *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 @Component
 public class GitHubPullRequestPageMessageSerializer

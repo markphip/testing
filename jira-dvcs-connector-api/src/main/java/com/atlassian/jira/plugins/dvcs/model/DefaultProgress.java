@@ -44,9 +44,6 @@ public class DefaultProgress implements Progress, Serializable
     private String error;
 
     @XmlAttribute
-    private String errorTitle;
-
-    @XmlAttribute
     private Date firstMessageTime;
 
     @XmlAttribute
@@ -63,9 +60,6 @@ public class DefaultProgress implements Progress, Serializable
 
     @XmlAttribute
     private boolean webHookSync;
-
-    @XmlAttribute
-    private boolean warning;
 
     @XmlTransient
     private boolean hasAdminPermission = true;
@@ -324,29 +318,5 @@ public class DefaultProgress implements Progress, Serializable
     public void setWebHookSync(final boolean webHookSync)
     {
         this.webHookSync = webHookSync;
-    }
-
-    @Override
-    public boolean isWarning()
-    {
-        return warning;
-    }
-
-    @Override
-    public void setWarning(final boolean value)
-    {
-        this.warning = value;
-    }
-
-    @Override
-    public String getErrorTitle()
-    {
-        return errorTitle;
-    }
-
-    @Override
-    public void setErrorTitle(final String errorTitle)
-    {
-        this.errorTitle = errorTitle;
     }
 }

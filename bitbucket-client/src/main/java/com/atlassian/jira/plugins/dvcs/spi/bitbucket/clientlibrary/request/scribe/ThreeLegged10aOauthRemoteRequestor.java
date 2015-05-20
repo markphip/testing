@@ -18,6 +18,8 @@ import java.util.Map;
 /**
  * ThreeLegged10aOauthRemoteRequestor
  *
+ * Created on 13.7.2012, 10:26:08 <br />
+ *
  * @author jhocman@atlassian.com
  */
 public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequestor
@@ -26,13 +28,16 @@ public class ThreeLegged10aOauthRemoteRequestor extends ScribeOauthRemoteRequest
     private final HeaderExtractorImpl authHeaderCreator;
 
     /**
-    /**
+     * The Constructor.
      *
-     * @param apiProvider
+     * @param apiUrl
+     *            the api url
      * @param key
+     *            the key
      * @param secret
-     * @param accessTokenWithSecret the access token = TOKEN + '&amp;' + TOKEN_SECRET
-     * @param httpClientProvider
+     *            the secret
+     * @param accessTokenWithSecret
+     *            the access token = TOKEN + '&' + TOKEN_SECRET
      */
     public ThreeLegged10aOauthRemoteRequestor(ApiProvider apiProvider, String key, String secret, String accessTokenWithSecret, HttpClientProvider httpClientProvider)
     {

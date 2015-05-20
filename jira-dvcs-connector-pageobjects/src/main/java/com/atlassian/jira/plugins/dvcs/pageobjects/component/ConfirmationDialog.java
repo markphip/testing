@@ -13,6 +13,8 @@ import static org.hamcrest.Matchers.is;
 
 /**
  * Represents the confirmation dialog
+ * 
+ * @author Miroslav Stencel <mstencel@atlassian.com>
  *
  */
 public class ConfirmationDialog extends WebDriverElement

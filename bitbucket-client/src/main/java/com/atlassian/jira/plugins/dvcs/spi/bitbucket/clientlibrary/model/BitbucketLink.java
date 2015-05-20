@@ -4,6 +4,8 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model;
  * "html": {
  *      "href": "https://bitbucket.org/user/repo"
  *  },
+ *
+ *  @author Miroslav Stencel <mstencel@atlassian.com>
  */
 public class BitbucketLink
 {

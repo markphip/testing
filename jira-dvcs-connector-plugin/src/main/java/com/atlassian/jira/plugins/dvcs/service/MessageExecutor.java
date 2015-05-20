@@ -2,8 +2,6 @@ package com.atlassian.jira.plugins.dvcs.service;
 
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
-import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
-import com.atlassian.jira.plugins.dvcs.ProgressUtil;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySyncHelper;
 import com.atlassian.jira.plugins.dvcs.model.DiscardReason;
@@ -15,10 +13,7 @@ import com.atlassian.jira.plugins.dvcs.service.message.HasProgress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageConsumer;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
-import com.atlassian.jira.plugins.dvcs.spi.github.GithubRateLimitExceededException;
 import com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag;
-import com.atlassian.jira.util.I18nHelper;
-import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.util.concurrent.ThreadFactories;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -41,8 +36,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GENERIC_ERROR_KEY;
-import static com.atlassian.jira.plugins.dvcs.DvcsErrorMessages.GITHUB_RATE_LIMIT_REACHED_ERROR_KEY;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.SOFT_SYNC;
 import static com.atlassian.jira.plugins.dvcs.sync.SynchronizationFlag.WEBHOOK_SYNC;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -68,10 +61,6 @@ public class MessageExecutor
 
     @Resource
     private ClusterLockServiceFactory clusterLockServiceFactory;
-
-    @Resource
-    @ComponentImport
-    private I18nHelper i18nHelper;
 
     @Resource
     private MessagingService messagingService;
@@ -371,18 +360,6 @@ public class MessageExecutor
                 consumer.onReceive(message, payload);
                 messagingService.ok(consumer, message);
             }
-            catch (GithubRateLimitExceededException e)
-            {
-                messagingService.fail(consumer, message, e);
-
-                if (message.getRetriesCount() >= 3)
-                {
-                    messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
-                }
-                ProgressUtil.setErrorMessage(progress, i18nHelper.getText(DvcsErrorMessages.DVCS_SYNC_PAUSED_KEY),
-                        i18nHelper.getText(GITHUB_RATE_LIMIT_REACHED_ERROR_KEY), true);
-                LOGGER.error(e.getMessage());
-            }
             catch (Throwable t)
             {
                 LOGGER.error("Synchronization failed: " + t.getMessage(), t);
@@ -393,7 +370,7 @@ public class MessageExecutor
                     messagingService.discard(consumer, message, DiscardReason.RETRY_COUNT_EXCEEDED);
                 }
 
-                progress.setError(i18nHelper.getText(GENERIC_ERROR_KEY));
+                progress.setError("Error during sync. See server logs.");
                 Throwables.propagateIfInstanceOf(t, Error.class);
             }
             finally

@@ -165,7 +165,7 @@ public class ChangesetServiceImpl implements ChangesetService
                     }
                     catch (SourceControlException e)
                     {
-                        logger.warn("Error getting file details for: " + changeset, e);
+                        logger.debug("Error getting file details for: " + changeset, e);
                     }
                 }
             }

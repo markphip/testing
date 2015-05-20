@@ -9,7 +9,7 @@ import net.java.ao.schema.Table;
 import java.util.Date;
 
 /**
- * AO representation of the {@link GitHubEventMapping}.
+ * AO representation of the {@link GitHubEvent}.
  * 
  * @author Stanislav Dvorscak
  * 
@@ -39,7 +39,7 @@ public interface GitHubEventMapping extends Entity
     public static String SAVE_POINT = "SAVE_POINT";
 
     /**
-     * @return {@link GitHubEventMapping#getRepository()}
+     * @return {@link GitHubEvent#getRepository()}
      */
     @NotNull
     @Indexed

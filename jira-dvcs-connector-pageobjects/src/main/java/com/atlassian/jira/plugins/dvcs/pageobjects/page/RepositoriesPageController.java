@@ -4,17 +4,14 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.model.RepositoryList;
 import com.atlassian.jira.plugins.dvcs.pageobjects.GrantAccessPageController;
+import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.bitbucket.BitbucketGrantAccessPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.PageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.github.GithubGrantAccessPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -23,8 +20,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
 
     private final JiraTestedProduct jira;
     private final RepositoriesPage page;
-    private final long MAX_WAITING_TIME = TimeUnit.SECONDS.toMillis(120);
-    private final Logger log = LoggerFactory.getLogger(RepositoriesPageController.class);
 
     public RepositoriesPageController(JiraTestedProduct jira)
     {
@@ -49,14 +44,9 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         return addOrganization(accountType, accountName, oAuthCredentials, autosync, false);
     }
 
-    public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials,
-            boolean autosync, boolean expectError)
+    public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
     {
-        // always disable auto-sync checkbox, why?
-        // because for unknown reason sync is not working when enabled by default (with github)
-        // workaround by adding new organization disabled, then enable repos one by one and click refresh
-        // check code section if (autosync)
-        page.addOrganisation(accountType.index, accountName, accountType.hostUrl, oAuthCredentials, false);
+        page.addOrganisation(accountType.index, accountName, accountType.hostUrl, oAuthCredentials, autosync);
         assertThat(page.getErrorStatusMessage()).isNull();
 
         if ("githube".equals(accountType.type))
@@ -82,7 +72,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
         OrganizationDiv organization = page.getOrganization(accountType.type, accountName);
         if (autosync)
         {
-            organization.sync();
             waitForSyncToFinish();
             if (!getSyncErrors().isEmpty())
             {
@@ -104,20 +93,11 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
      */
     public void waitForSyncToFinish()
     {
-        boolean syncTimeout = false;
-        long startTime = System.currentTimeMillis();
         do
         {
             try
             {
                 Thread.sleep(1000l);
-
-                long waitTime = System.currentTimeMillis() - startTime;
-                if (waitTime > MAX_WAITING_TIME)
-                {
-                    syncTimeout = true;
-                    break;
-                }
             }
             catch (InterruptedException e)
             {
@@ -125,10 +105,6 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             }
         }
         while (!isSyncFinished());
-        if (syncTimeout)
-        {
-            log.error("Failed to complete sync in " + MAX_WAITING_TIME + " milliseconds");
-        }
     }
 
     private boolean isSyncFinished()
@@ -191,6 +167,7 @@ public class RepositoriesPageController implements PageController<RepositoriesPa
             this.hostUrl = hostUrl;
             this.grantAccessPageController = grantAccessPageController;
         }
+
     }
 
 }

@@ -4,7 +4,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAcco
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Conditions;
+import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.openqa.selenium.By;
@@ -13,10 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
-import static com.atlassian.pageobjects.elements.timeout.TimeoutType.DIALOG_LOAD;
-import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
+import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static org.hamcrest.Matchers.is;
 
 public class OrganizationDiv
 {
@@ -55,7 +54,7 @@ public class OrganizationDiv
         PageElement deleteLink = elementFinder.find(By.id(dropDownMenuId)).find(By.className("dvcs-control-delete-org"));
         deleteLink.click();
 
-        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, DIALOG_LOAD);
+        ConfirmationDialog dialog = elementFinder.find(By.id("confirm-dialog"), ConfirmationDialog.class, TimeoutType.DIALOG_LOAD);
         dialog.confirm();
         dialog.waitUntilVisible();
     }
@@ -133,13 +132,13 @@ public class OrganizationDiv
         // wait for popup to show up
         try
         {
-            waitUntilTrue(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible());
+            Poller.waitUntilTrue(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible());
         }
         catch (AssertionError e)
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        waitUntilFalse(elementFinder.find(By.id("refreshing-account-dialog")).withTimeout(PAGE_LOAD).timed().isVisible());
+        Poller.waitUntil(elementFinder.find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(30000));
     }
 
     private AccountsPageAccountControlsDialog findControlDialog()
@@ -148,37 +147,4 @@ public class OrganizationDiv
         return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
     }
 
-    public void sync()
-    {
-        enableAllRepos();
-        // click sync icon
-        for(RepositoryDiv repoDiv: getRepositories())
-        {
-            waitUntilTrue(Conditions.and(repoDiv.getSyncIcon().timed().isEnabled(),
-                    repoDiv.getSyncIcon().timed().isVisible()));
-            repoDiv.getSyncIcon().click();
-        }
-    }
-
-    public void enableAllRepos()
-    {
-        for(RepositoryDiv repoDiv: getRepositories())
-        {
-            repoDiv.enableSync();
-            dismissNotificationDialogIfExist();
-        }
-    }
-
-    private void dismissNotificationDialogIfExist()
-    {
-        PageElement button = elementFinder.find(By.cssSelector("div.dialog-components .submit"));
-        // we want to dismiss the dialog if it is shown and if not no error just continue
-        button.timed().isPresent().byDefaultTimeout();
-        if (button.isPresent() && button.isVisible())
-        {
-            button.click();
-            waitUntilFalse("dialog should be dismissed",
-                    elementFinder.find(By.className("dialog-components")).withTimeout(DIALOG_LOAD).timed().isVisible());
-        }
-    }
 }

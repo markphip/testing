@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.util.DvcsConstants;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.EventService;
 import org.eclipse.egit.github.core.service.IssueService;
@@ -47,7 +48,7 @@ public class GithubClientProvider
         return client;
     }
 
-    public GithubClientWithTimeout createClient(String hostUrl)
+    public GitHubClient createClient(String hostUrl)
     {
         return createClientInternal(hostUrl, userAgent);
     }
@@ -57,9 +58,9 @@ public class GithubClientProvider
         return createClient(url, userAgent);
     }
     
-    public GithubClientWithTimeout createClient(Organization organization)
+    public GitHubClient createClient(Organization organization)
     {
-        GithubClientWithTimeout client = createClientInternal(organization.getHostUrl(), userAgent);
+        GitHubClient client = createClientInternal(organization.getHostUrl(), userAgent);
         Authentication authentication = authenticationFactory.getAuthentication(organization);
         if (authentication instanceof OAuthAuthentication)
         {

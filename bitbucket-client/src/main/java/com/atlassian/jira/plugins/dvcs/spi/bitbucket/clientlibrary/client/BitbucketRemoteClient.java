@@ -26,7 +26,12 @@ import com.google.gson.reflect.TypeToken;
  *
  * List&lt;BitbucketRepository&gt; repositories = repositoriesRest.getAllRepositories("teamname");
  *		
- * </pre>
+ * <pre>
+ *
+ * 
+ * <br /><br />
+ * Created on 12.7.2012, 17:04:43
+ * <br /><br />
  * 
  * @see AuthProvider
  * 

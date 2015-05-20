@@ -49,8 +49,8 @@ import java.util.List;
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
-import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
+import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
@@ -63,7 +63,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @BeforeClass
     public void beforeClass()
     {
-        jira.backdoor().restoreDataFromResource(TEST_DATA);
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to Bitbucket
@@ -111,7 +110,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void addOrganizationWaitForSync()
     {
-        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         assertThat(organization).isNotNull();
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
@@ -119,9 +118,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         final String expectedMessage = "Fri Mar 02 2012";
 
         RepositoryDiv repositoryDiv = organization.findRepository(repositoryName);
-        repositoryDiv.enableSync();
-        repositoryDiv.sync();
-
         assertThat(repositoryDiv).isNotNull();
         assertThat(repositoryDiv.getMessage()).isEqualTo(expectedMessage);
 
@@ -147,7 +143,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
     public void addOrganizationInvalidOAuth()
     {
-        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), false, true);
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, new OAuthCredentials("bad", "credentials"), true, true);
     }
 
     @Test
@@ -342,8 +338,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
-        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
-        organization.enableAllRepos();
+        addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
@@ -358,8 +353,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Test
     public void autoLinkingRepositoryWithAdminPermission()
     {
-        OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
-        organization.enableAllRepos();
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), true);
 
         AccountsPage accountsPage = jira.visit(AccountsPage.class);
         AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);

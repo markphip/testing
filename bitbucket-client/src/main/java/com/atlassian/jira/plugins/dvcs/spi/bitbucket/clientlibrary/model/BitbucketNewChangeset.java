@@ -17,7 +17,7 @@ import java.util.List;
  *   },
  *   "links": [...],
  *   "author": {
- *     "raw": "John Doe &lt;john.doe@gmail.com&gt;",
+ *     "raw": "John Doe <john.doe@gmail.com>",
  *     "user": {
  *       "username": "jdoe",
  *       "display_name": "John Doe",
@@ -34,6 +34,11 @@ import java.util.List;
  *   "message": "convert BB.delay to AMD"
  * },
  * </pre>
+ *
+ * <br /><br />
+ *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
+ *
  */
 public class BitbucketNewChangeset implements Serializable
 {

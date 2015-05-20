@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
+import com.atlassian.jira.compatibility.util.ApplicationUserUtil;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
@@ -22,6 +23,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class to retrieve historical issue a project keys for issue
+ *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
  */
 @Component
 public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
@@ -96,7 +99,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
             throw new IllegalArgumentException("The issue cannot be null");
         }
 
-        ApplicationUser user = authenticationContext.getUser();
+        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
         return permissionManager.hasPermission(permissionKey, issue, user);
     }
 
@@ -108,7 +111,7 @@ public class IssueAndProjectKeyManagerImpl implements IssueAndProjectKeyManager
             throw new IllegalArgumentException("The project cannot be null");
         }
 
-        ApplicationUser user = authenticationContext.getUser();
+        ApplicationUser user = ApplicationUserUtil.from(authenticationContext.getLoggedInUser());
         return permissionManager.hasPermission(permissionKey, project, user);
     }
 }

@@ -5,6 +5,11 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ *
+ *
+ * @author Miroslav Stencel <mstencel@atlassian.com>
+ */
 @XmlRootElement
 @XmlAccessorType (XmlAccessType.FIELD)
 public class RestDevResponse<T extends  RestRepository>

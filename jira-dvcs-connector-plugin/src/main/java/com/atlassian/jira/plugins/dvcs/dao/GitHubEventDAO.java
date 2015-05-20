@@ -39,7 +39,8 @@ public interface GitHubEventDAO
 
     /**
      * @param repository
-     * @param gitHubId {@link GitHubEventMapping#getGitHubId()}
+     * @param gitHubId
+     *            {@link GitHubEvent#getId()}
      * @return resolved {@link GitHubEventMapping} by remote id
      */
     GitHubEventMapping getByGitHubId(Repository repository, String gitHubId);

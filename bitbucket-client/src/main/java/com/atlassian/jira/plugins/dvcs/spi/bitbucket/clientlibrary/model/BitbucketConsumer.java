@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 /**
  * Maps the Bitbucket consumer information about the OAuth, e.g. :
- * <pre>
  *   {
  *      "name": "Test_OAuth_1430118361594",
  *      "url": "",
@@ -13,7 +12,6 @@ import java.io.Serializable;
  *      "id": 173461,
  *      "description": "Test OAuth Description [Test_OAuth_1430118361594]"
  *   }
- * </pre>
  */
 public class BitbucketConsumer implements Serializable
 {

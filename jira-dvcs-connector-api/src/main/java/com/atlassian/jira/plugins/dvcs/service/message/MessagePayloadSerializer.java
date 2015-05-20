@@ -21,8 +21,8 @@ public interface MessagePayloadSerializer<P extends HasProgress>
     String serialize(P payload);
 
     /**
-     * Deserialize the message
-     * @param message serialized version of message payload
+     * @param payload
+     *            serialized version of message payload
      * @return deserialized message
      */
     P deserialize(Message<P> message);

@@ -15,6 +15,11 @@ import java.io.Serializable;
  *           ],
  * 
  * </pre>
+ *
+ * 
+ * <br /><br />
+ * Created on 12.7.2012, 16:30:43
+ * <br /><br />
  * @author jhocman@atlassian.com
  *
  */

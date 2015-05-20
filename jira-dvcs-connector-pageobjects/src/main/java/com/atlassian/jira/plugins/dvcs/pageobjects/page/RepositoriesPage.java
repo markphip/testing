@@ -127,7 +127,10 @@ public class RepositoriesPage implements Page
             break;
         } 
         
-        autoLinkNewRepos.click();
+        if (!autoSync)
+        {
+            autoLinkNewRepos.click();
+        }
         addOrgButton.click();
     
         // dismiss any information alert

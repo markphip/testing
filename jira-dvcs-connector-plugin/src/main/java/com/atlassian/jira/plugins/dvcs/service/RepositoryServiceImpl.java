@@ -769,7 +769,7 @@ public class RepositoryServiceImpl implements RepositoryService
                 }
                 else
                 {
-                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage(), e);
+                    log.warn("Could not load user [" + author + ", " + rawAuthor + "]: " + e.getMessage());
                 }
                 return getUnknownUser(repository, author, rawAuthor);
             }

@@ -7,6 +7,9 @@ import com.google.common.base.Function;
 
 import javax.annotation.Nullable;
 
+/**
+ * @author Miroslav Stencel <mstencel@atlassian.com>
+ */
 public class PullRequestLocalRestpoint
 {
     private static final String DETAIL_URL_SUFFIX = "pr-detail";
