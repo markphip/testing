@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
@@ -16,15 +17,19 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
 /**
  * Represents the page to link repositories to projects
+ *
+ * @deprecated use {@link DvcsAccountsPage} instead. Any functionality missing from {@link DvcsAccountsPage} should be moved
+ * to that other page from here.
  */
+@Deprecated
 public class RepositoriesPage implements Page
 {
     /**

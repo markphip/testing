@@ -13,7 +13,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -206,7 +206,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         rpc.addOrganization(AccountType.GITHUB, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB, DVCS_CONNECTOR_TEST_ACCOUNT);
         AccountRepository repository = account.enableRepository("testemptyrepo", true);
 
@@ -221,7 +221,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         rpc.addOrganization(AccountType.GITHUB, JIRA_BB_CONNECTOR_ACCOUNT, getOAuthCredentials(), false);
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB, JIRA_BB_CONNECTOR_ACCOUNT);
         AccountRepository repository = account.enableRepository(REPOSITORY_NAME, false);
 
@@ -238,7 +238,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB, DVCS_CONNECTOR_TEST_ACCOUNT);
 
         for (AccountRepository repository : account.getRepositories())
@@ -255,7 +255,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
                 getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.GIT_HUB, JIRA_BB_CONNECTOR_ACCOUNT);
 
         for (AccountRepository repository : account.getRepositories())

@@ -18,7 +18,7 @@ import static com.google.common.collect.Iterables.transform;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Container of single account of {@link AccountsPage}.
+ * Container of single account of {@link DvcsAccountsPage}.
  * 
  * @author Stanislav Dvorscak
  * 

@@ -18,7 +18,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -333,7 +333,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
 
         for (AccountRepository repository : account.getRepositories())
@@ -349,7 +349,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, ACCOUNT_NAME);
         for (AccountRepository repository : account.getRepositories())
         {
@@ -461,7 +461,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     private AccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
     {
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, accountName);
         return account.enableRepository(repositoryName, noAdminPermission);
     }

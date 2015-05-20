@@ -3,6 +3,9 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page.account;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
+import com.atlassian.pageobjects.binder.WaitUntil;
+import com.atlassian.pageobjects.elements.ElementBy;
+import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.google.common.collect.Iterables;
 import org.openqa.selenium.By;
@@ -10,14 +13,11 @@ import org.openqa.selenium.By;
 import javax.inject.Inject;
 
 import static com.atlassian.jira.pageobjects.framework.elements.PageElements.bind;
+import static com.atlassian.pageobjects.elements.query.Conditions.and;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.google.common.collect.Iterables.transform;
 
-/**
- * Holds available DVCS accounts.
- *
- * @author Stanislav Dvorscak
- */
-public class AccountsPage implements Page
+public class DvcsAccountsPage implements Page
 {
     @Inject
     protected PageElementFinder pageElementFinder;
@@ -25,17 +25,26 @@ public class AccountsPage implements Page
     @Inject
     protected PageBinder pageBinder;
 
+    @ElementBy(id = "linkRepositoryButton")
+    protected PageElement linkAccountButton;
+
+    @ElementBy(id = "organization-list")
+    protected PageElement organisationsList;
+
     @Override
     public String getUrl()
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
 
-    // TODO @WaitUntil
+    @WaitUntil
+    public void waitUntilLoaded()
+    {
+        waitUntilTrue(and(organisationsList.timed().isPresent(), linkAccountButton.timed().isPresent()));
+    }
 
     public Iterable<Account> getAccounts()
     {
-        // waitUntilTrue(pageElementFinder.find(By.className("aui-page-panel-content")).timed().isPresent());
         return transform(pageElementFinder.findAll(By.className("dvcs-orgdata-container")),
                 bind(pageBinder, Account.class));
     }
@@ -49,7 +58,7 @@ public class AccountsPage implements Page
             Account.AccountType accountType, String accountName, String repositoryName,
             boolean refresh)
     {
-        AccountsPage accountsPage = jiraTestedProduct.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = jiraTestedProduct.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(accountType, accountName);
         if (refresh)
         {

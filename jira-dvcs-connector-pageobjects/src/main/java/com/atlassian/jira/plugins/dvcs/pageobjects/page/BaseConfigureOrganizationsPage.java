@@ -4,7 +4,7 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -85,7 +85,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     public Account getOrganization(Account.AccountType accountType, String accountName)
     {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
+        DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(accountType, accountName);
 
         return account;
@@ -208,7 +208,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
      */
     public AccountRepository enableAndSyncRepository(Account.AccountType accountType, String accountName, String repositoryName)
     {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
+        DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(accountType, accountName);
 
         AccountRepository repository = account.getRepository(repositoryName);

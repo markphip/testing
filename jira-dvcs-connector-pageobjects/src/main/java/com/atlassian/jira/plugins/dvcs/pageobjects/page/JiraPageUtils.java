@@ -9,7 +9,7 @@ import com.atlassian.jira.pageobjects.project.ViewProjectsPage;
 import com.atlassian.jira.pageobjects.project.summary.ProjectSummaryPageTab;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
@@ -70,7 +70,7 @@ public class JiraPageUtils
 
     private static TimedCondition isSyncing(PageBinder pageBinder)
     {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
+        DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
         List<TimedQuery<Boolean>> syncStatus = Lists.newArrayList();
 
         for (Account account : accountsPage.getAccounts())

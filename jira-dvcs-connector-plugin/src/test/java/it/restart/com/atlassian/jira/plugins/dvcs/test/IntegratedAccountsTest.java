@@ -12,7 +12,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageControll
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account.AccountType;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountOAuthDialog;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import com.atlassian.pageobjects.TestedProductFactory;
 import it.com.atlassian.jira.plugins.dvcs.DvcsWebDriverTestCase;
@@ -174,7 +174,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
                 RepositoriesPageController.AccountType.BITBUCKET, ACCOUNT_NAME,
                 new OAuthCredentials(oAuthOriginal.key, oAuthOriginal.secret), false);
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         account.regenerate().regenerate(oAuthNew.key, oAuthNew.secret);
 
@@ -197,7 +197,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         buildOnDemandProperties(new IntegratedAccount(ACCOUNT_NAME, oAuthOriginal.key, oAuthOriginal.secret));
         refreshIntegratedAccounts();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
@@ -216,7 +216,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         buildOnDemandProperties(new IntegratedAccount(ACCOUNT_NAME, oAuthNew.key, oAuthNew.secret));
         refreshIntegratedAccounts();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Account account = accountsPage.getAccount(AccountType.BITBUCKET, ACCOUNT_NAME);
         assertTrue("Provided account has to be integrated account/OnDemand account!", account.isOnDemand());
     }
@@ -229,7 +229,7 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
         buildOnDemandProperties();
         refreshIntegratedAccounts();
 
-        AccountsPage accountsPage = JIRA.visit(AccountsPage.class);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
         Iterator<Account> accounts = accountsPage.getAccounts().iterator();
         while (accounts.hasNext())
         {

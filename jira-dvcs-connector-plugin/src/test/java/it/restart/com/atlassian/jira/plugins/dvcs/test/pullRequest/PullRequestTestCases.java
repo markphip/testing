@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
@@ -219,7 +219,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-        Account account = AccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
+        Account account = DvcsAccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
                 ACCOUNT_NAME, repositoryName, true);
 
         PullRequestLocalRestpoint prRest = new PullRequestLocalRestpoint();
