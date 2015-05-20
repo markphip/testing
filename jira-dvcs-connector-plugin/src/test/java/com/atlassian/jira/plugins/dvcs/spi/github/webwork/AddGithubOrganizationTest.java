@@ -256,5 +256,4 @@ public class AddGithubOrganizationTest {
 
         verifyNoMoreInteractions(eventPublisher);
     }
-
 }

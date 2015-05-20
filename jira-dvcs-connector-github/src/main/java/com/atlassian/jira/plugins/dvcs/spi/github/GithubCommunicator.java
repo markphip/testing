@@ -738,6 +738,7 @@ public class GithubCommunicator implements DvcsCommunicator
     }
 
     private boolean hasExceededRateLimit(GitHubClient client){
-        return client.getRemainingRequests() == -1;
+        int remainingRequests = client.getRemainingRequests();
+        return remainingRequests == 0 || remainingRequests == -1;
     }
 }

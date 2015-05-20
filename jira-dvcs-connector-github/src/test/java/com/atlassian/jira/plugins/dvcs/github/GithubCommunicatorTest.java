@@ -126,6 +126,8 @@ public class GithubCommunicatorTest
     };
 
     private static final RateLimit rateLimit = new RateLimit(10, 0, System.currentTimeMillis());
+    final String hostUrl = "hostURL";
+    final String accountName = "accountName";
 
     @Test
     @SuppressWarnings ("deprecation")
@@ -249,6 +251,8 @@ public class GithubCommunicatorTest
         when(githubClientProvider.getRepositoryService(repository)).thenReturn(repositoryService);
         when(githubClientProvider.getUserService(repository)).thenReturn(userService);
         when(githubClientProvider.getCommitService(repository)).thenReturn(commitService);
+        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
+        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
 
         when(commitService.getClient()).thenReturn(gitHubClient);
         when(repositoryService.getClient()).thenReturn(gitHubClient);
@@ -433,10 +437,6 @@ public class GithubCommunicatorTest
 
     @Test
     public void TestIsUsernameCorrect(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
         try{
             when(userService.getUser(accountName)).thenReturn(githubUser);
         }catch (Exception e)
@@ -448,10 +448,6 @@ public class GithubCommunicatorTest
 
     @Test
     public void TestIsUsernameIncorrect(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
         when(userService.getClient()).thenReturn(gitHubClient);
         when(gitHubClient.getRemainingRequests()).thenReturn(1);
         try{
@@ -465,12 +461,8 @@ public class GithubCommunicatorTest
 
     @Test
     public void TestIsUsernameIncorrectAndBlownRateLimit(){
-        final String hostUrl = "hostURL";
-        final String accountName = "accountName";
-        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
-        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
         when(userService.getClient()).thenReturn(gitHubClient);
-        when(gitHubClient.getRemainingRequests()).thenReturn(-1);
+        when(gitHubClient.getRemainingRequests()).thenReturn(0);
         try{
             when(userService.getUser(accountName)).thenReturn(null);
         }catch (Exception e)
@@ -478,5 +470,11 @@ public class GithubCommunicatorTest
             throw new RuntimeException(e);
         }
         assertTrue(communicator.isUsernameCorrect(hostUrl, accountName));
+    }
+
+
+    private void setupUserServiceFactor(){
+        when(githubClientProvider.createClient(hostUrl)).thenReturn(gitHubClient);
+        when(userServiceFactory.createUserService(gitHubClient)).thenReturn(userService);
     }
 }
