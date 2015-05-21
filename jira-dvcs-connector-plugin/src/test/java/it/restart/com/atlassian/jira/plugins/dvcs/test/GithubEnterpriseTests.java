@@ -30,6 +30,7 @@ import java.util.List;
 
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType.getGHEAccountType;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.GithubTestHelper.REPOSITORY_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
@@ -232,7 +233,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
 
         // check that repository is enabled
         waitUntilTrue(repository.isEnabled());
-        waitUntilTrue(repository.hasWarning());
+        waitUntilFalse(repository.hasWarning());
     }
 
     @Test
@@ -264,7 +265,7 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
         for (AccountRepository repository : account.getRepositories())
         {
             waitUntilTrue(repository.isEnabled());
-            waitUntilTrue(repository.hasWarning());
+            waitUntilFalse(repository.hasWarning());
         }
     }
 
