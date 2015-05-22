@@ -81,7 +81,7 @@ function retrieveSyncStatus() {
         var err = textStatus + ", " + error;
         dvcsLogConsole("Request Failed: " + err);
         window.setTimeout(retrieveSyncStatus, 40000);
-       });
+    });
 }
 
 function updateSyncStatus(repo) {
@@ -96,12 +96,15 @@ function updateSyncStatus(repo) {
 
     if (repo.sync) {
 
-    	if (repo.sync.finished) {
+        if (repo.sync.finished) {
             syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
             var title = syncRepoIconElement.attr("data-title");
             if (repo.sync.finishTime) {
-              var finishSyncDateTime = new Date(repo.sync.finishTime);
-              title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
+                var finishSyncDateTime = new Date(repo.sync.finishTime);
+                title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
+                syncRepoIconElement.attr("data-last-sync", finishSyncDateTime.getTime());
+            } else {
+                syncRepoIconElement.attr("data-last-sync", new Date().getTime());
             }
             syncRepoIconElement.attr("title", title);
 
@@ -111,21 +114,21 @@ function updateSyncStatus(repo) {
                 syncIcon = repo.sync.warning === true ? "info" : "error";
 
                 syncErrorDiv.html("<span class='@syncIcon'><strong>@syncTitle</strong>@syncError</span>"
-                        .replace("@syncIcon", syncIcon)
-                        .replace("@syncTitle", syncTitle)
-                        .replace("@syncError", repo.sync.error));
+                    .replace("@syncIcon", syncIcon)
+                    .replace("@syncTitle", syncTitle)
+                    .replace("@syncError", repo.sync.error));
             }
             else {
                 syncErrorDiv.html("");
             }
         }/* else if (repo.sync.startTime === 0) {
-            syncRepoIcon = "syncrepoiconqueue";
-            syncRepoIconElement.attr("title", "In queue");
-        }*/ else {
+         syncRepoIcon = "syncrepoiconqueue";
+         syncRepoIconElement.attr("title", "In queue");
+         }*/ else {
             syncErrorDiv.html("");
             var title = "Synchronizing...";
             if (repo.sync.startTime) {
-               var startSyncDateTime = new Date(repo.sync.startTime);
+                var startSyncDateTime = new Date(repo.sync.startTime);
                 title += " (started at " + startSyncDateTime.toDateString() + " " + startSyncDateTime.toLocaleTimeString() + ")";
             }
             syncRepoIconElement.attr("title", title);
@@ -147,8 +150,8 @@ function updateSyncStatus(repo) {
     }
 
     else {
-    	if (repo.lastActivityDate)
-        syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
+        if (repo.lastActivityDate)
+            syncStatusHtml = getLastCommitRelativeDateHtml(repo.lastActivityDate);
     }
     syncIconElement.removeClass("commits").removeClass("finished").removeClass("running").removeClass("error").removeClass("info").addClass(syncIcon);
     syncRepoIconElement.removeClass("running").removeClass("syncrepoiconqueue").addClass(syncRepoIcon);
@@ -449,21 +452,21 @@ function configureDefaultGroups(orgName, id) {
             type:'GET',
             url : BASE_URL + "/rest/bitbucket/1.0/organization/" + id + "/defaultgroups",
             success:
-            function (data) {
-                if (dialog.isAttached()) {
-	                AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(dvcs.connector.plugin.soy.defaultGroups({
-	                	organization: data.organization,
-	                	groups: data.groups
-	                }));
-                    dialog.updateHeight();
-                    dialog.enableActions();
+                function (data) {
+                    if (dialog.isAttached()) {
+                        AJS.$(".dialog-panel-body #configureDefaultGroupsContent").html(dvcs.connector.plugin.soy.defaultGroups({
+                            organization: data.organization,
+                            groups: data.groups
+                        }));
+                        dialog.updateHeight();
+                        dialog.enableActions();
+                    }
                 }
-            }
         }
     ).error(function (err) {
-    	dialog.showError(AJS.$(err.responseXML).find('status').find('message').text());
-        dialog.updateHeight();
-    });
+            dialog.showError(AJS.$(err.responseXML).find('status').find('message').text());
+            dialog.updateHeight();
+        });
 }
 
 function configureOAuth(org, atlToken) {
@@ -548,12 +551,12 @@ function configureOAuth(org, atlToken) {
     popup.updateHeight();
 
     AJS.$.getJSON(BASE_URL + "/rest/bitbucket/1.0/organization/" + org.id + "/tokenOwner",function (data) {
-    	if (data.fullName.replace(/\s+/g, '').length == 0) 
-    		data.fullName = data.username;
+        if (data.fullName.replace(/\s+/g, '').length == 0)
+            data.fullName = data.username;
         AJS.$(".repositoryOAuthDialog #tokenUser").html(dvcs.connector.plugin.soy.repositoryOAuthDialogTokenOwner(data));
     }).error(function (err) {
-            AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
-        });
+        AJS.$(".repositoryOAuthDialog #tokenUser").html("<i>&lt;Invalid, please regenerate access token.&gt;<i>");
+    });
 
     return false;
 }
@@ -662,15 +665,15 @@ function autoLinkIssuesOrg(organizationId, checkboxId, checkedValue) {
             contentType:"application/json",
             url:BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/autolink",
             data:'{ "payload" : "' + checkedValue + '"}',
-            success: 
-            function (data) {
-                AJS.$("#" + checkboxId).removeClass("disabled");
-                if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
-                    AJS.$("#org_global_smarts" + organizationId).addClass("disabled");
-                } else {
-                    AJS.$("#org_global_smarts" + organizationId).removeClass("disabled");
+            success:
+                function (data) {
+                    AJS.$("#" + checkboxId).removeClass("disabled");
+                    if (!checkedValue && AJS.$("#org_global_smarts" + organizationId)) {
+                        AJS.$("#org_global_smarts" + organizationId).addClass("disabled");
+                    } else {
+                        AJS.$("#org_global_smarts" + organizationId).removeClass("disabled");
+                    }
                 }
-            }
         }
     ).error(function (err) {
             showError("Unexpected error occurred. Please contact the server administrator.", "#aui-message-bar-" + organizationId);
@@ -688,9 +691,9 @@ function enableSmartcommitsOnNewRepos(organizationId, checkboxId, checkedValue) 
             url:BASE_URL + "/rest/bitbucket/1.0/org/" + organizationId + "/globalsmarts",
             data:'{ "payload" : "' + checkedValue + '"}',
             success:
-            function (data) {
-                AJS.$("#" + checkboxId).removeClass("disabled");
-            }
+                function (data) {
+                    AJS.$("#" + checkboxId).removeClass("disabled");
+                }
         }
     ).error(function (err) {
             showError("Unexpected error occurred when enabling smart commits on new repositories. Please contact the server administrator.", "#aui-message-bar-" + organizationId);
@@ -703,8 +706,8 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
     var checkedValue = AJS.$("#" + checkboxId).is(":checked");
     AJS.$("#" + checkboxId).attr("disabled", "disabled");
     AJS.$("#" + checkboxId + "working").show();
-    AJS.$.ajax( 
-    	{
+    AJS.$.ajax(
+        {
             type:'POST',
             dataType:"json",
             contentType:"application/json",
@@ -712,47 +715,47 @@ function autoLinkIssuesRepo(repoId, checkboxId) {
             data:'{ "payload" : "' + checkedValue + '"}',
 
             success:
-            function (registration) {
-                if (registration.callBackUrlInstalled != checkedValue) {
+                function (registration) {
+                    if (registration.callBackUrlInstalled != checkedValue) {
 
-                    var popup = new AJS.Dialog({
-                        width:600,
-                        height:400,
-                        id:"dvcs-postcommit-hook-registration-dialog",
-                        closeOnOutsideClick:false
-                    });
+                        var popup = new AJS.Dialog({
+                            width:600,
+                            height:400,
+                            id:"dvcs-postcommit-hook-registration-dialog",
+                            closeOnOutsideClick:false
+                        });
 
-                    popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
-                    popup.addPanel("Registration", dvcs.connector.plugin.soy.postCommitHookDialog({
-                        'registering':checkedValue,
-                        'callbackUrl':registration.callBackUrl
-                    }));
-                    popup.addButton("OK", function (dialog) {
-                        popup.remove();
-                    }, "aui-button submit");
-                    popup.show();
-                    popup.updateHeight();
+                        popup.addHeader((checkedValue ? "Linking" : "Unlinking") + " the repository");
+                        popup.addPanel("Registration", dvcs.connector.plugin.soy.postCommitHookDialog({
+                            'registering':checkedValue,
+                            'callbackUrl':registration.callBackUrl
+                        }));
+                        popup.addButton("OK", function (dialog) {
+                            popup.remove();
+                        }, "aui-button submit");
+                        popup.show();
+                        popup.updateHeight();
 
-                    // show warning icon if not already shown
-                    var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
-                    errorStatusIcon.addClass("admin_permission aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow");
-                    registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
+                        // show warning icon if not already shown
+                        var errorStatusIcon = AJS.$("#error_status_icon_" + repoId);
+                        errorStatusIcon.addClass("admin_permission aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow");
+                        registerAdminPermissionInlineDialogTooltip(errorStatusIcon);
+                    }
+
+                    AJS.$("#" + checkboxId + "working").hide();
+                    AJS.$("#" + checkboxId).removeAttr("disabled");
+                    if (checkedValue) {
+                        AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-action-container3-" + repoId).removeClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
+                    } else {
+                        AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-action-container3-" + repoId).addClass("dvcs-nodisplay");
+                        AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
+                    }
                 }
-
-                AJS.$("#" + checkboxId + "working").hide();
-                AJS.$("#" + checkboxId).removeAttr("disabled");
-                if (checkedValue) {
-                    AJS.$("#dvcs-action-container-" + repoId).removeClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-action-container2-" + repoId).removeClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-action-container3-" + repoId).removeClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-repo-row-" + repoId).removeClass("dvcs-disabled");
-                } else {
-                    AJS.$("#dvcs-action-container-" + repoId).addClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-action-container2-" + repoId).addClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-action-container3-" + repoId).addClass("dvcs-nodisplay");
-                    AJS.$("#dvcs-repo-row-" + repoId).addClass("dvcs-disabled");
-                }
-            }
         }
 
     ).error(function (err) {
@@ -789,14 +792,14 @@ function registerInlineDialogTooltip(element, body) {
     if (inlineDialogContent) { // inline dialog is already registered
         return;
     }
-    
+
     return AJS.InlineDialog(AJS.$(element), "tooltip_" + AJS.$(element).attr('id'),
         function (content, trigger, showPopup) {
             var inlineDialogContent = AJS.$(element).data("inlineDialogContent");
             content.css({"padding":"20px", "width":"auto"}).html(inlineDialogContent);
             showPopup();
             return false;
-        }, 
+        },
         {onHover:true, hideDelay:200, showDelay:1000, arrowOffsetX:-8, offsetX:-80}
     );
 }
@@ -806,7 +809,7 @@ function enableRepoSmartcommits(repoId, checkboxId) {
     AJS.$("#" + checkboxId).attr("disabled", "disabled");
     AJS.$("#" + checkboxId + "working").show();
     AJS.$.ajax(
-    	{
+        {
             type:'POST',
             dataType:"json",
             contentType:"application/json",
@@ -814,10 +817,10 @@ function enableRepoSmartcommits(repoId, checkboxId) {
             data:'{ "payload" : "' + checkedValue + '"}',
 
             success :
-            function (data) {
-                AJS.$("#" + checkboxId + "working").hide();
-                AJS.$("#" + checkboxId).removeAttr("disabled");
-            }
+                function (data) {
+                    AJS.$("#" + checkboxId + "working").hide();
+                    AJS.$("#" + checkboxId).removeAttr("disabled");
+                }
         }
     ).error(function (err) {
             showError("Unexpected error occurred.");
@@ -904,16 +907,16 @@ function deleteOrganizationInternal(dialog, organizationId, organizationName) {
             dialog.remove();
         }
     }).error(function (jqXHR, textStatus, errorThrown) {
-    	// ignore not found status
-    	if (jqXHR.status == 404) {
-    		AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
-    		dialog.showError("Account '" + organizationName + "' was already deleted!");
-    	} else if(jqXHR.status == 0) { // timeout can happen if organization has too many repositories and uninstalling postcommit hooks takes too long. Pretend deletion is succesfull (it will continue on the server)
+        // ignore not found status
+        if (jqXHR.status == 404) {
+            AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
+            dialog.showError("Account '" + organizationName + "' was already deleted!");
+        } else if(jqXHR.status == 0) { // timeout can happen if organization has too many repositories and uninstalling postcommit hooks takes too long. Pretend deletion is succesfull (it will continue on the server)
             AJS.$("#dvcs-orgdata-container-" + organizationId).remove();
             dialog.remove();
-    	} else {
-    		dialog.showError("Error when deleting account '" + organizationName + "'.");
-    	}
+        } else {
+            dialog.showError("Error when deleting account '" + organizationName + "'.");
+        }
     });
 }
 
@@ -931,9 +934,9 @@ function syncRepositoryList(organizationId, organizationName) {
             window.location.reload();
         }
     }).error(function (err) {
-            showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-" + organizationId);
-            dialog.remove();
-        });
+        showError("Error when refreshing account '" + organizationName + "'.", "#aui-message-bar-" + organizationId);
+        dialog.remove();
+    });
 }
 
 function showError(message, auiMessageElement, closeable) {
@@ -1028,7 +1031,7 @@ AJS.$(document).ready(function () {
 
 function dvcsLogConsole(msg) {
     if ( window.console && window.console.log ) {
-       console.log("DVCS: " + msg);
+        console.log("DVCS: " + msg);
     }
 }
 //---------------------------------------------------------

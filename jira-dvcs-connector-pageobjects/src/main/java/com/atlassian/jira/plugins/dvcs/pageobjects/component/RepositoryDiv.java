@@ -1,17 +1,28 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPage;
 import com.atlassian.pageobjects.elements.PageElement;
+import com.atlassian.pageobjects.elements.query.Queries;
+import com.atlassian.pageobjects.elements.query.TimedQuery;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import com.atlassian.pageobjects.elements.timeout.Timeouts;
+import com.google.common.base.Supplier;
+import org.apache.commons.lang.math.NumberUtils;
 import org.openqa.selenium.By;
 
-import static com.atlassian.pageobjects.elements.query.Conditions.and;
-import static com.atlassian.pageobjects.elements.query.Poller.by;
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
-import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.Matchers.is;
+import javax.inject.Inject;
 
+import static com.atlassian.pageobjects.elements.query.Poller.*;
+import static org.hamcrest.Matchers.greaterThan;
+
+/**
+ * @deprecated * @deprecated see deprecation note on {@link RepositoriesPage}
+ */
 public class RepositoryDiv
 {
+    @Inject
+    protected Timeouts timeouts;
+
     private final PageElement rootElement;
     private final PageElement syncRadio;
 
@@ -67,10 +78,20 @@ public class RepositoryDiv
     public void sync()
     {
         final PageElement syncIcon = getSyncIcon();
-        waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isEnabled(), syncIcon.timed().isVisible()));
+        waitUntilTrue(syncIcon.timed().isVisible());
+        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts, new Supplier<Long>()
+        {
+            @Override
+            public Long get()
+            {
+                return NumberUtils.toLong(syncIcon.getAttribute("data-last-sync"));
+            }
+        }, TimeoutType.SLOW_PAGE_LOAD);
+        long lastSyncBefore = lastSync.now();
+
         syncIcon.click();
-        waitUntilTrue(and(syncIcon.timed().isPresent(), syncIcon.timed().isVisible(), syncIcon.timed().hasClass("running")));
-        waitUntil(syncIcon.timed().hasClass("running"), is(false), by(60, SECONDS));
+        waitUntil(lastSync, greaterThan(lastSyncBefore));
+        waitUntilFalse(syncIcon.withTimeout(TimeoutType.SLOW_PAGE_LOAD).timed().hasClass("running"));
     }
 
 }

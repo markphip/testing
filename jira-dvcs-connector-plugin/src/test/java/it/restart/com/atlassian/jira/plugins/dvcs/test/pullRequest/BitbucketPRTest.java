@@ -11,7 +11,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepository
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
 import it.util.TestAccounts;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeClass;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
@@ -29,15 +28,10 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     {
     }
 
-    @BeforeClass
-    public void initBitbucket()
-    {
-        bitbucket = new BitbucketTestedProduct(getJiraTestedProduct().getTester());
-    }
-
     @Override
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
+        bitbucket = new BitbucketTestedProduct(getJiraTestedProduct().getTester());
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
                 bitbucket, BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);

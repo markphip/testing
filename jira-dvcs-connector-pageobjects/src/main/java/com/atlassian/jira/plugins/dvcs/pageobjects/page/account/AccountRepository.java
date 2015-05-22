@@ -13,9 +13,13 @@ import com.atlassian.pageobjects.elements.WebDriverElement;
 import com.atlassian.pageobjects.elements.WebDriverLocatable;
 import com.atlassian.pageobjects.elements.query.Conditions;
 import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.query.Queries;
 import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
+import com.atlassian.pageobjects.elements.timeout.Timeouts;
+import com.google.common.base.Supplier;
+import org.apache.commons.lang.math.NumberUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
@@ -24,8 +28,7 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Represents repository table row of {@link Account}.
@@ -36,16 +39,19 @@ import static org.hamcrest.Matchers.not;
 public class AccountRepository extends AbstractComponentPageObject
 {
     @Inject
-    private PageElementFinder elementFinder;
+    protected PageElementFinder elementFinder;
 
     @Inject
-    private PageBinder pageBinder;
+    protected PageBinder pageBinder;
 
     @Inject
-    private JiraTestedProduct jiraTestedProduct;
+    protected JiraTestedProduct jiraTestedProduct;
 
     @Inject
-    private PageElementActions actions;
+    protected PageElementActions actions;
+
+    @Inject
+    protected Timeouts timeouts;
 
     public AccountRepository(PageElement container) {
         super(container);
@@ -82,14 +88,39 @@ public class AccountRepository extends AbstractComponentPageObject
     }
 
     /**
+     * NOTE: this method only checks whether the sync is in progress, for comple
+     *
      * @return True if synchronization is currently in progress.
      */
     @Nonnull
     public TimedCondition isSyncing()
     {
-        return getSynchronizationIcon().withTimeout(TimeoutType.PAGE_LOAD).timed().hasClass("running");
+        return getSynchronizationIcon().withTimeout(TimeoutType.SLOW_PAGE_LOAD).timed().hasClass("running");
     }
 
+    /**
+     * Checks whether the "last sync" timestamp has changed, which indicates that a sync has finished.
+     *
+     * NOTE: this must be called _before_ the synchronization is triggered so that the current "last sync" timestamp
+     * is captured
+     *
+     * @return {@code true} if synchronization process has been triggered and finished since this timed condition has
+     * been obtained
+     */
+    @Nonnull
+    public TimedCondition isSynchronizationFinished()
+    {
+        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts, new Supplier<Long>() {
+            @Override
+            public Long get() {
+                return NumberUtils.toLong(getSynchronizationIcon().getAttribute("data-last-sync"));
+            }
+        }, TimeoutType.SLOW_PAGE_LOAD);
+        long lastSyncBefore = lastSync.now();
+        return Conditions.forMatcher(lastSync, greaterThan(lastSyncBefore));
+    }
+
+    @Nonnull
     public TimedCondition hasRepositorySyncError()
     {
         return Conditions.forMatcher(getRepositorySyncError(), not(isEmptyOrNullString()));
@@ -165,8 +196,9 @@ public class AccountRepository extends AbstractComponentPageObject
 
         ForceSyncDialog forceSyncDialog = getForceSyncDialog();
         Poller.waitUntilTrue(forceSyncDialog.isOpen());
+        TimedCondition syncFinished = isSynchronizationFinished();
         forceSyncDialog.fullSync();
-        waitUntilFalse(isSyncing());
+        waitUntilTrue(syncFinished);
 
         return this;
     }
@@ -227,8 +259,9 @@ public class AccountRepository extends AbstractComponentPageObject
 
     private void syncAndWaitForFinish()
     {
+        TimedCondition isSyncFinished = isSynchronizationFinished();
         triggerSynchronization();
-        waitUntilFalse(isSyncing());
+        waitUntilTrue(isSyncFinished);
     }
 
     public static class ForceSyncDialog extends AbstractComponentPageObject

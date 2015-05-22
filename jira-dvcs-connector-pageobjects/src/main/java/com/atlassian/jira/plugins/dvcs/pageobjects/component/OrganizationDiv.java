@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountControlsDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
@@ -18,6 +19,10 @@ import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.DIALOG_LOAD;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
+/**
+ * @deprecated see deprecation note on {@link RepositoriesPage}
+ */
+@Deprecated
 public class OrganizationDiv
 {
     private static final String DYNAMIC_REPOSITORIES_PREFIX = "it.restart";
