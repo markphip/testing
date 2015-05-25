@@ -51,6 +51,7 @@ import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -112,6 +113,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
         this.applicationProperties = checkNotNull(ap);
     }
 
+    @VisibleForTesting
+    public BitbucketCommunicator(BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
+            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
+    {
+        this.bitbucketLinker = checkNotNull(bitbucketLinker);
+        this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
+        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
+        this.applicationProperties = checkNotNull(ap);
+    }
+    
     /**
      * {@inheritDoc}
      */

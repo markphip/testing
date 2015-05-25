@@ -52,6 +52,17 @@ public class DeferredBitbucketLinker implements BitbucketLinker
         this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }
 
+    @VisibleForTesting
+    DeferredBitbucketLinker(
+            final BitbucketLinker bitbucketLinker,
+            final ClusterLockServiceFactory clusterLockServiceFactory,
+            final PluginSettingsFactory pluginSettingsFactory)
+    {
+        this.bitbucketLinker = checkNotNull(bitbucketLinker);
+        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
+        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
+    }
+
     @Override
     public void linkRepository(final Repository repository, final Set<String> projectKeys)
     {
