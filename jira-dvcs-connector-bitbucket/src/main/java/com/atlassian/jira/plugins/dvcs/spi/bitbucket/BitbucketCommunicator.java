@@ -82,7 +82,6 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     public static final String BITBUCKET = "bitbucket";
 
-    private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ApplicationProperties applicationProperties;
@@ -98,13 +97,16 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
+    
+    @Resource
+    @Qualifier ("deferredBitbucketLinker") 
+    private BitbucketLinker bitbucketLinker;
 
     @Autowired
-    public BitbucketCommunicator(@Qualifier ("deferredBitbucketLinker") BitbucketLinker bitbucketLinker,
+    public BitbucketCommunicator(
             @ComponentImport PluginAccessor pluginAccessor,
             BitbucketClientBuilderFactory bitbucketClientBuilderFactory, @ComponentImport ApplicationProperties ap)
     {
-        this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
         this.applicationProperties = checkNotNull(ap);
