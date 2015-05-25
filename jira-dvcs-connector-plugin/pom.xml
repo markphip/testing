@@ -84,6 +84,11 @@
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-software-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-software-conditions-factory</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.compat</groupId>

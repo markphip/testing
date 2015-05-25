@@ -134,13 +134,16 @@
                 <groupId>com.atlassian.jira.plugins</groupId>
                 <artifactId>jira-software-api</artifactId>
                 <version>${jira.software.version}</version>
-                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.plugins</groupId>
+                <artifactId>jira-software-conditions-factory</artifactId>
+                <version>${jira.software.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.jira.compat</groupId>
                 <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
                 <version>0.8</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
