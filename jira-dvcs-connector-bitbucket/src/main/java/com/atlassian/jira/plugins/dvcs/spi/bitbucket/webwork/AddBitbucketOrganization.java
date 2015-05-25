@@ -219,6 +219,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     protected void doValidation()
     {
         if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) != null){
+            log.warn("Setting the URL for testing "+System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
             setUrlAndKeyForCtkTesting();
         }
 
