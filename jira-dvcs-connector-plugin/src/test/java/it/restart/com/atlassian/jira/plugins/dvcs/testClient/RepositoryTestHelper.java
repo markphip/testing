@@ -88,7 +88,7 @@ public abstract class RepositoryTestHelper<T extends TestedProduct<WebDriverTest
             {
                 try
                 {
-                    repositoryService.removeRepository(repository.getName(), userName);
+                    repositoryService.removeRepository(userName, repository.getName());
                 }
                 catch (BitbucketRequestException.NotFound_404 ignored) {} // the repo does not exist
             }

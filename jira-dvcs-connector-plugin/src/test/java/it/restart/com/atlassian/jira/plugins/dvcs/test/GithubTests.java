@@ -127,15 +127,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
-    public void addOrganizationInvalidAccount()
-    {
-        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
-        rpc.addOrganization(AccountType.GITHUB, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false, true);
-    }
-
-
-    @Override
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {

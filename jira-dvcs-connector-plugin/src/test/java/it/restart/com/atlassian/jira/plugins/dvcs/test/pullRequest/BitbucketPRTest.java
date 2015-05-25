@@ -11,6 +11,8 @@ import it.restart.com.atlassian.jira.plugins.dvcs.testClient.BitbucketRepository
 import it.restart.com.atlassian.jira.plugins.dvcs.testClient.RepositoryTestHelper;
 import it.util.TestAccounts;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.PASSWORD;
@@ -28,19 +30,31 @@ public class BitbucketPRTest extends PullRequestTestCases<BitbucketPullRequest>
     {
     }
 
+    @BeforeClass
+    public void beforeClass()
+    {
+        setUpEnvironment();
+    }
+
+    @AfterMethod
+    public void afterMethod()
+    {
+        deleteCreatedIssues();
+    }
+
     @Override
     protected void beforeEachTestClassInitialisation(final JiraTestedProduct jiraTestedProduct)
     {
         bitbucket = new BitbucketTestedProduct(getJiraTestedProduct().getTester());
         repositoryTestHelper = new BitbucketRepositoryTestHelper(ACCOUNT_NAME, PASSWORD, getJiraTestedProduct(),
-                bitbucket, BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+                bitbucket, BitbucketRepositoryTestHelper.DvcsType.GIT);
         repositoryTestHelper.initialiseOrganizationsAndDvcs(null, null);
 
         this.dvcs = repositoryTestHelper.getDvcs();
         this.oAuth = repositoryTestHelper.getoAuth();
 
         forkRepositoryTestHelper = new BitbucketRepositoryTestHelper(FORK_ACCOUNT_NAME, FORK_ACCOUNT_PASSWORD,
-                getJiraTestedProduct(), bitbucket, BitbucketRepositoryTestHelper.DvcsType.MERCURIAL);
+                getJiraTestedProduct(), bitbucket, BitbucketRepositoryTestHelper.DvcsType.GIT);
         forkRepositoryTestHelper.initialiseOrganizationsAndDvcs(dvcs, oAuth);
 
         MockitoAnnotations.initMocks(this);
