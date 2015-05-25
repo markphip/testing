@@ -2,42 +2,57 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
 public class PanelVisibilityManager
 {
-    private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
-    private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
+    static final String CONTEXT_KEY_PROJECT = "project";
+    static final String DEV_STATUS_PHASE_TWO_FEATURE_FLAG = "jira.plugin.devstatus.phasetwo";
+    static final String DEV_STATUS_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
 
-    private final PermissionManager permissionManager;
-    private final PluginAccessor pluginAccessor;
     private final FeatureManager featureManager;
+    private final PluginAccessor pluginAccessor;
+    private final ProjectDevToolsIntegrationFeatureCondition projectDevToolsIntegrationFeatureCondition;
 
     @Autowired
     @SuppressWarnings("SpringJavaAutowiringInspection")
-    public PanelVisibilityManager(@ComponentImport PermissionManager permissionManager,
+    public PanelVisibilityManager(@ComponentImport FeatureManager featureManager,
             @ComponentImport PluginAccessor pluginAccessor,
-            @ComponentImport FeatureManager featureManager)
+            ProjectDevToolsIntegrationFeatureCondition projectDevToolsIntegrationFeatureCondition)
     {
-        this.permissionManager = checkNotNull(permissionManager);
-        this.pluginAccessor = checkNotNull(pluginAccessor);
         this.featureManager = checkNotNull(featureManager);
+        this.pluginAccessor = checkNotNull(pluginAccessor);
+        this.projectDevToolsIntegrationFeatureCondition = checkNotNull(projectDevToolsIntegrationFeatureCondition);
     }
 
     public boolean showPanel(Issue issue, ApplicationUser user)
     {
-        return (!pluginAccessor.isPluginEnabled(DEVSUMMARY_PLUGIN_ID) || !featureManager.isEnabled(LABS_OPT_IN) ||
-                // JIRA 6.1.x was installed with 0.x of the devsummary plugin, everything else after will want to hide this panel
-                pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID).getPluginInformation().getVersion().startsWith("0.")) &&
-                permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user);
+        return projectDevToolsIntegrationFeatureConditionIsSatisfied(issue.getProjectObject())
+               && devStatusPluginDoesNotShowCommitInformation();
+    }
+
+    private boolean projectDevToolsIntegrationFeatureConditionIsSatisfied(Project project)
+    {
+        Map<String,Object> context = ImmutableMap.<String,Object>of(CONTEXT_KEY_PROJECT, project);
+        return projectDevToolsIntegrationFeatureCondition.shouldDisplay(context);
+    }
+
+    private boolean devStatusPluginDoesNotShowCommitInformation()
+    {
+        return !pluginAccessor.isPluginEnabled(DEV_STATUS_PLUGIN_ID) //because the plugin is disabled
+               || !featureManager.isEnabled(DEV_STATUS_PHASE_TWO_FEATURE_FLAG) //because phase two feature flag is not enabled
+               || pluginAccessor.getPlugin(DEV_STATUS_PLUGIN_ID).getPluginInformation().getVersion().startsWith("0."); //because the plugin is too old
     }
 }
