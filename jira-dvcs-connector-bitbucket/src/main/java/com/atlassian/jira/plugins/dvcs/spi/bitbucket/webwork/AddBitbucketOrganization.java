@@ -79,14 +79,16 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
 
         storeLatestOAuth();
-        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) == null){
+        if (StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
+        {
             // then continue
             return redirectUserToBitbucket();
-        }else{
-            //your in a test so we are going to just skip the oauthdance
-            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
-            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
-           return doAddOrganization();
+        }
+        else
+        {
+            // you are in a test so we are going to skip the OAuth dance
+            setUrlAndKeyForCtkTesting();
+            return doAddOrganization();
         }
 
 
@@ -218,8 +220,9 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) != null){
-            log.warn("Setting the URL for testing "+System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
+        if (StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
+        {
+            log.warn("Setting the URL for testing " + System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
             setUrlAndKeyForCtkTesting();
         }
 
@@ -257,7 +260,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
     }
 
-    private void setUrlAndKeyForCtkTesting(){
+    private void setUrlAndKeyForCtkTesting()
+    {
         url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
         accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
     }
