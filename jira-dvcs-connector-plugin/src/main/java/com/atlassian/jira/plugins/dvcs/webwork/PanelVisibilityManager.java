@@ -7,19 +7,23 @@ import com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeat
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+import static com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition.CONTEXT_KEY_PROJECT;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Component
 public class PanelVisibilityManager
 {
-    static final String CONTEXT_KEY_PROJECT = "project";
+    @VisibleForTesting
     static final String DEV_STATUS_PHASE_TWO_FEATURE_FLAG = "jira.plugin.devstatus.phasetwo";
+
+    @VisibleForTesting
     static final String DEV_STATUS_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
 
     private final FeatureManager featureManager;
@@ -51,8 +55,7 @@ public class PanelVisibilityManager
 
     private boolean devStatusPluginDoesNotShowCommitInformation()
     {
-        return !pluginAccessor.isPluginEnabled(DEV_STATUS_PLUGIN_ID) //because the plugin is disabled
-               || !featureManager.isEnabled(DEV_STATUS_PHASE_TWO_FEATURE_FLAG) //because phase two feature flag is not enabled
-               || pluginAccessor.getPlugin(DEV_STATUS_PLUGIN_ID).getPluginInformation().getVersion().startsWith("0."); //because the plugin is too old
+        return !pluginAccessor.isPluginEnabled(DEV_STATUS_PLUGIN_ID)
+               || !featureManager.isEnabled(DEV_STATUS_PHASE_TWO_FEATURE_FLAG);
     }
 }

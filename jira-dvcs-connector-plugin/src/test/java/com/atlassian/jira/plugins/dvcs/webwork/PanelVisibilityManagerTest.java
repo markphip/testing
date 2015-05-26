@@ -5,9 +5,7 @@ import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.PluginInformation;
 import org.hamcrest.Matchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,9 +17,9 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager.CONTEXT_KEY_PROJECT;
 import static com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager.DEV_STATUS_PHASE_TWO_FEATURE_FLAG;
 import static com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager.DEV_STATUS_PLUGIN_ID;
+import static com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition.CONTEXT_KEY_PROJECT;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyMapOf;
@@ -51,13 +49,7 @@ public class PanelVisibilityManagerTest
     private PanelVisibilityManager panelVisibilityManager;
 
     @Mock
-    private Plugin fusionPlugin;
-
-    @Mock
     private PluginAccessor pluginAccessor;
-
-    @Mock
-    private PluginInformation fusionPluginInfo;
 
     @Mock
     private Project project;
@@ -85,40 +77,26 @@ public class PanelVisibilityManagerTest
         //The first boolean specifies whether the SW condition is satisfied. This covers: license, user role, project type, and view dev tools permission
         //The second boolean specifies whether the dev status plugin is enabled
         //The third boolean specifies whether the phase two feature flag is enabled
-        //The fourth boolean specifies whether we're running an old version of devstatus (old means major version is 0)
-        //The fifth boolean specifies whether the commits tab panel should be visible given the test case
+        //The fourth boolean specifies whether the commits tab panel should be visible given the test case
         return new Object[][] {
-                {false, false, false, false, false},
-                {false, false, false, true, false},
-                {false, false, true, false, false},
-                {false, false, true, true, false},
-                {false, true, false, false, false},
-                {false, true, false, true, false},
-                {false, true, true, false, false},
-                {false, true, true, true, false},
-                {true, false, false, false, true},
-                {true, false, false, true, true},
-                {true, false, true, false, true},
-                {true, false, true, true, true},
-                {true, true, false, false, true},
-                {true, true, false, true, true},
-                {true, true, true, false, false},
-                {true, true, true, true, true},
+                {false, false, false, false},
+                {false, false, true, false},
+                {false, true, false, false},
+                {false, true, true, false},
+                {true, false, false, true},
+                {true, false, true, true},
+                {true, true, false, true},
+                {true, true, true, false}
         };
     }
 
     @Test(dataProvider = "visibilityTestCases")
     public void testPanelVisibility(boolean softwareConditionIsSatisfied, boolean isDevStatusPluginEnabled,
-            boolean isPhaseTwoFeatureFlagEnabled, boolean isRunningAnOldVersionOfDevStatus, boolean commitsPanelVisible)
+            boolean isPhaseTwoFeatureFlagEnabled, boolean commitsPanelVisible)
     {
         when(projectDevToolsIntegrationFeatureCondition.shouldDisplay(anyMapOf(String.class, Object.class))).thenReturn(softwareConditionIsSatisfied);
         when(pluginAccessor.isPluginEnabled(eq(DEV_STATUS_PLUGIN_ID))).thenReturn(isDevStatusPluginEnabled);
         when(featureManager.isEnabled(DEV_STATUS_PHASE_TWO_FEATURE_FLAG)).thenReturn(isPhaseTwoFeatureFlagEnabled);
-
-        String devStatusVersion = isRunningAnOldVersionOfDevStatus ? "0.0.1" : "1.0.0";
-        when(pluginAccessor.getPlugin(DEV_STATUS_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-        when(fusionPluginInfo.getVersion()).thenReturn(devStatusVersion);
 
         assertThat(panelVisibilityManager.showPanel(issue, user), is(commitsPanelVisible));
 
