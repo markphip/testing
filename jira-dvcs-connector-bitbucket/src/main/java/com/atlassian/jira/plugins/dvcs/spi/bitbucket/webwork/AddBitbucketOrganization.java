@@ -58,6 +58,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private final HttpClientProvider httpClientProvider;
     private final com.atlassian.sal.api.ApplicationProperties ap;
     private final OAuthStore oAuthStore;
+    private final AddBitbucketAction actionDelegate;
 
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
             @ComponentImport EventPublisher eventPublisher,
@@ -70,6 +71,16 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.httpClientProvider = httpClientProvider;
+
+        String testingUrl = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+        if (StringUtils.isBlank(testingUrl))
+        {
+            actionDelegate = new ProductionAction();
+        }
+        else
+        {
+            actionDelegate = new TestAction(testingUrl);
+        }
     }
 
     @Override
@@ -79,17 +90,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
 
         storeLatestOAuth();
-        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) == null){
-            // then continue
-            return redirectUserToBitbucket();
-        }else{
-            //your in a test so we are going to just skip the oauthdance
-            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
-            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
-           return doAddOrganization();
-        }
-
-
+        return actionDelegate.doExecute();
     }
 
     private String redirectUserToBitbucket()
@@ -218,10 +219,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION) != null){
-            log.warn("Setting the URL for testing "+System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
-            setUrlAndKeyForCtkTesting();
-        }
+        actionDelegate.doValidation();
 
         if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
         {
@@ -257,8 +255,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
     }
 
-    private void setUrlAndKeyForCtkTesting(){
-        url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+    private void setUrlAndKeyForCtkTesting(String testingUrl){
+        url = testingUrl;
         accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
     }
 
@@ -326,5 +324,51 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private void triggerAddFailedEvent(String reason)
     {
         super.triggerAddFailedEvent(EVENT_TYPE_BITBUCKET, reason);
+    }
+
+    private interface AddBitbucketAction
+    {
+        String doExecute();
+
+        void doValidation();
+    }
+
+    private final class ProductionAction implements AddBitbucketAction
+    {
+        @Override
+        public String doExecute()
+        {
+            return redirectUserToBitbucket();
+        }
+
+        @Override
+        public void doValidation()
+        {
+            // no additional validation required
+        }
+    }
+
+    private final class TestAction implements AddBitbucketAction
+    {
+        private final String testingUrl;
+        public TestAction(String testingUrl)
+        {
+            this.testingUrl = testingUrl;
+        }
+
+        @Override
+        public String doExecute()
+        {
+            url = testingUrl;
+            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+            return doAddOrganization();
+        }
+
+        @Override
+        public void doValidation()
+        {
+            log.info("Setting the URL for testing {}", testingUrl);
+            setUrlAndKeyForCtkTesting(testingUrl);
+        }
     }
 }
