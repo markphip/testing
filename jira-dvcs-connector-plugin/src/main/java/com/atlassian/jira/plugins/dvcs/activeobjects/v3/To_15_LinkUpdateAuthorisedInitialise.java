@@ -25,6 +25,7 @@ public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgrad
     public void upgrade(final ModelVersion currentVersion, final ActiveObjects activeObjects)
     {
         log.info("upgrade [ " + getModelVersion() + " ]");
+        activeObjects.flushAll();
         activeObjects.migrate(RepositoryMapping.class);
         RepositoryMapping[] repositoryMappings = activeObjects.find(RepositoryMapping.class);
         for (RepositoryMapping repositoryMapping : repositoryMappings)
