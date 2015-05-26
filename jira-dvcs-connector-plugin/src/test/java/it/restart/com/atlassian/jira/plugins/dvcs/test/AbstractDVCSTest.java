@@ -38,8 +38,6 @@ public abstract class AbstractDVCSTest
 
     protected Backdoor testKit;
 
-    protected static final String TEST_DATA = "test-dvcs.zip";
-
     public void setUpEnvironment()
     {
         testKit = new Backdoor(new TestKitLocalEnvironmentData(new Properties(), "."));
