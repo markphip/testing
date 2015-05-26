@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class To_15_LinkUpdateAuthorisedInitialise implements ActiveObjectsUpgradeTask
 {
-    private static final Logger log = LoggerFactory.getLogger(To_14_NewRepositoryColumn.class);
+    private static final Logger log = LoggerFactory.getLogger(To_15_LinkUpdateAuthorisedInitialise.class);
 
     @Override
     public ModelVersion getModelVersion()

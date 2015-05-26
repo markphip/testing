@@ -46,7 +46,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     @BeforeClass
     public void beforeClass()
     {
-        jira.backdoor().restoreDataFromResource(TEST_DATA);
         // log in to JIRA
         new JiraLoginPageController(jira).login();
         // log in to github
