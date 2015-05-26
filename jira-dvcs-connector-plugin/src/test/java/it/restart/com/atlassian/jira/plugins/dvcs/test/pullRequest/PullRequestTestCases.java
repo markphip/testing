@@ -222,8 +222,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-        Account account = DvcsAccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
-                ACCOUNT_NAME, repositoryName, true);
+        DvcsAccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(), ACCOUNT_NAME, repositoryName, true);
 
         PullRequestLocalRestpoint prRest = new PullRequestLocalRestpoint();
 

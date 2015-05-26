@@ -5,17 +5,17 @@ import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
-import com.atlassian.pageobjects.elements.query.Poller;
+import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.google.common.base.Predicate;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
 
 import static com.atlassian.jira.pageobjects.framework.elements.PageElements.bind;
-import static com.atlassian.pageobjects.elements.query.Poller.by;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.transform;
-import static org.hamcrest.Matchers.is;
 
 /**
  * Container of single account of {@link DvcsAccountsPage}.
@@ -123,13 +123,13 @@ public class Account extends AbstractComponentPageObject
         // wait for popup to show up
         try
         {
-            Poller.waitUntilTrue(find(By.id("refreshing-account-dialog")).timed().isVisible());
+            waitUntilTrue(find(By.id("refreshing-account-dialog")).timed().isVisible());
         }
         catch (AssertionError e)
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
-        Poller.waitUntil(find(By.id("refreshing-account-dialog")).timed().isVisible(), is(false), by(600000));
+        waitUntilFalse(find(By.id("refreshing-account-dialog"), TimeoutType.SLOW_PAGE_LOAD).timed().isVisible());
     }
 
     /**

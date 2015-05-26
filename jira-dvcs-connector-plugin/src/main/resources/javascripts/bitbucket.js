@@ -103,8 +103,6 @@ function updateSyncStatus(repo) {
                 var finishSyncDateTime = new Date(repo.sync.finishTime);
                 title += " (last sync finished at " + finishSyncDateTime.toDateString() + " " + finishSyncDateTime.toLocaleTimeString()  + ")";
                 syncRepoIconElement.attr("data-last-sync", finishSyncDateTime.getTime());
-            } else {
-                syncRepoIconElement.attr("data-last-sync", new Date().getTime());
             }
             syncRepoIconElement.attr("title", title);
 

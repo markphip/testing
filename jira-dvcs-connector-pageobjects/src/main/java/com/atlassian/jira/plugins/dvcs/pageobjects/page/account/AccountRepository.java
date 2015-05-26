@@ -19,7 +19,6 @@ import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.atlassian.pageobjects.elements.timeout.Timeouts;
 import com.google.common.base.Supplier;
-import org.apache.commons.lang.math.NumberUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
@@ -28,6 +27,7 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static org.apache.commons.lang.math.NumberUtils.toLong;
 import static org.hamcrest.Matchers.*;
 
 /**
@@ -113,7 +113,7 @@ public class AccountRepository extends AbstractComponentPageObject
         TimedQuery<Long> lastSync = Queries.forSupplier(timeouts, new Supplier<Long>() {
             @Override
             public Long get() {
-                return NumberUtils.toLong(getSynchronizationIcon().getAttribute("data-last-sync"));
+                return toLong(getSynchronizationIcon().getAttribute("data-last-sync"));
             }
         }, TimeoutType.SLOW_PAGE_LOAD);
         long lastSyncBefore = lastSync.now();
@@ -192,7 +192,10 @@ public class AccountRepository extends AbstractComponentPageObject
      */
     public AccountRepository fullSynchronize()
     {
-        actions.keyDown(Keys.LEFT_SHIFT).click(getSynchronizationButton()).perform();
+        actions.keyDown(Keys.LEFT_SHIFT)
+                .click(getSynchronizationButton())
+                .keyUp(Keys.LEFT_SHIFT)
+                .perform();
 
         ForceSyncDialog forceSyncDialog = getForceSyncDialog();
         Poller.waitUntilTrue(forceSyncDialog.isOpen());
@@ -261,7 +264,7 @@ public class AccountRepository extends AbstractComponentPageObject
     {
         TimedCondition isSyncFinished = isSynchronizationFinished();
         triggerSynchronization();
-        waitUntilTrue(isSyncFinished);
+        waitUntilTrue("Synchronization has not finished on time, or has never been triggered", isSyncFinished);
     }
 
     public static class ForceSyncDialog extends AbstractComponentPageObject
