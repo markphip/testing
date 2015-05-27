@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>3.3.2-SNAPSHOT</version>
+    <version>3.3.2-D20150527T012248</version>
     <packaging>pom</packaging>
 
     <name>JIRA DVCS Connector Parent POM</name>
