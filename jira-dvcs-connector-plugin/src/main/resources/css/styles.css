@@ -28,7 +28,6 @@
 .syncicon {
     width:16px;
     height:16px;
-    /*background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);*/
     background-repeat: no-repeat;
     vertical-align: text-bottom;
     display: none;
@@ -37,7 +36,7 @@
  .syncrepoicon {
      width: 16px;
      height: 16px;
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/not_working.png);
+     background-image: inlineimage(images/not_working.png);
      background-repeat: no-repeat;
      vertical-align: text-bottom;
      display: inline-block;
@@ -51,51 +50,51 @@
  }
 
  .syncrepoicon.running {
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+     background-image: inlineimage(images/working.gif);
      cursor: default;
  }
  .syncrepoicon.syncrepoiconqueue {
-     background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/queued.png);
+     background-image: inlineimage(images/queued.png);
      cursor: default;
  }
 .syncicon.error {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
+    background-image: inlineimage(images/error.png);
     display:inline-block;
 }
 
 .syncicon.info {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/info.png);
+    background-image: inlineimage(images/info.png);
     display:inline-block;
 }
 
 .syncicon.running {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/working.gif);
+    background-image: inlineimage(images/working.gif);
     display:inline-block;
 }
 
 .syncicon.finished {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/status-ok.png);
+    background-image: inlineimage(images/status-ok.png);
     display:inline-block;
 }
 
 .syncicon.commits {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/clock.png);
+    background-image: inlineimage(images/clock.png);
     display:inline-block;
     background-position: 0 2px;
 }
 
 .bitbucketLogo {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/bitbucket_logo.png);
+    background-image: inlineimage(images/bitbucket_logo.png);
     background-repeat: no-repeat;
 }
 
 .githubLogo {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/github_logo.png);
+    background-image: inlineimage(images/github_logo.png);
     background-repeat: no-repeat;
 }
 
 .githubeLogo {
-	background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/githube_logo.png);
+	background-image: inlineimage(images/githube_logo.png);
 	background-repeat: no-repeat;
 }
 
@@ -306,7 +305,7 @@ html[xmlns] .dvcs-dclear {
 .dvcs-account-ondemand {
 	width: 115px;
     height: 28px;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ondemand_logo.png);
+    background-image: inlineimage(images/ondemand_logo.png);
     background-repeat: no-repeat;
     display: inline-block;
     position: relative;
@@ -315,7 +314,7 @@ html[xmlns] .dvcs-dclear {
 .dvcs-account-enterprise {
 	width: 110px;
     height: 29px;
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/ghe_logo.png);
+    background-image: inlineimage(images/ghe_logo.png);
     background-repeat: no-repeat;
     display: inline-block;
     position: relative;
@@ -331,7 +330,7 @@ html[xmlns] .dvcs-dclear {
 	margin-top: 20px;
 }
 .dvcs-invalid-organization {
-    background-image: url(../../../download/resources/com.atlassian.jira.plugins.jira-bitbucket-connector-plugin/images/error.png);
+    background-image: inlineimage(images/error.png);
     background-repeat: no-repeat;
     background-position: 4px -1px; 
     display: inline-block;
