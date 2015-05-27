@@ -32,7 +32,6 @@
         <skipTests>false</skipTests>
         <testGroups>integration_tests_without_ghe</testGroups>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>

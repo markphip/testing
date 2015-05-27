@@ -58,6 +58,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private final HttpClientProvider httpClientProvider;
     private final com.atlassian.sal.api.ApplicationProperties ap;
     private final OAuthStore oAuthStore;
+    private final AddBitbucketAction actionDelegate;
 
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
             @ComponentImport EventPublisher eventPublisher,
@@ -70,6 +71,12 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.httpClientProvider = httpClientProvider;
+
+        if(StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
+            actionDelegate = new ProductionAction();
+        }else{
+            actionDelegate = new TestAction();
+        }
     }
 
     @Override
@@ -77,21 +84,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     protected String doExecute() throws Exception
     {
         triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
-
         storeLatestOAuth();
-        if (StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
-        {
-            // then continue
-            return redirectUserToBitbucket();
-        }
-        else
-        {
-            // you are in a test so we are going to skip the OAuth dance
-            setUrlAndKeyForCtkTesting();
-            return doAddOrganization();
-        }
-
-
+        return actionDelegate.doExecute();
     }
 
     private String redirectUserToBitbucket()
@@ -181,7 +175,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         return doAddOrganization();
     }
 
-    private String doAddOrganization()
+    protected String doAddOrganization()
     {
 
         try
@@ -220,9 +214,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if (StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
-        {
-            log.warn("Setting the URL for testing " + System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
+        if(StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
             setUrlAndKeyForCtkTesting();
         }
 
@@ -262,6 +254,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private void setUrlAndKeyForCtkTesting()
     {
+        log.info("Setting the URL for testing {}", System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
         url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
         accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
     }
@@ -306,7 +299,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.adminUsername = adminUsername;
     }
 
-
     public String getOauthBbClientId()
     {
         return oauthBbClientId;
@@ -330,5 +322,25 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private void triggerAddFailedEvent(String reason)
     {
         super.triggerAddFailedEvent(EVENT_TYPE_BITBUCKET, reason);
+    }
+
+    @FunctionalInterface
+    private interface AddBitbucketAction
+    {
+        String doExecute();
+    }
+
+    private final class ProductionAction implements AddBitbucketAction
+    {
+        public String doExecute(){
+            return redirectUserToBitbucket();
+        }
+    }
+
+    private final class TestAction implements AddBitbucketAction
+    {
+        public String doExecute(){
+            return doAddOrganization();
+        }
     }
 }
