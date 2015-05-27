@@ -159,14 +159,24 @@
     <web-resource name="resources" key="resources">
         <resource type="download" name="javascripts/bitbucket.js" location="javascripts/bitbucket.js"/>
         <resource type="download" name="javascripts/validation.js" location="javascripts/validation.js"/>
-        <resource type="download" name="css/styles.css" location="css/styles.css"/>
+        <resource type="download" name="css/styles.css" location="css/styles.less"/>
+
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin</context>
         <dependency>com.atlassian.auiplugin:aui-experimental-dropdown2</dependency>
         <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
     </web-resource>
 
     <web-resource name="cssResources" key="cssResources">
-        <resource type="download" name="css/styles.css" location="css/styles.css"/>
+        <resource type="download" name="css/styles.css" location="css/styles.less"/>
+
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
         <context>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin-css</context>
     </web-resource>
 
