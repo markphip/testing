@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -21,10 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_RESPONSE;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
 import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator.GITHUB_ENTERPRISE;
 
 @Scanned
@@ -34,7 +32,6 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
     private final Logger log = LoggerFactory.getLogger(AddGithubEnterpriseOrganization.class);
 
-    public static final String EVENT_TYPE_GITHUB_ENTERPRISE = "githubenterprise";
 
     private String organization;
 
@@ -60,12 +57,11 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         this.applicationProperties = applicationProperties;
     }
 
-
     @Override
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        triggerAddStartedEvent(EVENT_TYPE_GITHUB_ENTERPRISE);
+        triggerAddStartedEvent(DvcsType.GITHUB_ENTERPRISE);
 
         oAuthStore.store(new Host(GITHUB_ENTERPRISE, url), oauthClientIdGhe, oauthSecretGhe);
 
@@ -120,7 +116,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
 
         if (invalidInput())
         {
-            triggerAddFailedEvent(FAILED_REASON_VALIDATION);
+            triggerAddFailedEvent(FailureReason.VALIDATION);
         }
     }
 
@@ -132,7 +128,7 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         } catch (InvalidResponseException ire)
         {
             addErrorMessage(ire.getMessage() + " Possibly bug in releases of GitHub Enterprise prior to 11.10.290.");
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_RESPONSE);
+            triggerAddFailedEvent(FailureReason.OAUTH_RESPONSE);
             return INPUT;
 
         } catch (SourceControlException sce)
@@ -143,13 +139,13 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             {
                 log.warn("Caused by: " + sce.getCause().getMessage());
             }
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
+            triggerAddFailedEvent(FailureReason.OAUTH_SOURCECONTROL);
             return INPUT;
 
         } catch (Exception e)
         {
             addErrorMessage("Error obtaining access token.");
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_GENERIC);
+            triggerAddFailedEvent(FailureReason.OAUTH_GENERIC);
             return INPUT;
         }
 
@@ -174,11 +170,11 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
             e.printStackTrace();
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
+            triggerAddFailedEvent(FailureReason.OAUTH_SOURCECONTROL);
             return INPUT;
         }
 
-        triggerAddSucceededEvent(EVENT_TYPE_GITHUB_ENTERPRISE);
+        triggerAddSucceededEvent(DvcsType.GITHUB_ENTERPRISE);
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
                             getSourceAsUrlParam());
     }
@@ -238,8 +234,8 @@ public class AddGithubEnterpriseOrganization extends CommonDvcsConfigurationActi
         this.url = url;
     }
 
-    private void triggerAddFailedEvent(String reason)
+    private void triggerAddFailedEvent(FailureReason reason)
     {
-        super.triggerAddFailedEvent(EVENT_TYPE_GITHUB_ENTERPRISE, reason);
+        super.triggerAddFailedEvent(DvcsType.GITHUB_ENTERPRISE, reason);
     }
 }

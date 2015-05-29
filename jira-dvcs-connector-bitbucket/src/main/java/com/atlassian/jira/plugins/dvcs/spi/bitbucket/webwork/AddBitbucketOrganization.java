@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -28,11 +30,6 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
-
 /**
  * Webwork action used to configure the bitbucket organization.
  */
@@ -43,7 +40,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
-    public static final String EVENT_TYPE_BITBUCKET = "bitbucket";
+    //public static final String EVENT_TYPE_BITBUCKET = "bitbucket";
     public static final String SESSION_KEY_REQUEST_TOKEN = "requestToken";
 
     private String url;
@@ -80,7 +77,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
+        triggerAddStartedEvent(DvcsType.BITBUCKET);
 
         storeLatestOAuth();
 
@@ -104,7 +101,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         {
             log.warn("Error redirect user to bitbucket server.", e);
             addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_TOKEN);
+            triggerAddFailedEvent(FailureReason.OAUTH_TOKEN);
             return INPUT;
         }
     }
@@ -184,18 +181,18 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_UNAUTH);
+            triggerAddFailedEvent(FailureReason.OAUTH_UNAUTH);
             return INPUT;
         }
         catch (SourceControlException e)
         {
             addErrorMessage("Failed adding the account: [" + e.getMessage() + "]");
             log.debug("Failed adding the account: [" + e.getMessage() + "]");
-            triggerAddFailedEvent(FAILED_REASON_OAUTH_SOURCECONTROL);
+            triggerAddFailedEvent(FailureReason.OAUTH_SOURCECONTROL);
             return INPUT;
         }
 
-        triggerAddSucceededEvent(EVENT_TYPE_BITBUCKET);
+        triggerAddSucceededEvent(DvcsType.BITBUCKET);
 
         // go back to main DVCS configuration page
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken())
@@ -235,7 +232,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
         if (invalidInput())
         {
-            triggerAddFailedEvent(FAILED_REASON_VALIDATION);
+            triggerAddFailedEvent(FailureReason.VALIDATION);
         }
     }
 
@@ -300,8 +297,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.oauthBbSecret = oauthBbSecret;
     }
 
-    private void triggerAddFailedEvent(String reason)
+    private void triggerAddFailedEvent(FailureReason reason)
     {
-        super.triggerAddFailedEvent(EVENT_TYPE_BITBUCKET, reason);
+        super.triggerAddFailedEvent(DvcsType.BITBUCKET, reason);
     }
 }

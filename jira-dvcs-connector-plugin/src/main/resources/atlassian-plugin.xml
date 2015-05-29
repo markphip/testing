@@ -59,6 +59,8 @@
         <upgradeTask>com.atlassian.jira.plugins.dvcs.activeobjects.v3.To_15_LinkUpdateAuthorisedInitialise</upgradeTask>
     </ao>
 
+    <analytics-whitelist key="dvcs-whitelist" resource="whitelist/dvcs-whitelist.json"/>
+
     <!-- Integrated account -->
 
     <navigation-link key="app-switcher-nav-link" menu-key="home" state="disabled" weight="400">

@@ -4,6 +4,7 @@ import com.atlassian.analytics.api.annotations.EventName;
 
 import java.util.Date;
 
+@EventName("jira.dvcsconnector.sync.end")
 public class DvcsSyncEndAnalyticsEvent
 {
     private boolean soft;
@@ -28,11 +29,11 @@ public class DvcsSyncEndAnalyticsEvent
         this.tookMillis = tookMillis;
     }
 
-    @EventName
-    public String determineEventName()
-    {
-        return "jira.dvcsconnector.sync.end";
-    }
+//    @EventName
+//    public String determineEventName()
+//    {
+//        return "jira.dvcsconnector.sync.end";
+//    }
 
     public boolean isSoft()
     {

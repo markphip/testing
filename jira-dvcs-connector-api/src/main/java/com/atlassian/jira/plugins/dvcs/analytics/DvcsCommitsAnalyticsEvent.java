@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.analytics;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsCommitsAnalyticsEventSource;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsCommitsAnalyticsEventname;
 
 /**
  * Analytics event class to indicate actions on the issue.
@@ -13,14 +15,14 @@ public class DvcsCommitsAnalyticsEvent
 {
 
     private final String eventName;
-    private final boolean isAuthenticated;
+    private final boolean authenticated;
     private final String source;
 
-    public DvcsCommitsAnalyticsEvent(final String source, final String eventName, final boolean isAuthenticated)
+    public DvcsCommitsAnalyticsEvent(final DvcsCommitsAnalyticsEventSource source, final DvcsCommitsAnalyticsEventname eventName, final boolean authenticated)
     {
-        this.eventName = eventName;
-        this.isAuthenticated = isAuthenticated;
-        this.source = source;
+        this.eventName = eventName.toString();
+        this.authenticated = authenticated;
+        this.source = source.toString();
     }
 
     @EventName
@@ -31,7 +33,7 @@ public class DvcsCommitsAnalyticsEvent
 
     public boolean isAuthenticated()
     {
-        return isAuthenticated;
+        return authenticated;
     }
 
     public String getSource()

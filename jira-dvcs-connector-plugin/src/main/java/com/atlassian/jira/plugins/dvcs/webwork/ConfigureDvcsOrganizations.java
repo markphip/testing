@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
@@ -162,9 +163,13 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return source;
     }
 
-    public String getSourceOrDefault()
+    public Source getSourceOrDefault()
     {
-        return StringUtils.defaultIfEmpty(source, DEFAULT_SOURCE);
+        if(StringUtils.isNotBlank(source)){
+            return Source.valueOf(source);
+        }else{
+            return Source.UNKNOWN;
+        }
     }
 
     public void setSource(String source)

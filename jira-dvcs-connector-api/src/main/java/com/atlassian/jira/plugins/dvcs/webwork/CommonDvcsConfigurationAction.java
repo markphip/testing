@@ -1,6 +1,10 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Outcome;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
@@ -10,8 +14,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_FAILED;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 import static com.atlassian.jira.plugins.dvcs.util.CustomStringUtils.encode;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -70,22 +72,22 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
         this.autoSmartCommits = autoSmartCommits;
     }
 
-    protected void triggerAddStartedEvent(String type)
+    protected void triggerAddStartedEvent(DvcsType type)
     {
         eventPublisher.publish(new DvcsConfigAddStartedAnalyticsEvent(getSourceOrDefault(), type));
     }
 
-    protected void triggerAddSucceededEvent(String type)
+    protected void triggerAddSucceededEvent(DvcsType type)
     {
-        triggerAddEndedEvent(type, OUTCOME_SUCCEEDED, null);
+        triggerAddEndedEvent(type, Outcome.SUCCEEDED, null);
     }
 
-    protected void triggerAddFailedEvent(String type, String reason)
+    protected void triggerAddFailedEvent(DvcsType type, FailureReason reason)
     {
-        triggerAddEndedEvent(type, OUTCOME_FAILED, reason);
+        triggerAddEndedEvent(type, Outcome.FAILED, reason);
     }
 
-    protected void triggerAddEndedEvent(String type, String outcome, String reason)
+    protected void triggerAddEndedEvent(DvcsType type, Outcome outcome, FailureReason reason)
     {
         eventPublisher.publish(new DvcsConfigAddEndedAnalyticsEvent(getSourceOrDefault(), type, outcome, reason));
     }
@@ -95,9 +97,13 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
         return source;
     }
 
-    public String getSourceOrDefault()
+    public Source getSourceOrDefault()
     {
-        return StringUtils.defaultIfEmpty(source, DEFAULT_SOURCE);
+        if(StringUtils.isNotBlank(source)){
+            return Source.valueOf(source.toUpperCase());
+        }else{
+            return Source.UNKNOWN;
+        }
     }
 
     /**
