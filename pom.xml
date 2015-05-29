@@ -487,11 +487,11 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0.0-SNAPSHOT</jira.compile.version>
+                <jira.compile.version>7.0.0-20150524.092050</jira.compile.version>
                 <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
-                <jira.data.version>7.0.0-SNAPSHOT</jira.data.version>
+                <jira.data.version>7.0.0-20150524.092050</jira.data.version>
                 <jira.software.version>1.17</jira.software.version>
-                <jira.version>7.0.0-SNAPSHOT</jira.version>
+                <jira.version>7.0.0-20150524.092050</jira.version>
                 <testkit.version>7.0.32</testkit.version>
             </properties>
         </profile>
