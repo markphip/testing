@@ -32,7 +32,7 @@ public class DoAddOrganizationAction implements DoExecuteAction
         return doAddOrganization();
     }
 
-    private String doAddOrganization()
+    public String doAddOrganization()
     {
         try
         {
@@ -62,7 +62,7 @@ public class DoAddOrganizationAction implements DoExecuteAction
             return Action.INPUT;
         }
 
-        //triggerAddSucceededEvent(EVENT_TYPE_BITBUCKET);
+        addBitbucketOrganization.triggerAddSucceededEvent(addBitbucketOrganization.EVENT_TYPE_BITBUCKET);
 
         // go back to main DVCS configuration page
         return addBitbucketOrganization.getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(addBitbucketOrganization.getXsrfToken())

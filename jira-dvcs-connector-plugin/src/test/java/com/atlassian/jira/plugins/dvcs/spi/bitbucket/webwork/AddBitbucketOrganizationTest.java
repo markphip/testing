@@ -8,21 +8,32 @@ import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEv
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketOAuthAuthentication;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.util.DebugOutputStream;
+import com.atlassian.jira.plugins.dvcs.util.CustomStringUtils;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
 import com.atlassian.jira.security.JiraAuthenticationContext;
+import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
 import com.atlassian.jira.security.xsrf.XsrfTokenGenerator;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.web.action.RedirectSanitiser;
 import com.atlassian.sal.api.ApplicationProperties;
+import junit.framework.Assert;
+import org.apache.commons.lang.StringUtils;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.scribe.builder.ServiceBuilder;
 import org.scribe.exceptions.OAuthException;
+import org.scribe.model.SignatureType;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
@@ -34,6 +45,7 @@ import webwork.action.Action;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.AssertTrue;
 
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
@@ -43,6 +55,7 @@ import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyt
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization.EVENT_TYPE_BITBUCKET;
 import static com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction.DEFAULT_SOURCE;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -53,6 +66,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class AddBitbucketOrganizationTest
@@ -100,9 +114,18 @@ public class AddBitbucketOrganizationTest
     @Mock
     private HttpClientProvider httpClientProvider;
 
+    @Mock
+    private AccountInfo accountInfo;
+
+    @Mock
+    private DoExecuteDelegateFactory doExecuteDelegateFactory;
+
+    @Mock
+    private DoAddOrganizationActionFactory doAddOrganizationActionFactory;
+
     private AddBitbucketOrganization addBitbucketOrganization;
 
-    @BeforeMethod (alwaysRun=true)
+    @BeforeMethod (alwaysRun = true)
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
@@ -134,10 +157,11 @@ public class AddBitbucketOrganizationTest
         when(oAuthService.getRequestToken()).thenReturn(requestToken);
         when(oAuthService.getAuthorizationUrl(eq(requestToken))).thenReturn(SAMPLE_AUTH_URL);
 
-        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider, doExecuteDelegateFactory,doAddOrganizationActionFactory)
         {
             @Override
-            OAuthService createOAuthScribeService() {
+            OAuthService createOAuthScribeService()
+            {
                 return oAuthService;
             }
         };
@@ -150,6 +174,7 @@ public class AddBitbucketOrganizationTest
         ComponentAccessor.initialiseWorker(null); // reset
         mockComponentContainer.afterMethod();
         mockHttp.afterMethod();
+        System.clearProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
     }
 
     @Test
@@ -163,6 +188,7 @@ public class AddBitbucketOrganizationTest
         verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
         verifyNoMoreInteractions(response);
     }
+
     @Test
     public void testDoExecuteAnalyticsDefaultSource() throws Exception
     {
@@ -259,4 +285,33 @@ public class AddBitbucketOrganizationTest
 //        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
+
+    @Test
+    public void ctkTestVerificationUrlIsExpected() throws Exception
+    {
+        setupForCtkTestingStateTests();
+        addBitbucketOrganization.doValidation();
+        verifyZeroInteractions(eventPublisher);
+        assertThat("Expecting url to match system property ", addBitbucketOrganization.getUrl().equals(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)));
+}
+
+    private void setupForCtkTestingStateTests(){
+       String url = System.setProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, "localhost:8890");
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider,doExecuteDelegateFactory,doAddOrganizationActionFactory)
+        {
+            @Override
+            OAuthService createOAuthScribeService()
+            {
+                return oAuthService;
+            }
+        };
+        addBitbucketOrganization.setOrganization("org");
+        when(organizationService.getAccountInfo("localhost:8890","org",BitbucketCommunicator.BITBUCKET)).thenReturn(accountInfo);
+    }
+
+
+
+
+
+
 }

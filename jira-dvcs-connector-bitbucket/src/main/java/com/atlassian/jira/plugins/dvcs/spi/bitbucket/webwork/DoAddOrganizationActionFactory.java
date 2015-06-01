@@ -1,8 +1,11 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 
-/**
- * Created by gtaylor on 1/06/15.
- */
+import org.springframework.stereotype.Component;
+
+@Component
 public class DoAddOrganizationActionFactory
 {
+    public DoAddOrganizationAction createDoAddOrganizationAction(AddBitbucketOrganization  addBitbucketOrganization){
+        return new DoAddOrganizationAction(addBitbucketOrganization);
+    }
 }

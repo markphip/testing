@@ -29,10 +29,13 @@ import org.scribe.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
 import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
+import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
 
 /**
  * Webwork action used to configure the bitbucket organization.
@@ -58,25 +61,24 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private final HttpClientProvider httpClientProvider;
     private final com.atlassian.sal.api.ApplicationProperties ap;
     private final OAuthStore oAuthStore;
-    private final AddBitbucketAction actionDelegate;
+    private final DoAddOrganizationActionFactory doAddOrganizationActionFactory;
+    private final DoExecuteDelegateFactory doExecuteDelegateFactory;
 
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
             @ComponentImport EventPublisher eventPublisher,
             OAuthStore oAuthStore,
             OrganizationService organizationService,
-            HttpClientProvider httpClientProvider)
+            HttpClientProvider httpClientProvider,
+            @ComponentImport DoExecuteDelegateFactory doExecuteDelegateFactory,
+            @ComponentImport DoAddOrganizationActionFactory doAddOrganizationActionFactory)
     {
         super(eventPublisher);
         this.ap = ap;
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.httpClientProvider = httpClientProvider;
-
-        if(StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
-            actionDelegate = new ProductionAction();
-        }else{
-            actionDelegate = new TestAction();
-        }
+        this.doExecuteDelegateFactory = doExecuteDelegateFactory;
+        this.doAddOrganizationActionFactory = doAddOrganizationActionFactory;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     {
         triggerAddStartedEvent(EVENT_TYPE_BITBUCKET);
         storeLatestOAuth();
-        return actionDelegate.doExecute();
+        return doExecuteDelegateFactory.createDoExecuteAction(this).doExecute();
     }
 
     private String redirectUserToBitbucket()
@@ -95,13 +97,14 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
             OAuthService service = createOAuthScribeService();
             Token requestToken = service.getRequestToken();
             String authUrl = service.getAuthorizationUrl(requestToken);
-
+            this.getHttpSession().setAttribute(SESSION_KEY_REQUEST_TOKEN, requestToken);
             request.getSession().setAttribute(SESSION_KEY_REQUEST_TOKEN, requestToken);
 
             return SystemUtils.getRedirect(this, authUrl, true);
         }
         catch (Exception e)
         {
+
             log.warn("Error redirect user to bitbucket server.", e);
             addErrorMessage("The authentication with Bitbucket has failed. Please check your OAuth settings.");
             triggerAddFailedEvent(FAILED_REASON_OAUTH_TOKEN);
@@ -172,10 +175,10 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
         httpClientProvider.closeIdleConnections();
 
-        return doAddOrganization();
+        return doAddOrganizationActionFactory.createDoAddOrganizationAction(this).doAddOrganization();
     }
 
-    protected String doAddOrganization()
+    private String doAddOrganization()
     {
 
         try
@@ -214,7 +217,8 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if(StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
+        if (StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
+        {
             setUrlAndKeyForCtkTesting();
         }
 
@@ -319,28 +323,48 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.oauthBbSecret = oauthBbSecret;
     }
 
-    private void triggerAddFailedEvent(String reason)
+    public HttpServletRequest getRequest()
+    {
+        return this.getHttpRequest();
+    }
+
+    protected void triggerAddFailedEvent(String reason)
     {
         super.triggerAddFailedEvent(EVENT_TYPE_BITBUCKET, reason);
     }
 
-    @FunctionalInterface
-    private interface AddBitbucketAction
+    public OAuthStore getOAuthStore()
     {
-        String doExecute();
+    return oAuthStore;
     }
 
-    private final class ProductionAction implements AddBitbucketAction
-    {
-        public String doExecute(){
-            return redirectUserToBitbucket();
-        }
+    public HttpClientProvider getHttpClientProvider(){
+        return  httpClientProvider;
     }
 
-    private final class TestAction implements AddBitbucketAction
-    {
-        public String doExecute(){
-            return doAddOrganization();
-        }
+    public String getSourceAsUrlParam(){
+        return super.getSourceAsUrlParam();
     }
+
+    public com.atlassian.sal.api.ApplicationProperties getAP(){
+        return ap;
+    }
+
+    public boolean hadAutolinkingChecked(){
+        return super.hadAutolinkingChecked();
+    }
+
+    public boolean hadAutoSmartCommitsChecked(){
+        return super.hadAutoSmartCommitsChecked();
+    }
+
+    public String getAccessToken(){
+        return accessToken;
+    }
+
+    protected void triggerAddSucceededEvent(String type)
+    {
+        super.triggerAddEndedEvent(type, OUTCOME_SUCCEEDED, null);
+    }
+
 }

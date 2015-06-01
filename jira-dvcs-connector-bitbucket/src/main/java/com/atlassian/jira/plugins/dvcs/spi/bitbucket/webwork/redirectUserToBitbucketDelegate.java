@@ -14,14 +14,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webwork.action.Action;
 
-public class redirectUserToBitbucketDelegate
+public class RedirectUserToBitbucketDelegate implements DoExecuteAction
 {
     AddBitbucketOrganization addBitbucketOrganization;
     private final static Logger log = LoggerFactory.getLogger(AddBitbucketOrganization.class);
 
-    public redirectUserToBitbucketDelegate(AddBitbucketOrganization addBitbucketOrganization)
+    public RedirectUserToBitbucketDelegate(AddBitbucketOrganization addBitbucketOrganization)
     {
         this.addBitbucketOrganization = addBitbucketOrganization;
+    }
+
+    public String doExecute(){
+        return redirectUserToBitbucket();
     }
 
     private String redirectUserToBitbucket()
