@@ -72,9 +72,12 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         this.oAuthStore = oAuthStore;
         this.httpClientProvider = httpClientProvider;
 
-        if(StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
+        if (StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
+        {
             actionDelegate = new ProductionAction();
-        }else{
+        }
+        else
+        {
             actionDelegate = new TestAction();
         }
     }
@@ -175,7 +178,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         return doAddOrganization();
     }
 
-    protected String doAddOrganization()
+    private String doAddOrganization()
     {
 
         try
@@ -214,9 +217,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     @Override
     protected void doValidation()
     {
-        if(StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION))){
-            setUrlAndKeyForCtkTesting();
-        }
+        setUrlAndTokenIfTesting();
 
         if (StringUtils.isBlank(organization) || StringUtils.isBlank(url))
         {
@@ -252,11 +253,14 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
     }
 
-    private void setUrlAndKeyForCtkTesting()
+    private void setUrlAndTokenIfTesting()
     {
-        log.info("Setting the URL for testing {}", System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
-        url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
-        accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+        if (StringUtils.isNotBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
+        {
+            log.info("Setting the URL for testing {}", System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION));
+            url = System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
+            accessToken = "oauth_verifier=2370445076&oauth_token=NpPhUdKULLszcQfNsR";
+        }
     }
 
     public String getAdminPassword()
@@ -324,7 +328,6 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         super.triggerAddFailedEvent(EVENT_TYPE_BITBUCKET, reason);
     }
 
-    @FunctionalInterface
     private interface AddBitbucketAction
     {
         String doExecute();
@@ -332,14 +335,16 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
 
     private final class ProductionAction implements AddBitbucketAction
     {
-        public String doExecute(){
+        public String doExecute()
+        {
             return redirectUserToBitbucket();
         }
     }
 
     private final class TestAction implements AddBitbucketAction
     {
-        public String doExecute(){
+        public String doExecute()
+        {
             return doAddOrganization();
         }
     }

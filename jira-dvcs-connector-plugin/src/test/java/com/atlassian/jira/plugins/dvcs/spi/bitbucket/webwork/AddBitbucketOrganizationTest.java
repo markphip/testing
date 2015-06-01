@@ -11,6 +11,7 @@ import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
+import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
@@ -100,7 +101,12 @@ public class AddBitbucketOrganizationTest
     @Mock
     private HttpClientProvider httpClientProvider;
 
+    @Mock
+    private AccountInfo accountInfo;
+
     private AddBitbucketOrganization addBitbucketOrganization;
+    private static final String testingURL = "localhost:8890";
+
 
     @BeforeMethod (alwaysRun=true)
     public void setup()
@@ -150,6 +156,7 @@ public class AddBitbucketOrganizationTest
         ComponentAccessor.initialiseWorker(null); // reset
         mockComponentContainer.afterMethod();
         mockHttp.afterMethod();
+        System.clearProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION);
     }
 
     @Test
@@ -259,4 +266,43 @@ public class AddBitbucketOrganizationTest
 //        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
+
+
+    @Test
+    public void testExpectedAnalyticsWhenCtkState() throws Exception
+    {
+        setupForCtkStateTest();
+        String response = addBitbucketOrganization.doExecute();
+        assertThat(response, equalTo(Action.NONE));
+
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET, OUTCOME_SUCCEEDED, null));
+        verifyNoMoreInteractions(eventPublisher);
+    }
+
+
+    @Test
+    public void testValidationWhenCtkState() throws Exception
+    {
+        setupForCtkStateTest();
+        addBitbucketOrganization.doValidation();
+        assertThat(addBitbucketOrganization.getUrl(), equalTo(testingURL));
+    }
+
+
+    private void setupForCtkStateTest()
+    {
+        String url = System.setProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, testingURL);
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
+        {
+            @Override
+            OAuthService createOAuthScribeService()
+            {
+                return oAuthService;
+            }
+        };
+        addBitbucketOrganization.setOrganization("org");
+        when(organizationService.getAccountInfo(testingURL, "org", BitbucketCommunicator.BITBUCKET)).thenReturn(accountInfo);
+    }
+
 }
