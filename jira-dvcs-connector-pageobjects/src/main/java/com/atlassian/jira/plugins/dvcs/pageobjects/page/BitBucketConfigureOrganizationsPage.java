@@ -15,19 +15,19 @@ import static org.hamcrest.Matchers.is;
  */
 public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizationsPage
 {
-    @ElementBy(id = "oauthClientId")
+    @ElementBy (id = "oauthClientId")
     PageElement oauthKeyInput;
 
-    @ElementBy(id = "oauthSecret")
+    @ElementBy (id = "oauthSecret")
     PageElement oauthSecretInput;
 
-    @ElementBy(id = "atlassian-token")
+    @ElementBy (id = "atlassian-token")
     PageElement atlassianTokenMeta;
 
-    @ElementBy(id = "oauthBbClientId")
+    @ElementBy (id = "oauthBbClientId")
     private PageElement oauthBbClientId;
 
-    @ElementBy(id = "oauthBbSecret")
+    @ElementBy (id = "oauthBbSecret")
     private PageElement oauthBbSecret;
 
     @Override
@@ -101,7 +101,7 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
     /**
      * Links a public repository to the given JIRA project.
      *
-     * @param url        The url to the bitucket public repo
+     * @param url The url to the bitucket public repo
      * @return BitBucketConfigureOrganizationsPage
      */
     @Override
@@ -130,10 +130,10 @@ public class BitBucketConfigureOrganizationsPage extends BaseConfigureOrganizati
 
         organization.clear().type("https://bitbucket.org/someaccount");
         addOrgButton.click();
-		Poller.waitUntilTrue(
-				"Expected form for bitbucket repository admin login/password!",
-				Conditions.and(oauthKeyInput.timed().isVisible(),
-						oauthSecretInput.timed().isVisible()));
+        Poller.waitUntilTrue(
+                "Expected form for bitbucket repository admin login/password!",
+                Conditions.and(oauthKeyInput.timed().isVisible(),
+                        oauthSecretInput.timed().isVisible()));
 
         return this;
     }

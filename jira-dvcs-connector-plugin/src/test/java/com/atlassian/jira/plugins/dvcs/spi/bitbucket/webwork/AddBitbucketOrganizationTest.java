@@ -106,9 +106,8 @@ public class AddBitbucketOrganizationTest
 
     private AddBitbucketOrganization addBitbucketOrganization;
     private static final String testingURL = "localhost:8890";
-
-
-    @BeforeMethod (alwaysRun=true)
+    
+    @BeforeMethod (alwaysRun = true)
     public void setup()
     {
         MockitoAnnotations.initMocks(this);
@@ -143,7 +142,8 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
         {
             @Override
-            OAuthService createOAuthScribeService() {
+            OAuthService createOAuthScribeService()
+            {
                 return oAuthService;
             }
         };
@@ -170,6 +170,7 @@ public class AddBitbucketOrganizationTest
         verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
         verifyNoMoreInteractions(response);
     }
+
     @Test
     public void testDoExecuteAnalyticsDefaultSource() throws Exception
     {
@@ -267,7 +268,6 @@ public class AddBitbucketOrganizationTest
         verifyNoMoreInteractions(eventPublisher);
     }
 
-
     @Test
     public void testExpectedAnalyticsWhenCtkState() throws Exception
     {
@@ -280,7 +280,6 @@ public class AddBitbucketOrganizationTest
         verifyNoMoreInteractions(eventPublisher);
     }
 
-
     @Test
     public void testValidationWhenCtkState() throws Exception
     {
@@ -288,7 +287,6 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.doValidation();
         assertThat(addBitbucketOrganization.getUrl(), equalTo(testingURL));
     }
-
 
     private void setupForCtkStateTest()
     {
