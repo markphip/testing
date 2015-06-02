@@ -11,7 +11,7 @@
 
     <groupId>com.atlassian.jira.plugins</groupId>
     <artifactId>jira-dvcs-connector-parent</artifactId>
-    <version>3.3.2-SNAPSHOT</version>
+    <version>3.3.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>JIRA DVCS Connector Parent POM</name>
@@ -59,7 +59,7 @@
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
-        <greenhopper.version>6.7-breakit-8</greenhopper.version>
+        <greenhopper.version>6.7-breakit-9</greenhopper.version>
         <guava.version>18.0</guava.version>
         <jira.compile.version>6.5-OD-03-002</jira.compile.version>
         <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
@@ -136,13 +136,16 @@
                 <groupId>com.atlassian.jira.plugins</groupId>
                 <artifactId>jira-software-api</artifactId>
                 <version>${jira.software.version}</version>
-                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.plugins</groupId>
+                <artifactId>jira-software-conditions-factory</artifactId>
+                <version>${jira.software.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.jira.compat</groupId>
                 <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
                 <version>0.8</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
@@ -486,11 +489,11 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0.0-SNAPSHOT</jira.compile.version>
-                <jira.data.path />
-                <jira.data.version>7.0.0-SNAPSHOT</jira.data.version>
+                <jira.compile.version>7.0.0-20150524.092050</jira.compile.version>
+                <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
+                <jira.data.version>7.0.0-20150524.092050</jira.data.version>
                 <jira.software.version>1.17</jira.software.version>
-                <jira.version>7.0.0-SNAPSHOT</jira.version>
+                <jira.version>7.0.0-20150524.092050</jira.version>
                 <testkit.version>7.0.32</testkit.version>
             </properties>
         </profile>
