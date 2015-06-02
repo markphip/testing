@@ -24,7 +24,6 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -37,7 +36,6 @@ import java.util.List;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@Ignore
 public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
@@ -46,6 +44,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     private static final String REPOSITORY_NAME = "test-project";
     private OAuth oAuth;
 
+    // Note: commented annotation otherwise it will run beforeClass() despite @Ignore
     @BeforeClass
     public void beforeClass()
     {
@@ -58,6 +57,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
+    // Note: commented annotation otherwise it will run beforeClass() despite @Ignore
     @AfterClass
     public void afterClass()
     {
@@ -71,6 +71,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
     }
 
+    // Note: commented annotation otherwise it will run beforeClass() despite @Ignore
     @BeforeMethod
     public void beforeMethod()
     {
@@ -79,7 +80,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test
+    @Test (enabled = false)
     public void addOrganization()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -90,7 +91,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test
+    @Test (enabled = false)
     public void addOrganizationWaitForSync()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -114,7 +115,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
+    @Test (enabled = false, expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -122,7 +123,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
+    @Test (enabled = false, expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
     public void addOrganizationInvalidAccount()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -131,14 +132,14 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
+    @Test (enabled = false, expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
         rpc.addOrganization(AccountType.GITHUB, ACCOUNT_NAME, new OAuthCredentials("xxx", "yyy"), true, true);
     }
 
-    @Test
+    @Test (enabled = false)
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
@@ -152,7 +153,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         return actualHookUrls.contains(jiraCallbackUrl);
     }
 
-    @Test
+    @Test (enabled = false)
     @Override
     public void testCommitStatistics()
     {
@@ -180,7 +181,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test
+    @Test (enabled = false)
     public void shouldBeAbleToSeePrivateRepositoriesFromTeamAccount()
     {
         // we should see 'private-dvcs-connector-test' repo
@@ -191,7 +192,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         assertThat(organization.containsRepository("private-dvcs-connector-test"));
     }
 
-    @Test
+    @Test (enabled = false)
     public void linkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -206,7 +207,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         Assert.assertTrue(repository.hasWarning());
     }
 
-    @Test
+    @Test (enabled = false)
     public void linkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -221,7 +222,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         Assert.assertFalse(repository.hasWarning());
     }
 
-    @Test
+    @Test (enabled = false)
     public void autoLinkingRepositoryWithoutAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
@@ -236,7 +237,7 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
         }
     }
 
-    @Test
+    @Test (enabled = false)
     public void autoLinkingRepositoryWithAdminPermission()
     {
         RepositoriesPageController rpc = new RepositoriesPageController(jira);
