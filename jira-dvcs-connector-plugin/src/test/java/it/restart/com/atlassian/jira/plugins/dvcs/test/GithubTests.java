@@ -24,6 +24,7 @@ import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthApplicationPage;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubOAuthPage;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -36,6 +37,7 @@ import java.util.List;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
+@Ignore
 public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
 {
     private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
