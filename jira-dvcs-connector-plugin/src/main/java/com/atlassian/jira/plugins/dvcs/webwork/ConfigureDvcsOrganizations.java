@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.compatibility.bridge.project.ProjectTypeKey;
+import com.atlassian.jira.compatibility.bridge.project.UnlicensedProjectPageRendererBridge;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
@@ -15,18 +17,31 @@ import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.github.GithubCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.githubenterprise.GithubEnterpriseCommunicator;
 import com.atlassian.jira.security.xsrf.RequiresXsrfCheck;
+import com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition;
+import com.atlassian.jira.web.action.ActionViewDataMappings;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+import com.atlassian.webresource.api.assembler.PageBuilderService;
+import com.atlassian.webresource.api.assembler.RequiredResources;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+
+import static com.atlassian.jira.plugins.dvcs.ProjectTypeKey.SOFTWARE;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.util.Collections.emptyMap;
 
 /**
  * Webwork action used to configure the bitbucket organizations
@@ -34,35 +49,51 @@ import java.util.List;
 @Scanned
 public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 {
-    static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
-    public static final String SYNCHRONIZATION_DISABLED_TITLE = "%s synchronization disabled";
-    public static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Synchronization disabled";
-    public static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
-    public static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
-    private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
+    private static final String CONTENT_DATA_MAP_KEY = "content";
+    private static final String DEFAULT_SOURCE = CommonDvcsConfigurationAction.DEFAULT_SOURCE;
+    private static final String SYNCHRONIZATION_DISABLED_TITLE = "%s synchronization disabled";
+    private static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Synchronization disabled";
+    private static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
+    private static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
+    public static final String UNLICENSED_PAGE_WEB_RESOURCE = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:unlicensed-page-resources";
+
+    @VisibleForTesting
+    static final String UNLICENSED = "unlicensed";
+
+    private final EventPublisher eventPublisher;
+    private final FeatureManager featureManager;
+    private final InvalidOrganizationManager invalidOrganizationsManager;
+    private final OAuthStore oAuthStore;
+    private final OrganizationService organizationService;
+    private final PageBuilderService pageBuilderService;
+    private final PluginFeatureDetector pluginFeatureDetector;
+    private final SoftwareGlobalAdminCondition softwareGlobalAdminCondition;
+    private final SyncDisabledHelper syncDisabledHelper;
+    private final UnlicensedProjectPageRendererBridge unlicensedProjectPageRendererBridge;
 
     private String postCommitRepositoryType;
     private String source;
 
-    private final EventPublisher eventPublisher;
-    private final FeatureManager featureManager;
-    private final OrganizationService organizationService;
-    private final PluginFeatureDetector featuresDetector;
-    private final InvalidOrganizationManager invalidOrganizationsManager;
-    private final OAuthStore oAuthStore;
-    private final SyncDisabledHelper syncDisabledHelper;
-
-    public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher, OrganizationService organizationService,
-            @ComponentImport FeatureManager featureManager, PluginFeatureDetector featuresDetector,
-            @ComponentImport PluginSettingsFactory pluginSettingsFactory, OAuthStore oAuthStore, SyncDisabledHelper syncDisabledHelper)
+    @Autowired
+    public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher,
+            @ComponentImport FeatureManager featureManager, OAuthStore oAuthStore,  OrganizationService organizationService,
+            @ComponentImport PageBuilderService pageBuilderService, PluginFeatureDetector featuresDetector,
+            @ComponentImport PluginSettingsFactory pluginSettingsFactory, SoftwareGlobalAdminCondition softwareGlobalAdminCondition,
+            SyncDisabledHelper syncDisabledHelper, UnlicensedProjectPageRendererBridge unlicensedProjectPageRendererBridge)
     {
-        this.eventPublisher = eventPublisher;
-        this.organizationService = organizationService;
-        this.featureManager = featureManager;
-        this.featuresDetector = featuresDetector;
-        this.oAuthStore = oAuthStore;
+        checkNotNull(pluginSettingsFactory);
+
+        this.eventPublisher = checkNotNull(eventPublisher);
+        this.featureManager = checkNotNull(featureManager);
         this.invalidOrganizationsManager = new InvalidOrganizationsManagerImpl(pluginSettingsFactory);
-        this.syncDisabledHelper = syncDisabledHelper;
+        this.oAuthStore = checkNotNull(oAuthStore);
+        this.organizationService = checkNotNull(organizationService);
+        this.pageBuilderService = checkNotNull(pageBuilderService);
+        this.pluginFeatureDetector = checkNotNull(featuresDetector);
+        this.softwareGlobalAdminCondition = checkNotNull(softwareGlobalAdminCondition);
+        this.syncDisabledHelper = checkNotNull(syncDisabledHelper);
+        this.unlicensedProjectPageRendererBridge = checkNotNull(unlicensedProjectPageRendererBridge);
     }
 
     @Override
@@ -74,14 +105,30 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        logger.debug("Configure organization default action.");
+        LOGGER.debug("Configure organization default action.");
         eventPublisher.publish(new DvcsConfigPageShownAnalyticsEvent(getSourceOrDefault()));
         return INPUT;
     }
 
     public String doDefault() throws Exception
     {
-        return doExecute();
+        if (softwareGlobalAdminCondition.shouldDisplay(emptyMap()))
+        {
+            return doExecute();
+        }
+
+        return UNLICENSED;
+    }
+
+    @ActionViewDataMappings (UNLICENSED)
+    public Map<String,Object> getUnlicensedViewData()
+    {
+        checkState(unlicensedProjectPageRendererBridge.isBridgeActive(), "unlicensedProjectPageRendererBridge should be active.");
+
+        RequiredResources requiredResources = pageBuilderService.assembler().resources()
+                .requireWebResource(UNLICENSED_PAGE_WEB_RESOURCE);
+        ProjectTypeKey softwareKey = new ProjectTypeKey(SOFTWARE);
+        return ImmutableMap.of(CONTENT_DATA_MAP_KEY, unlicensedProjectPageRendererBridge.render(requiredResources, softwareKey));
     }
 
     public List<Organization> loadOrganizations()
@@ -144,7 +191,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     public boolean isUserInvitationsEnabled()
     {
-        return featuresDetector.isUserInvitationsEnabled();
+        return pluginFeatureDetector.isUserInvitationsEnabled();
     }
 
     public boolean isIntegratedAccount(Organization org)

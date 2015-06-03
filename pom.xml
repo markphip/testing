@@ -64,6 +64,7 @@
         <jira.compile.version>6.5-OD-03-002</jira.compile.version>
         <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <jira.data.version>6.5-OD-03-002</jira.data.version>
+        <jira.projects.version>2.5-D20150526T011810</jira.projects.version>
         <jira.software.version>0.32-D20150602T104750</jira.software.version>
         <jira.version>6.5-OD-03-002</jira.version>
         <maven.compiler.source>8</maven.compiler.source>
@@ -144,8 +145,8 @@
             </dependency>
             <dependency>
                 <groupId>com.atlassian.jira.compat</groupId>
-                <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
-                <version>0.8</version>
+                <artifactId>jira-cross-compatibility-lib-bridge-factory</artifactId>
+                <version>0.42</version>
             </dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
@@ -492,6 +493,7 @@
                 <jira.compile.version>7.0.0-QR20150602133705</jira.compile.version>
                 <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
                 <jira.data.version>7.0.0-QR20150602133705</jira.data.version>
+                <jira.projects.version>3.0.8</jira.projects.version>
                 <jira.software.version>1.20</jira.software.version>
                 <jira.version>7.0.0-QR20150602133705</jira.version>
                 <testkit.version>7.0.32</testkit.version>
