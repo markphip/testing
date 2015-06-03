@@ -32,16 +32,21 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     private static final Logger log = LoggerFactory.getLogger(DefaultSmartcommitsChangesetsProcessor.class);
 
     private final ListeningExecutorService executor;
+    private final SmartcommitsDarkFeature smartcommitsFeature;
     private final SmartcommitsService smartcommitService;
     private final CommitMessageParser commitParser;
     private final ChangesetDao changesetDao;
 
     @Autowired
-    public DefaultSmartcommitsChangesetsProcessor(ChangesetDao changesetDao, SmartcommitsService smartcommitService,
-            CommitMessageParser commitParser)
+    public DefaultSmartcommitsChangesetsProcessor(
+            @Nonnull final ChangesetDao changesetDao,
+            @Nonnull final SmartcommitsDarkFeature smartcommitsFeature,
+            @Nonnull final SmartcommitsService smartcommitService,
+            @Nonnull final CommitMessageParser commitParser)
     {
         this.changesetDao = changesetDao;
         this.smartcommitService = smartcommitService;
+        this.smartcommitsFeature = smartcommitsFeature;
         this.commitParser = commitParser;
 
         // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
@@ -69,6 +74,12 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     @Override
     public Promise<Void> startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
     {
+        if (!smartcommitsFeature.isEnabled())
+        {
+            log.debug("Smart commits processing disabled by feature flag.");
+            return Promises.promise(null);
+        }
+
         return Promises.forListenableFuture(executor.submit(
                 new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService)
         ));
