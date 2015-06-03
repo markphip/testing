@@ -153,7 +153,7 @@
         <name>DVCS Name Item</name>
 
         <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
     </web-item>
 
     <web-resource name="resources" key="resources">
