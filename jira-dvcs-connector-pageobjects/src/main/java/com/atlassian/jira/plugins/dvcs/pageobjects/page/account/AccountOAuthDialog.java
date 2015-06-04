@@ -14,40 +14,20 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import javax.annotation.Nullable;
 
 /**
- * Represents dialog, which is fired on {@link AccountsPageAccount#regenerate()}.
- * 
- * @author Stanislav Dvorscak
- * 
+ * Represents dialog, which is fired on {@link Account#regenerate()}.
  */
-public class AccountsPageAccountOAuthDialog extends WebDriverElement
+public class AccountOAuthDialog extends WebDriverElement
 {
-
-    /**
-     * Reference to 'Key' text field.
-     */
     @ElementBy(xpath = ".//input[@name='key']")
     private PageElement keyField;
 
-    /**
-     * Reference to 'Secret' text field.
-     */
     @ElementBy(xpath = ".//input[@name='secret']")
     private PageElement secretField;
 
-    /**
-     * Reference to 'Regenerate ...' button.
-     */
     @ElementBy(xpath = ".//button[contains(concat(' ', @class, ' '), ' submit ')]")
     private PageElement submitButton;
 
-    /**
-     * Constructor.
-     * 
-     * @param locator
-     * @param parent
-     * @param timeoutType
-     */
-    public AccountsPageAccountOAuthDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
+    public AccountOAuthDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
     {
         super(locator, parent, timeoutType);
     }
@@ -90,12 +70,12 @@ public class AccountsPageAccountOAuthDialog extends WebDriverElement
                 @Override
                 public Boolean apply(@Nullable WebDriver driver)
                 {
-                    return !AccountsPageAccountOAuthDialog.this.isPresent();
+                    return !AccountOAuthDialog.this.isPresent();
                 }
 
             });
-
-        } catch (StaleElementReferenceException e)
+        }
+        catch (StaleElementReferenceException e)
         {
             // silently ignored - dialog will disappeared, we know about them
         }

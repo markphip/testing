@@ -27,7 +27,7 @@ public class BitbucketLoginPage implements Page
     @Override
     public String getUrl()
     {
-        return "https://bitbucket.org/account/signin/?next=/";
+        return "/account/signin/?next=/";
     }
 
     public void doLogin(String username, String password)
