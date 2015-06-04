@@ -18,7 +18,6 @@ import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.atlassian.pageobjects.elements.timeout.Timeouts;
-import com.google.common.base.Supplier;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
@@ -27,14 +26,14 @@ import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
+import static com.atlassian.pageobjects.elements.timeout.TimeoutType.SLOW_PAGE_LOAD;
 import static org.apache.commons.lang.math.NumberUtils.toLong;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Represents repository table row of {@link Account}.
- *
- * @author Stanislav Dvorscak
- *
  */
 public class AccountRepository extends AbstractComponentPageObject
 {
@@ -53,7 +52,8 @@ public class AccountRepository extends AbstractComponentPageObject
     @Inject
     protected Timeouts timeouts;
 
-    public AccountRepository(PageElement container) {
+    public AccountRepository(PageElement container)
+    {
         super(container);
     }
 
@@ -88,21 +88,22 @@ public class AccountRepository extends AbstractComponentPageObject
     }
 
     /**
-     * NOTE: this method only checks whether the sync is in progress, for comple
+     * NOTE: this method only checks whether the sync is in progress, use {@link #isSynchronizationFinished()} for a
+     * reliable answer as to whether the synchronization has <i>finished</i>.
      *
-     * @return True if synchronization is currently in progress.
+     * @return {@code true}, if synchronization is currently in progress.
      */
     @Nonnull
     public TimedCondition isSyncing()
     {
-        return getSynchronizationIcon().withTimeout(TimeoutType.SLOW_PAGE_LOAD).timed().hasClass("running");
+        return getSynchronizationIcon().withTimeout(SLOW_PAGE_LOAD).timed().hasClass("running");
     }
 
     /**
      * Checks whether the "last sync" timestamp has changed, which indicates that a sync has finished.
-     *
-     * NOTE: this must be called _before_ the synchronization is triggered so that the current "last sync" timestamp
-     * is captured
+     * <p/>
+     * NOTE: this must be called <i>before</i> the synchronization is triggered so that the current "last sync"
+     * timestamp is captured.
      *
      * @return {@code true} if synchronization process has been triggered and finished since this timed condition has
      * been obtained
@@ -110,12 +111,8 @@ public class AccountRepository extends AbstractComponentPageObject
     @Nonnull
     public TimedCondition isSynchronizationFinished()
     {
-        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts, new Supplier<Long>() {
-            @Override
-            public Long get() {
-                return toLong(getSynchronizationIcon().getAttribute("data-last-sync"));
-            }
-        }, TimeoutType.SLOW_PAGE_LOAD);
+        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts,
+                () -> toLong(getSynchronizationIcon().getAttribute("data-last-sync")), SLOW_PAGE_LOAD);
         long lastSyncBefore = lastSync.now();
         return Conditions.forMatcher(lastSync, greaterThan(lastSyncBefore));
     }
@@ -206,7 +203,8 @@ public class AccountRepository extends AbstractComponentPageObject
         return this;
     }
 
-    protected ForceSyncDialog getForceSyncDialog() {
+    protected ForceSyncDialog getForceSyncDialog()
+    {
         return pageBinder.bind(ForceSyncDialog.class, elementFinder.find(By.className("forceSyncDialog")));
     }
 
@@ -215,7 +213,8 @@ public class AccountRepository extends AbstractComponentPageObject
         return container.find(By.id("repo_autolink_check" + getId()), CheckboxElement.class, TimeoutType.PAGE_LOAD);
     }
 
-    protected LinkingRepositoryDialog getLinkRepositoryDialog() {
+    protected LinkingRepositoryDialog getLinkRepositoryDialog()
+    {
         return elementFinder.find(By.id("dvcs-postcommit-hook-registration-dialog"), LinkingRepositoryDialog.class);
     }
 
@@ -244,14 +243,14 @@ public class AccountRepository extends AbstractComponentPageObject
         return container.find(By.id("error_status_icon_" + getId()));
     }
 
-    private void approveLinkRepository(boolean forceNoAdminPermissionCheck, LinkingRepositoryDialog linkingRepositoryDialog) {
+    private void approveLinkRepository(boolean forceNoAdminPermissionCheck, LinkingRepositoryDialog linkingRepositoryDialog)
+    {
         // check that dialog appears
         try
         {
             waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
             linkingRepositoryDialog.clickOk();
-        }
-        catch (AssertionError e)
+        } catch (AssertionError e)
         {
             if (forceNoAdminPermissionCheck)
             {
@@ -272,7 +271,8 @@ public class AccountRepository extends AbstractComponentPageObject
         @ElementBy(className = "full-sync-trigger")
         private PageElement fullSyncButton;
 
-        public ForceSyncDialog(PageElement container) {
+        public ForceSyncDialog(PageElement container)
+        {
             super(container);
         }
 
@@ -290,7 +290,7 @@ public class AccountRepository extends AbstractComponentPageObject
 
     public static class LinkingRepositoryDialog extends WebDriverElement
     {
-        @ElementBy (xpath = "//div[@class='dialog-button-panel']/button")
+        @ElementBy(xpath = "//div[@class='dialog-button-panel']/button")
         private PageElement okButton;
 
         public LinkingRepositoryDialog(final By locator)

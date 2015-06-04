@@ -22,7 +22,7 @@ public abstract class AbstractBitbucketMissingCommitsTest
 {
     protected static BitbucketRepositoriesRemoteRestpoint bitbucketRepositoriesREST;
 
-    protected static final BitbucketTestedProduct BIT_BUCKET = new BitbucketTestedProduct(JIRA.getTester());
+    protected static final BitbucketTestedProduct BITBUCKET = new BitbucketTestedProduct(JIRA.getTester());
 
     @BeforeClass
     public static void setup()
@@ -63,7 +63,7 @@ public abstract class AbstractBitbucketMissingCommitsTest
     OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
         // log in to Bitbucket and set up OAuth
-        return BIT_BUCKET
+        return BITBUCKET
                 .loginAndGoTo(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD, BitbucketOAuthPage.class, DVCS_REPO_OWNER)
                 .addConsumer();
     }
@@ -80,7 +80,7 @@ public abstract class AbstractBitbucketMissingCommitsTest
         }
         finally
         {
-            BIT_BUCKET.logout();
+            BITBUCKET.logout();
         }
     }
 
@@ -107,6 +107,6 @@ public abstract class AbstractBitbucketMissingCommitsTest
 
     private void removeConsumer(final String applicationId)
     {
-        BIT_BUCKET.visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(applicationId);
+        BITBUCKET.visit(BitbucketOAuthPage.class, DVCS_REPO_OWNER).removeConsumer(applicationId);
     }
 }

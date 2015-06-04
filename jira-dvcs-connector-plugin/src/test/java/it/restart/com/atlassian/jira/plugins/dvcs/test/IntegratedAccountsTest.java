@@ -32,7 +32,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests integrated accounts functionality.
@@ -44,17 +46,10 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 {
 
     private static final String BB_ACCOUNT_NAME = TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
-    /**
-     * Name of tested account.
-     */
     private static final String ACCOUNT_NAME = BB_ACCOUNT_NAME;
 
-    /**
-     * Access Jira instance.
-     */
-    private static JiraTestedProduct JIRA = TestedProductFactory.create(JiraTestedProduct.class);
-
-    private static BitbucketTestedProduct BITBUCKET = new BitbucketTestedProduct(JIRA.getTester());
+    private static final JiraTestedProduct JIRA = TestedProductFactory.create(JiraTestedProduct.class);
+    private static final BitbucketTestedProduct BITBUCKET = new BitbucketTestedProduct(JIRA.getTester());
 
     /**
      * Represents information of an integrated accounts.
@@ -99,19 +94,8 @@ public class IntegratedAccountsTest extends DvcsWebDriverTestCase
 
     }
 
-    /**
-     * OAuth used as original - first/initial ...
-     */
     private OAuth oAuthOriginal;
-
-    /**
-     * OAuth used as changed/new.
-     */
     private OAuth oAuthNew;
-
-    /**
-     * Path to ondemand.properties.
-     */
     private String onDemandConfigurationPath;
 
     /**

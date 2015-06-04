@@ -16,12 +16,10 @@ import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.transform;
+import static java.lang.String.format;
 
 /**
  * Container of single account of {@link DvcsAccountsPage}.
- * 
- * @author Stanislav Dvorscak
- * 
  */
 public class Account extends AbstractComponentPageObject
 {
@@ -34,21 +32,14 @@ public class Account extends AbstractComponentPageObject
     @ElementBy(className = "dvcs-header-container")
     protected PageElement header;
 
-    /**
-     * Reference to {@link AccountOAuthDialog}.
-     * 
-     * @see #regenerate()
-     */
     @ElementBy(xpath = "//div[contains(concat(' ', @class, ' '), ' dialog-components ')]")
     private AccountOAuthDialog oAuthDialog;
 
-    /**
-     * @see #isOnDemand()
-     */
     @ElementBy(xpath = ".//span[@title='OnDemand']")
     private PageElement onDemandDecorator;
 
-    public Account(PageElement container) {
+    public Account(PageElement container)
+    {
         super(container);
     }
 
@@ -82,8 +73,7 @@ public class Account extends AbstractComponentPageObject
     /**
      * Resolves repository for provided name.
      *
-     * @param repositoryName
-     *            name of repository
+     * @param repositoryName name of repository
      * @return resolved repository
      */
     public AccountRepository getRepository(String repositoryName)
@@ -124,8 +114,7 @@ public class Account extends AbstractComponentPageObject
         try
         {
             waitUntilTrue(find(By.id("refreshing-account-dialog")).timed().isVisible());
-        }
-        catch (AssertionError e)
+        } catch (AssertionError e)
         {
             // ignore, the refresh was probably very quick and the popup has been already closed.
         }
@@ -209,33 +198,14 @@ public class Account extends AbstractComponentPageObject
 
     /**
      * Type of account.
-     *
-     * @author Stanislav Dvorscak
-     *
      */
     public enum AccountType
     {
-        /**
-         * GitHub account type.
-         */
         GIT_HUB("githubLogo"), GIT_HUB_ENTERPRISE("githubeLogo"),
-
-        /**
-         * Bitbucket account type.
-         */
         BITBUCKET("bitbucketLogo");
 
-        /**
-         * @see #getLogoClassName()
-         */
         private String logoClassName;
 
-        /**
-         * Constructor.
-         *
-         * @param logoClassName
-         *            {@link #getLogoClassName()}
-         */
         private AccountType(String logoClassName)
         {
             this.logoClassName = logoClassName;
@@ -259,7 +229,7 @@ public class Account extends AbstractComponentPageObject
                     return accountType;
                 }
             }
-            throw new IllegalArgumentException("Unrecognized logo class: " + classAttributeValue);
+            throw new IllegalArgumentException(format("Unrecognized logo class: '%s'", classAttributeValue));
         }
     }
 }

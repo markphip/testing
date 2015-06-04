@@ -16,9 +16,9 @@ import com.atlassian.pageobjects.elements.query.TimedQuery;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
@@ -86,9 +86,7 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     public Account getOrganization(Account.AccountType accountType, String accountName)
     {
         DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
-        Account account = accountsPage.getAccount(accountType, accountName);
-
-        return account;
+        return accountsPage.getAccount(accountType, accountName);
     }
 
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
@@ -199,12 +197,12 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     }
 
     /**
-     * Enables and synchronizes given repository
+     * Enables and synchronizes given repository.
      *
      * @param accountType type of account
      * @param accountName account name
      * @param repositoryName repository name
-     * @return {@link AccountRepository} element
+     * @return the enabled repository
      */
     public AccountRepository enableAndSyncRepository(Account.AccountType accountType, String accountName, String repositoryName)
     {

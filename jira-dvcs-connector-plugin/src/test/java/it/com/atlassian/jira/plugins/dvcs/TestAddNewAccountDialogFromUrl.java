@@ -6,7 +6,9 @@ import org.testng.annotations.Test;
 
 import javax.ws.rs.core.UriBuilder;
 
-import static com.atlassian.pageobjects.elements.query.Poller.*;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -15,7 +17,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * ie ConfigureDvcsOrganizations!default.jspa?source=devtools&selectHost=github#expand
  */
-public class TestAddNewAccountDialogFromURL extends BaseOrganizationTest
+public class TestAddNewAccountDialogFromUrl extends BaseOrganizationTest
 {
     private AutoOpenDialogConfigureOrganizationsPage commonConfigureOrganizationPage;
 

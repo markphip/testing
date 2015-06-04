@@ -6,18 +6,20 @@ import com.atlassian.pageobjects.elements.query.Queries;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.atlassian.pageobjects.elements.timeout.Timeouts;
-import com.google.common.base.Supplier;
 import org.apache.commons.lang.math.NumberUtils;
 import org.openqa.selenium.By;
 
 import javax.inject.Inject;
 
-import static com.atlassian.pageobjects.elements.query.Poller.*;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static org.hamcrest.Matchers.greaterThan;
 
 /**
- * @deprecated * @deprecated see deprecation note on {@link RepositoriesPage}
+ * @deprecated see deprecation note on {@link RepositoriesPage}
  */
+@Deprecated
 public class RepositoryDiv
 {
     @Inject
@@ -79,15 +81,9 @@ public class RepositoryDiv
     {
         final PageElement syncIcon = getSyncIcon();
         waitUntilTrue(syncIcon.timed().isVisible());
-        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts, new Supplier<Long>()
-        {
-            @Override
-            public Long get()
-            {
-                return NumberUtils.toLong(syncIcon.getAttribute("data-last-sync"));
-            }
-        }, TimeoutType.SLOW_PAGE_LOAD);
-        long lastSyncBefore = lastSync.now();
+        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts,
+                () -> NumberUtils.toLong(syncIcon.getAttribute("data-last-sync")), TimeoutType.SLOW_PAGE_LOAD);
+        final long lastSyncBefore = lastSync.now();
 
         syncIcon.click();
         waitUntil(lastSync, greaterThan(lastSyncBefore));

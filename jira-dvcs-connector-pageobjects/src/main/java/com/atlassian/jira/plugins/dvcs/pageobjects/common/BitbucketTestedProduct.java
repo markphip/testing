@@ -29,7 +29,8 @@ public class BitbucketTestedProduct implements TestedProduct<WebDriverTester>
     private final PageBinder pageBinder;
     private final WebDriverTester tester;
 
-    public BitbucketTestedProduct(@Nonnull WebDriverTester webDriverTester) {
+    public BitbucketTestedProduct(@Nonnull WebDriverTester webDriverTester)
+    {
         this.productInstance = new DefaultProductInstance("https://bitbucket.org", "bitbucket", 443, "/");
         this.tester = checkNotNull(webDriverTester, "tester");
 
@@ -42,24 +43,28 @@ public class BitbucketTestedProduct implements TestedProduct<WebDriverTester>
                 new LoggerModule(log));
     }
 
+    @Nonnull
     @Override
-    public <P extends Page> P visit(Class<P> pageClass, Object... args)
+    public <P extends Page> P visit(@Nonnull Class<P> pageClass, @Nonnull Object... args)
     {
         return pageBinder.navigateToAndBind(pageClass, args);
     }
 
+    @Nonnull
     @Override
     public PageBinder getPageBinder()
     {
         return pageBinder;
     }
 
+    @Nonnull
     @Override
     public ProductInstance getProductInstance()
     {
         return productInstance;
     }
 
+    @Nonnull
     @Override
     public WebDriverTester getTester()
     {

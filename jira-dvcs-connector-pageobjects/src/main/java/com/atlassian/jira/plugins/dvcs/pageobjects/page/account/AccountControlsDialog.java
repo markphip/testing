@@ -9,53 +9,26 @@ import org.openqa.selenium.By;
 
 /**
  * Controls dialog of {@link Account}.
- *
- * @author Stanislav Dvorscak
- *
  */
 public class AccountControlsDialog extends WebDriverElement
 {
 
-    /**
-     * Reference to "Refresh List" link.
-     */
     @ElementBy(linkText = "Refresh list")
     private PageElement refreshLink;
 
-    /**
-     * Reference "Reset OAuth Settings" link.
-     */
     @ElementBy(linkText = "Reset OAuth Settings")
     private PageElement regenerateLink;
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     * @param parent
-     * @param timeoutType
-     */
     public AccountControlsDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
     {
         super(locator, parent, timeoutType);
     }
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     * @param parent
-     */
     public AccountControlsDialog(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
     }
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     */
     public AccountControlsDialog(By locator)
     {
         super(locator);

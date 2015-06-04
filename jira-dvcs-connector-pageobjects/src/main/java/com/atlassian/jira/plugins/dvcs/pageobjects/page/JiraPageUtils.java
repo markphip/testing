@@ -20,9 +20,6 @@ import java.util.List;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 
-/**
- * @author Martin Skurla
- */
 public class JiraPageUtils
 {
     private JiraPageUtils() {}
@@ -37,8 +34,8 @@ public class JiraPageUtils
 
     public static void deleteProject(JiraTestedProduct jira, String projectKey)
     {
-        ProjectSummaryPageTab projectSummaryPageTab = jira.getPageBinder().navigateToAndBind(ProjectSummaryPageTab.class,
-                projectKey);
+        ProjectSummaryPageTab projectSummaryPageTab =
+                jira.getPageBinder().navigateToAndBind(ProjectSummaryPageTab.class, projectKey);
         long projectId = projectSummaryPageTab.getProjectId();
 
         jira.getPageBinder().navigateToAndBind(DeleteProjectPage.class, projectId).submitConfirm();
