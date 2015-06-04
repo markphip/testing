@@ -90,8 +90,6 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     public void beforeEachPullRequestTestClass()
     {
         setUpEnvironment();
-
-        getJiraTestedProduct().backdoor().restoreDataFromResource(TEST_DATA);
         new JiraLoginPageController(getJiraTestedProduct()).login();
 
         beforeEachTestClassInitialisation(getJiraTestedProduct());

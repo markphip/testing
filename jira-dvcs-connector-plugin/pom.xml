@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-plugin</artifactId>
@@ -32,7 +32,6 @@
         <skipTests>false</skipTests>
         <testGroups>integration_tests_without_ghe</testGroups>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -84,6 +83,11 @@
         <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-software-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-software-conditions-factory</artifactId>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.compat</groupId>

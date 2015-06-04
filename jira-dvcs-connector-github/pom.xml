@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.3.2-SNAPSHOT</version>
+        <version>3.3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-github</artifactId>
@@ -92,6 +92,12 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>${com.sun.xml.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

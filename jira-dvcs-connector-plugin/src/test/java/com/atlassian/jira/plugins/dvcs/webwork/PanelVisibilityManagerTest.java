@@ -2,22 +2,31 @@ package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.security.PermissionManager;
-import com.atlassian.jira.security.Permissions;
-import com.atlassian.jira.software.api.permissions.SoftwareProjectPermissions;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.plugin.Plugin;
 import com.atlassian.plugin.PluginAccessor;
-import com.atlassian.plugin.PluginInformation;
-import org.junit.Assert;
+import org.hamcrest.Matchers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import java.util.Map;
+
+import static com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager.DEV_STATUS_PHASE_TWO_FEATURE_FLAG;
+import static com.atlassian.jira.plugins.dvcs.webwork.PanelVisibilityManager.DEV_STATUS_PLUGIN_ID;
+import static com.atlassian.jira.software.api.conditions.ProjectDevToolsIntegrationFeatureCondition.CONTEXT_KEY_PROJECT;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyMapOf;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -27,143 +36,70 @@ import static org.mockito.Mockito.when;
  */
 public class PanelVisibilityManagerTest
 {
-
-    private static final String DEVSUMMARY_PLUGIN_ID = "com.atlassian.jira.plugins.jira-development-integration-plugin";
-    private static final String LABS_OPT_IN = "jira.plugin.devstatus.phasetwo";
+    @Mock
+    private ApplicationUser user;
 
     @Mock
-    PermissionManager permissionManager;
-
-    @Mock
-    PluginAccessor pluginAccessor;
-
-    @Mock
-    FeatureManager featureManager;
-
-    @Mock
-    Plugin fusionPlugin;
-
-    @Mock
-    PluginInformation fusionPluginInfo;
+    private FeatureManager featureManager;
 
     @Mock
     private Issue issue;
 
-    @Mock
-    private ApplicationUser user;
+    @InjectMocks
+    private PanelVisibilityManager panelVisibilityManager;
 
-    @BeforeClass
+    @Mock
+    private PluginAccessor pluginAccessor;
+
+    @Mock
+    private Project project;
+
+    @Mock
+    private ProjectDevToolsIntegrationFeatureCondition projectDevToolsIntegrationFeatureCondition;
+
+    @BeforeTest
     public void initMocks()
     {
         MockitoAnnotations.initMocks(this);
+
+        when(issue.getProjectObject()).thenReturn(project);
     }
 
-
-    @Test
-    public void visibleWhenFusionPluginDisabled() throws Exception
+    @AfterMethod
+    public void resetMocks()
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
-
-        //given
-        // the fusion plugin is disabled
-        when(pluginAccessor.isPluginEnabled(eq(DEVSUMMARY_PLUGIN_ID))).thenReturn(false);
-
-        // but all other settings tell the tab to hide
-        when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);
-        when(pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-        when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
-
-        // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(SoftwareProjectPermissions.VIEW_DEV_TOOLS, issue, user)).thenReturn(true);
-
-        //when
-        Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
+        reset(projectDevToolsIntegrationFeatureCondition);
     }
 
-    @Test
-    public void visibleWhenNoLabsFlag() throws Exception
+    @DataProvider (name = "visibilityTestCases")
+    public static Object[][] visibilityTestCases()
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
-
-        //given
-        // the no labs flags disabled
-        when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(false);
-
-        // but all other settings tell the tab to hide
-        when(pluginAccessor.isPluginEnabled(eq(DEVSUMMARY_PLUGIN_ID))).thenReturn(true);
-        when(pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-        when(fusionPluginInfo.getVersion()).thenReturn("1.0.0");
-
-        // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
-
-        //when
-        Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
+        //The first boolean specifies whether the SW condition is satisfied. This covers: license, user role, project type, and view dev tools permission
+        //The second boolean specifies whether the dev status plugin is enabled
+        //The third boolean specifies whether the phase two feature flag is enabled
+        //The fourth boolean specifies whether the commits tab panel should be visible given the test case
+        return new Object[][] {
+                {false, false, false, false},
+                {false, false, true, false},
+                {false, true, false, false},
+                {false, true, true, false},
+                {true, false, false, true},
+                {true, false, true, true},
+                {true, true, false, true},
+                {true, true, true, false}
+        };
     }
 
-    @Test
-    public void visibleWhenPluginTooOld() throws Exception
+    @Test(dataProvider = "visibilityTestCases")
+    public void testPanelVisibility(boolean softwareConditionIsSatisfied, boolean isDevStatusPluginEnabled,
+            boolean isPhaseTwoFeatureFlagEnabled, boolean commitsPanelVisible)
     {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
+        when(projectDevToolsIntegrationFeatureCondition.shouldDisplay(anyMapOf(String.class, Object.class))).thenReturn(softwareConditionIsSatisfied);
+        when(pluginAccessor.isPluginEnabled(eq(DEV_STATUS_PLUGIN_ID))).thenReturn(isDevStatusPluginEnabled);
+        when(featureManager.isEnabled(DEV_STATUS_PHASE_TWO_FEATURE_FLAG)).thenReturn(isPhaseTwoFeatureFlagEnabled);
 
-        //given
-        // the version number is too old
-        when(fusionPluginInfo.getVersion()).thenReturn("0.0.1");
+        assertThat(panelVisibilityManager.showPanel(issue, user), is(commitsPanelVisible));
 
-        // but all other settings tell the tab to hide
-        when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);
-        when(pluginAccessor.isPluginEnabled(eq(DEVSUMMARY_PLUGIN_ID))).thenReturn(true);
-        when(pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-
-        // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
-
-        //when
-        Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(true)));
+        verify(projectDevToolsIntegrationFeatureCondition).shouldDisplay((Map<String,Object>) argThat(Matchers.<String,Object>hasEntry(CONTEXT_KEY_PROJECT, project)));
     }
-
-    @Test
-    void hiddenWithPermissionButAllOthersSayHide()
-    {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
-
-        // All other settings tell the tab to hide
-        when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);
-        when(pluginAccessor.isPluginEnabled(eq(DEVSUMMARY_PLUGIN_ID))).thenReturn(true);
-        when(pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-        when(fusionPluginInfo.getVersion()).thenReturn("1.0.1");
-
-        // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(true);
-
-        //when
-        Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(false)));
-
-    }
-
-    @Test
-    public void hiddenWhenNoPermissionButAllOthersSayShow()
-    {
-        PanelVisibilityManager panelVisibilityManager = new PanelVisibilityManager(permissionManager, pluginAccessor, featureManager);
-
-        //given
-        // except the permission manager which is ANDed.
-        when(permissionManager.hasPermission(Permissions.VIEW_VERSION_CONTROL, issue, user)).thenReturn(false);
-
-        // but all other settings tell the tab to show
-        when(featureManager.isEnabled(LABS_OPT_IN)).thenReturn(true);
-        when(pluginAccessor.isPluginEnabled(eq(DEVSUMMARY_PLUGIN_ID))).thenReturn(true);
-        when(pluginAccessor.getPlugin(DEVSUMMARY_PLUGIN_ID)).thenReturn(fusionPlugin);
-        when(fusionPlugin.getPluginInformation()).thenReturn(fusionPluginInfo);
-        when(fusionPluginInfo.getVersion()).thenReturn("1.0.1");
-
-
-        //when
-        Assert.assertThat(panelVisibilityManager.showPanel(issue, user), is(equalTo(false)));
-    }
-
 }

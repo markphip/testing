@@ -28,11 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/**
- * TODO implement sec. checks so int. account can not be i.e. deleted
- *
- * @author jhocman@atlassian.com
- */
 @ExportAsService (AccountsConfigService.class)
 @Component
 public class BitbucketAccountsConfigService implements AccountsConfigService, DisposableBean // TODO move to BB module
