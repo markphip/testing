@@ -8,8 +8,8 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.page.BaseConfigureOrganizatio
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitBucketConfigureOrganizationsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraPageUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.RepositoriesLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.PostCommitHookCallSimulatingRemoteRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -28,9 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntil;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static java.lang.Thread.sleep;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * @author Martin Skurla
@@ -53,7 +56,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     public void prepareRemoteDvcsRepositoryAndJiraProjectWithIssue()
     {
         removeOldDvcsRepository();
-        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
+        JIRA.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
 
         removeJiraProject();
 
@@ -101,11 +104,11 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
     {
         pushToRemoteDvcsRepository(getFirstDvcsZipRepoPathToPush());
 
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
+        JIRA.getTester().gotoUrl(JIRA.getProductInstance().getBaseUrl() + configureOrganizations.getUrl());
         configureOrganizations.addOrganizationSuccessfully(DVCS_REPO_OWNER, new OAuthCredentials(oAuth.key, oAuth.secret), false, "jirabitbucketconnector", PasswordUtil.getPassword("jirabitbucketconnector"));
-        AccountsPageAccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
+        AccountRepository repository = configureOrganizations.enableAndSyncRepository(getAccountType(), DVCS_REPO_OWNER, missingCommitsRepositoryName);
 
-        assertThat(repository.getMessage()).doesNotContain(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE);
+        waitUntil(repository.getMessage(), not(containsString(BaseConfigureOrganizationsPage.SYNC_FAILED_MESSAGE)));
 
         assertThat(getCommitsForIssue("MC-1", 3)).hasSize(3);
 
@@ -117,7 +120,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         assertThat(getCommitsForIssue("MC-1", 5)).hasSize(5);
 
         // Remove all organizations
-        jira.goTo(getConfigureOrganizationsPageClass());
+        JIRA.goTo(getConfigureOrganizationsPageClass());
         configureOrganizations.deleteAllOrganizations();
     }
 
@@ -143,7 +146,7 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
         return true;
     }
 
-    protected abstract AccountsPageAccount.AccountType getAccountType();
+    protected abstract Account.AccountType getAccountType();
 
     public String getGitCommand()
     {
@@ -177,25 +180,25 @@ public abstract class AbstractMissingCommitsTest<T extends BaseConfigureOrganiza
 
     private void removeJiraProject()
     {
-        if (JiraPageUtils.projectExists(jira, JIRA_PROJECT_NAME_AND_KEY))
+        if (JiraPageUtils.projectExists(JIRA, JIRA_PROJECT_NAME_AND_KEY))
         {
-            JiraPageUtils.deleteProject(jira, JIRA_PROJECT_NAME_AND_KEY);
+            JiraPageUtils.deleteProject(JIRA, JIRA_PROJECT_NAME_AND_KEY);
         }
     }
 
     private void createJiraProjectWithIssue()
     {
-        jira.backdoor().project().addProject(JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY, "admin");
-        jira.backdoor().issues().createIssue(JIRA_PROJECT_NAME_AND_KEY, "Missing commits fix demonstration");
+        JIRA.backdoor().project().addProject(JIRA_PROJECT_NAME_AND_KEY, JIRA_PROJECT_NAME_AND_KEY, "admin");
+        JIRA.backdoor().issues().createIssue(JIRA_PROJECT_NAME_AND_KEY, "Missing commits fix demonstration");
     }
 
     private void simulatePostCommitHookCall() throws IOException
     {
         BitBucketConfigureOrganizationsPage configureOrganizationsPage =
-                jira.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
+                JIRA.getPageBinder().navigateToAndBind(BitBucketConfigureOrganizationsPage.class);
         String repositoryId = configureOrganizationsPage.getRepositoryIdFromRepositoryName(getMissingCommitsRepositoryName());
 
-        PostCommitHookCallSimulatingRemoteRestpoint.simulate(jira.getProductInstance().getBaseUrl(), repositoryId);
+        PostCommitHookCallSimulatingRemoteRestpoint.simulate(JIRA.getProductInstance().getBaseUrl(), repositoryId);
     }
 
     protected void executeCommand(File workingDirectory, String... command) throws IOException, InterruptedException

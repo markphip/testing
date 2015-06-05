@@ -25,13 +25,13 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
     @Override
     protected void login(final String repoOwner, final String repoPassword)
     {
-        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin(repoOwner, repoPassword);
+        new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogin(repoOwner, repoPassword);
     }
 
     @Override
     protected void logout()
     {
-        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
+        new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogout();
     }
 
     @Override
@@ -113,6 +113,6 @@ public class DeleteGitHubOrphanAppsTest extends DeleteOrphanAppsBaseTest
 
     private GithubOAuthApplicationPage goToGithubOAuthApplicationPage()
     {
-        return new MagicVisitor(jira).visit(GithubOAuthApplicationPage.class);
+        return new MagicVisitor(JIRA).visit(GithubOAuthApplicationPage.class);
     }
 }
