@@ -5,6 +5,7 @@ import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
 import com.atlassian.pageobjects.Page;
+import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
@@ -17,6 +18,7 @@ import org.openqa.selenium.By;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
@@ -41,6 +43,9 @@ public class BitbucketOAuthPage implements Page
 
     @ElementBy (id = "oauth-consumers")
     private PageElement oauthConsumersSection;
+
+    @Inject
+    private PageBinder pageBinder;
 
     private final String account;
 
@@ -92,7 +97,9 @@ public class BitbucketOAuthPage implements Page
 
     private OAuthConsumerRow findConsumer(final String consumerName)
     {
-        // Ideally we would select the correct table and only its tr elements but because there are tables in tables we need to
+        // The Bitbucket OAuth page is structured so that adjacent rows in the table contain the data we want
+        // Also the table contains other tables so we end up searching for all the tr tags and try to find the right pairs
+        // for what we need
         final List<PageElement> rows = oauthConsumersSection.findAll(By.tagName("tr"));
         Predicate<PageElement> predicate = Predicates.or(PageElements.hasDataAttribute("id"), PageElements.hasClass("extra-info"));
         final Iterable<PageElement> filteredRows = Iterables.filter(rows, predicate);
@@ -108,7 +115,9 @@ public class BitbucketOAuthPage implements Page
             assertThat(true).isEqualTo(rowsIterator.hasNext());
             PageElement secret = rowsIterator.next();
             assertThat("extra-info").isEqualTo(secret.getAttribute("class"));
-            consumerRows.add(new OAuthConsumerRow(consumer, secret));
+            final OAuthConsumerRow oAuthConsumerRow = pageBinder.bind(OAuthConsumerRow.class, consumer, secret);
+
+            consumerRows.add(oAuthConsumerRow);
         }
 
         final OAuthConsumerRow createdConsumer = Iterables.find(consumerRows, new Predicate<OAuthConsumerRow>()
@@ -132,15 +141,15 @@ public class BitbucketOAuthPage implements Page
         final PageElement consumerRow = body.find(By.id("consumer-" + applicationId));
         final PageElement actionButton = consumerRow.find(By.tagName("button"));
         assertThat(actionButton.getAttribute("aria-owns")).isEqualTo(consumerActionsForThisApplication);
-        actionButton.javascript().execute("jQuery(arguments[0]).click()");
+        actionButton.click();
 
         // Trigger the delete
         final PageElement inlineDialog = body.find(By.id(consumerActionsForThisApplication));
         final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
-        deleteButton.javascript().execute("jQuery(arguments[0]).click()");
+        deleteButton.click();
     }
 
-    private static class OAuthConsumerRow
+    public static class OAuthConsumerRow
     {
         private final PageElement consumer;
         private final PageElement secret;
@@ -163,21 +172,26 @@ public class BitbucketOAuthPage implements Page
 
         public String getKey()
         {
-            ensureSecretIsVisible();
-            return secret.find(By.className("oauth-key")).getText();
+            return fetchTextFromSecretByClass("oauth-key");
         }
 
         public String getSecret()
         {
+            return fetchTextFromSecretByClass("oauth-secret");
+        }
+
+        private String fetchTextFromSecretByClass(String className)
+        {
             ensureSecretIsVisible();
-            return secret.find(By.className("oauth-secret")).getText();
+            Poller.waitUntilTrue(secret.timed().isVisible());
+            return secret.find(By.className(className)).getText();
         }
 
         private void ensureSecretIsVisible()
         {
             if (!secret.isVisible())
             {
-                consumer.find(By.linkText(getName())).javascript().execute("jQuery(arguments[0]).click()");
+                consumer.find(By.linkText(getName())).click();
             }
         }
     }
