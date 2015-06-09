@@ -21,6 +21,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -70,7 +71,7 @@ public class BitbucketOAuthPage implements Page
         // clicking the button scrolls to it, scroll back to top so that the dialog is considered visible
         WebDriverSupport.fromAutoInstall().getDriver().executeScript("scroll(0, 0);");
 
-        Poller.waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
+        waitUntilTrue(bbAddConsumerDialog.timed().isVisible());
         String consumerName = OAuthUtils.generateTestOAuthName();
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
         consumerNameInput.click().type(consumerName);
@@ -141,11 +142,13 @@ public class BitbucketOAuthPage implements Page
         final PageElement consumerRow = body.find(By.id("consumer-" + applicationId));
         final PageElement actionButton = consumerRow.find(By.tagName("button"));
         assertThat(actionButton.getAttribute("aria-owns")).isEqualTo(consumerActionsForThisApplication);
+        waitUntilTrue(actionButton.timed().isVisible());
         actionButton.click();
 
         // Trigger the delete
         final PageElement inlineDialog = body.find(By.id(consumerActionsForThisApplication));
         final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
+        waitUntilTrue(deleteButton.timed().isVisible());
         deleteButton.click();
     }
 
@@ -183,7 +186,7 @@ public class BitbucketOAuthPage implements Page
         private String fetchTextFromSecretByClass(String className)
         {
             ensureSecretIsVisible();
-            Poller.waitUntilTrue(secret.timed().isVisible());
+            waitUntilTrue(secret.timed().isVisible());
             return secret.find(By.className(className)).getText();
         }
 
