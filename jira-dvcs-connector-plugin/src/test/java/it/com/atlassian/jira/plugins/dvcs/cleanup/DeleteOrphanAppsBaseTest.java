@@ -24,12 +24,12 @@ public abstract class DeleteOrphanAppsBaseTest
 {
     protected static final Logger log = LoggerFactory.getLogger(DeleteOrphanAppsBaseTest.class);
 
+    protected static final JiraTestedProduct JIRA = TestedProductFactory.create(JiraTestedProduct.class);
+
     protected static final String[] REPO_OWNERS = { "dvcsconnectortest", "jirabitbucketconnector" };
-
     private static final int CONSUMER_EXPIRY_DAYS = 1;
-    private static final DateTime CUT_OFF_DATE = new DateTime().minusDays(CONSUMER_EXPIRY_DAYS);
 
-    protected JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
+    private static final DateTime CUT_OFF_DATE = new DateTime().minusDays(CONSUMER_EXPIRY_DAYS);
 
     @Test
     public void deleteOrphanOAuthApplications()

@@ -8,9 +8,9 @@ import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 
 /**
  * Represents the BitBucket panel in the view issue page
@@ -41,7 +41,7 @@ public class BitBucketIssuePanel implements ActivatedComponent<BitBucketIssuePan
     @Override
 	public BitBucketIssuePanel open()
     {
-         if(!isOpen())
+        if(!isOpen())
         {
             trigger.click();
             Poller.waitUntilTrue(trigger.timed().hasClass("active"));

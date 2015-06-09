@@ -44,7 +44,7 @@ public class BitbucketOAuthPage implements Page
     @Override
     public String getUrl()
     {
-        return "https://bitbucket.org/account/user/" + account + "/api";
+        return "/account/user/" + account + "/api";
     }
 
     public OAuth addConsumer()

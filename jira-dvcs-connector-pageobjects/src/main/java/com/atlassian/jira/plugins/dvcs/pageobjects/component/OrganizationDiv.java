@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.component;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountControlsDialog;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountControlsDialog;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.PageElementFinder;
@@ -9,15 +10,19 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.openqa.selenium.By;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.DIALOG_LOAD;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
 
+/**
+ * @deprecated see deprecation note on {@link RepositoriesPage}
+ */
+@Deprecated
 public class OrganizationDiv
 {
     private static final String DYNAMIC_REPOSITORIES_PREFIX = "it.restart";
@@ -142,10 +147,10 @@ public class OrganizationDiv
         waitUntilFalse(elementFinder.find(By.id("refreshing-account-dialog")).withTimeout(PAGE_LOAD).timed().isVisible());
     }
 
-    private AccountsPageAccountControlsDialog findControlDialog()
+    private AccountControlsDialog findControlDialog()
     {
         String dropDownMenuId = controlsButton.getAttribute("aria-owns");
-        return elementFinder.find(By.id(dropDownMenuId), AccountsPageAccountControlsDialog.class);
+        return elementFinder.find(By.id(dropDownMenuId), AccountControlsDialog.class);
     }
 
     public void sync()

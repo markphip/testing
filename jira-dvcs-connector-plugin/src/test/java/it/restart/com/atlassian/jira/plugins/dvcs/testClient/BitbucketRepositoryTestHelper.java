@@ -2,18 +2,17 @@ package it.restart.com.atlassian.jira.plugins.dvcs.testClient;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
 
-public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
+public class BitbucketRepositoryTestHelper extends RepositoryTestHelper<BitbucketTestedProduct>
 {
     public enum DvcsType
     {
@@ -26,18 +25,18 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
      * Default constructor uses Git
      */
     public BitbucketRepositoryTestHelper(final String userName, final String password,
-            final JiraTestedProduct jiraTestedProduct)
+            final JiraTestedProduct jiraTestedProduct, BitbucketTestedProduct bitbucket)
     {
-        this(userName, password, jiraTestedProduct, DvcsType.GIT);
+        this(userName, password, jiraTestedProduct, bitbucket, DvcsType.GIT);
     }
 
     /**
      * Constructor that can be used to setup a specific based dvcs
      */
     public BitbucketRepositoryTestHelper(final String userName, final String password,
-            final JiraTestedProduct jiraTestedProduct, final DvcsType dvcsType)
+            final JiraTestedProduct jiraTestedProduct, BitbucketTestedProduct bitbucket, final DvcsType dvcsType)
     {
-        super(userName, password, jiraTestedProduct);
+        super(userName, password, jiraTestedProduct, bitbucket);
         this.dvcsType = dvcsType;
     }
 
@@ -63,8 +62,7 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
         if (oAuth == null)
         {
             // only need to login if no OAuth token provided, assume login has been performed if OAuth is provided
-            new MagicVisitor(jiraTestedProduct).visit(BitbucketLoginPage.class).doLogin(userName, password);
-            this.oAuth = new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class, userName).addConsumer();
+            this.oAuth = dvcsProduct.loginAndGoTo(userName, password, BitbucketOAuthPage.class, userName).addConsumer();
         }
         else
         {
@@ -80,7 +78,7 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
     public void deleteAllOrganizations()
     {
         super.deleteAllOrganizations();
-        new MagicVisitor(jiraTestedProduct).visit(BitbucketOAuthPage.class, userName).removeConsumer(oAuth.applicationId);
+        dvcsProduct.visit(BitbucketOAuthPage.class, userName).removeConsumer(oAuth.applicationId);
     }
 
     @Override
@@ -113,8 +111,8 @@ public class BitbucketRepositoryTestHelper extends RepositoryTestHelper
     }
 
     @Override
-    public AccountsPageAccount.AccountType getAccountType()
+    public Account.AccountType getAccountType()
     {
-        return AccountsPageAccount.AccountType.BITBUCKET;
+        return Account.AccountType.BITBUCKET;
     }
 }

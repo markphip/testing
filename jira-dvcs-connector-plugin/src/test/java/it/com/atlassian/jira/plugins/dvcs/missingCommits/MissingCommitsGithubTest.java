@@ -3,7 +3,7 @@ package it.com.atlassian.jira.plugins.dvcs.missingCommits;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.GithubConfigureOrganizationsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.remoterestpoint.GithubRepositoriesRemoteRestpoint;
 import com.atlassian.plugin.util.zip.FileUnzipper;
 import it.restart.com.atlassian.jira.plugins.dvcs.github.GithubLoginPage;
@@ -95,9 +95,9 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
     OAuth loginToDvcsAndGetJiraOAuthCredentials()
     {
         // log in to github
-        new MagicVisitor(jira).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
+        new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogin(DVCS_REPO_OWNER, DVCS_REPO_PASSWORD);
         // setup up OAuth from github
-        return new MagicVisitor(jira).visit(GithubOAuthPage.class).addConsumer(jira.getProductInstance().getBaseUrl());
+        return new MagicVisitor(JIRA).visit(GithubOAuthPage.class).addConsumer(JIRA.getProductInstance().getBaseUrl());
     }
 
     @Override
@@ -179,18 +179,18 @@ public class MissingCommitsGithubTest extends AbstractMissingCommitsTest<GithubC
         finally
         {
             // log out from github
-            new MagicVisitor(jira).visit(GithubLoginPage.class).doLogout();
+            new MagicVisitor(JIRA).visit(GithubLoginPage.class).doLogout();
         }
     }
 
     @Override
-    protected AccountsPageAccount.AccountType getAccountType()
+    protected Account.AccountType getAccountType()
     {
-        return AccountsPageAccount.AccountType.GIT_HUB;
+        return Account.AccountType.GIT_HUB;
     }
 
     private void removeConsumer(final String applicationUrl)
     {
-        new MagicVisitor(jira).visit(applicationUrl, GithubOAuthPage.class).removeConsumer();
+        new MagicVisitor(JIRA).visit(applicationUrl, GithubOAuthPage.class).removeConsumer();
     }
 }

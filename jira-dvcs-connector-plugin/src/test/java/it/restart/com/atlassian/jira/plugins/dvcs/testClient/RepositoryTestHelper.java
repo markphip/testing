@@ -4,11 +4,13 @@ import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.base.resource.TimestampNameTestResource;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketRepository;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.BitbucketRequestException;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.restpoints.RepositoryRemoteRestpoint;
+import com.atlassian.pageobjects.TestedProduct;
+import com.atlassian.webdriver.pageobjects.WebDriverTester;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +27,7 @@ import java.util.Collection;
  *     <li>#cleanupLocalRepositories will be called per test method to remove created repositories</li>
  * </ul>
  */
-public abstract class RepositoryTestHelper
+public abstract class RepositoryTestHelper<T extends TestedProduct<WebDriverTester>>
 {
     protected final Collection<BitbucketRepository> testRepositories = new ArrayList<BitbucketRepository>();
     protected Dvcs dvcs;
@@ -33,13 +35,15 @@ public abstract class RepositoryTestHelper
     protected final String userName;
     protected final String password;
     protected final JiraTestedProduct jiraTestedProduct;
+    protected final T dvcsProduct;
 
     protected RepositoryTestHelper(final String userName, final String password,
-            final JiraTestedProduct jiraTestedProduct)
+                                   final JiraTestedProduct jiraTestedProduct, T dvcsProduct)
     {
         this.userName = userName;
         this.password = password;
         this.jiraTestedProduct = jiraTestedProduct;
+        this.dvcsProduct = dvcsProduct;
     }
 
     /**
@@ -91,7 +95,7 @@ public abstract class RepositoryTestHelper
         }
     }
 
-    public abstract AccountsPageAccount.AccountType getAccountType();
+    public abstract Account.AccountType getAccountType();
 
     public Dvcs getDvcs()
     {

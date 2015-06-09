@@ -1,7 +1,6 @@
 package it.com.atlassian.jira.plugins.dvcs.cleanup;
 
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.model.BitbucketConsumer;
@@ -18,16 +17,18 @@ import java.util.List;
  */
 public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
 {
+    protected static final BitbucketTestedProduct BITBUCKET = new BitbucketTestedProduct(JIRA.getTester());
+
     @Override
     protected void login(final String repoOwner, final String repoPassword)
     {
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(repoOwner, repoPassword);
+        BITBUCKET.login(repoOwner, repoPassword);
     }
 
     @Override
     protected void logout()
     {
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
+        BITBUCKET.logout();
     }
 
     @Override
@@ -74,6 +75,6 @@ public class DeleteBitbucketOrphanAppsTest extends DeleteOrphanAppsBaseTest
 
     private BitbucketOAuthPage goToOAuthPage(final String repoOwner)
     {
-        return new MagicVisitor(jira).visit(BitbucketOAuthPage.class, repoOwner);
+        return BITBUCKET.visit(BitbucketOAuthPage.class, repoOwner);
     }
 }

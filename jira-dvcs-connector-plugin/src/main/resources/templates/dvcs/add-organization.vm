@@ -209,7 +209,7 @@
                 #set( $dvcsRepoRowClass = "")
                 #set( $dvcsNoDisplayClass = "")
             #end
-            <tr id="dvcs-repo-row-$repo.id" class="$!dvcsRepoRowClass dvcs-repo-row">
+            <tr id="dvcs-repo-row-$repo.id" data-id="$repo.id" class="$!dvcsRepoRowClass dvcs-repo-row">
 
                 <td class="dvcs-autolink-repo">
                     <span style="padding-left: 1px;">&nbsp;</span>

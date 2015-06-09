@@ -8,8 +8,8 @@ import com.atlassian.jira.plugins.dvcs.model.dev.RestPrRepository;
 import com.atlassian.jira.plugins.dvcs.model.dev.RestPullRequest;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.PullRequestLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
 import it.restart.com.atlassian.jira.plugins.dvcs.test.AbstractDVCSTest;
@@ -42,6 +42,7 @@ import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUse
  */
 public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 {
+
     protected static final int EXPIRATION_DURATION_5_MIN = 5 * 60 * 1000;
     protected static final String TEST_PROJECT_KEY = "TST";
 
@@ -149,13 +150,13 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
     /**
      * The type of account we should look for when refreshing
      */
-    protected abstract AccountsPageAccount.AccountType getAccountType();
+    protected abstract Account.AccountType getAccountType();
 
     @Test
     public void testOpenPullRequestUpdateApproveAndMerge()
     {
         // skipping this test for GHE as the test is very flakey, see BBC-895
-        if (getAccountType() == AccountsPageAccount.AccountType.GIT_HUB_ENTERPRISE)
+        if (getAccountType() == Account.AccountType.GIT_HUB_ENTERPRISE)
         {
             return;
         }
@@ -181,13 +182,13 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         pullRequestDetails = pullRequestClient.updatePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(),
                 updatedPullRequestName, "updated desc", dvcs.getDefaultBranchName());
 
-        if (getAccountType() != AccountsPageAccount.AccountType.BITBUCKET)
+        if (getAccountType() != Account.AccountType.BITBUCKET)
         {
             // skip adding PR comment for BB until we have page objects to do so (BB Rest Api does not support that atm)
             pullRequestClient.commentPullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getPullRequest(), "Some comment after update");
         }
 
-        if (getAccountType() == AccountsPageAccount.AccountType.BITBUCKET)
+        if (getAccountType() == Account.AccountType.BITBUCKET)
         {
             pullRequestClient.approvePullRequest(ACCOUNT_NAME, repositoryName, PASSWORD, pullRequestDetails.getId());
 
@@ -208,7 +209,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
         Assert.assertEquals(restPullRequest.getTitle(), updatedPullRequestName);
 
         // Comments are not critical so let us just check them at the end rather than having a separate refresh and wait
-        Assert.assertEquals(restPullRequest.getCommentCount(), getAccountType() != AccountsPageAccount.AccountType.BITBUCKET ? 1 : 0);
+        Assert.assertEquals(restPullRequest.getCommentCount(), getAccountType() != Account.AccountType.BITBUCKET ? 1 : 0);
 
         // Commits should be pulled in now that we have merged
         Collection<String> allCommits = new ArrayList<String>(firstRoundCommits);
@@ -219,8 +220,7 @@ public abstract class PullRequestTestCases<T> extends AbstractDVCSTest
 
     private RestPrRepository refreshSyncAndGetFirstPrRepository()
     {
-        AccountsPageAccount account = AccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(),
-                ACCOUNT_NAME, repositoryName, true);
+        DvcsAccountsPage.syncAccount(getJiraTestedProduct(), getAccountType(), ACCOUNT_NAME, repositoryName, true);
 
         PullRequestLocalRestpoint prRest = new PullRequestLocalRestpoint();
 
