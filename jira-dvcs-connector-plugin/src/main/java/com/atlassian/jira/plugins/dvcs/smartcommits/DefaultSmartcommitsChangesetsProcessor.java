@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (SmartcommitsChangesetsProcessor.class)
 @Component
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor, DisposableBean
@@ -44,10 +46,10 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
             @Nonnull final SmartcommitsService smartcommitService,
             @Nonnull final CommitMessageParser commitParser)
     {
-        this.changesetDao = changesetDao;
-        this.smartcommitService = smartcommitService;
-        this.smartcommitsFeature = smartcommitsFeature;
-        this.commitParser = commitParser;
+        this.changesetDao = checkNotNull(changesetDao);
+        this.smartcommitService = checkNotNull(smartcommitService);
+        this.smartcommitsFeature = checkNotNull(smartcommitsFeature);
+        this.commitParser = checkNotNull(commitParser);
 
         // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
         // leads to an extra thread being created for the lifetime of the Promise (see Guava JdkFutureAdapters)
@@ -74,7 +76,7 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     @Override
     public Promise<Void> startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
     {
-        if (!smartcommitsFeature.isEnabled())
+        if (smartcommitsFeature.isDisabled())
         {
             log.debug("Smart commits processing disabled by feature flag.");
             return Promises.promise(null);

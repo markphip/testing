@@ -26,10 +26,10 @@ public class SmartcommitsDarkFeature
     }
 
     /**
-     * @return <code>true</code> if this dark feature is enabled
+     * @return <code>true</code> if this dark feature is disabled
      */
-    public boolean isEnabled()
+    public boolean isDisabled()
     {
-        return !featureManager.isEnabled(KEY);
+        return featureManager.isEnabled(KEY);
     }
 }
