@@ -1,7 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.compatibility.bridge.project.ProjectTypeKey;
 import com.atlassian.jira.compatibility.bridge.project.UnlicensedProjectPageRendererBridge;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
@@ -127,8 +126,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
         RequiredResources requiredResources = pageBuilderService.assembler().resources()
                 .requireWebResource(UNLICENSED_PAGE_WEB_RESOURCE);
-        ProjectTypeKey softwareKey = new ProjectTypeKey(SOFTWARE);
-        return ImmutableMap.of(CONTENT_DATA_MAP_KEY, unlicensedProjectPageRendererBridge.render(requiredResources, softwareKey));
+        return ImmutableMap.of(CONTENT_DATA_MAP_KEY, unlicensedProjectPageRendererBridge.render(requiredResources, SOFTWARE));
     }
 
     public List<Organization> loadOrganizations()

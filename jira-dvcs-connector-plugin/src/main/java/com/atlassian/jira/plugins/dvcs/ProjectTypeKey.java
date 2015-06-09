@@ -6,9 +6,10 @@ package com.atlassian.jira.plugins.dvcs;
 public final class ProjectTypeKey
 {
     /**
-     * String literal representing the Software project type key.
+     * The Software project type key constant.
      */
-    public static final String SOFTWARE = "software";
+    public static final com.atlassian.jira.compatibility.bridge.project.ProjectTypeKey SOFTWARE =
+            new com.atlassian.jira.compatibility.bridge.project.ProjectTypeKey("software");
 
     private ProjectTypeKey() {}
 }
