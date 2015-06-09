@@ -61,13 +61,11 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected JiraTestedProduct jiraTestedProduct;
 
-
     @Override
     public String getUrl()
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-
 
     public List<BitBucketOrganization> getOrganizations()
     {
