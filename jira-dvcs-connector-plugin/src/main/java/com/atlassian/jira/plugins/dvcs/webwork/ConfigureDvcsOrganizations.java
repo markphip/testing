@@ -56,7 +56,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private static final String SYNCHRONIZATION_ALL_DISABLED_TITLE = "Synchronization disabled";
     private static final String SYNCHRONIZATION_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization with %s for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
     private static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
-    public static final String UNLICENSED_PAGE_WEB_RESOURCE = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:unlicensed-page-resources";
+    private static final String UNLICENSED_PAGE_WEB_RESOURCE = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:unlicensed-page-resources";
 
     @VisibleForTesting
     static final String UNLICENSED = "unlicensed";
@@ -77,7 +77,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     @Autowired
     public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher,
-            @ComponentImport FeatureManager featureManager, OAuthStore oAuthStore,  OrganizationService organizationService,
+            @ComponentImport FeatureManager featureManager, OAuthStore oAuthStore, OrganizationService organizationService,
             @ComponentImport PageBuilderService pageBuilderService, PluginFeatureDetector featuresDetector,
             @ComponentImport PluginSettingsFactory pluginSettingsFactory, SoftwareGlobalAdminCondition softwareGlobalAdminCondition,
             SyncDisabledHelper syncDisabledHelper, UnlicensedProjectPageRendererBridge unlicensedProjectPageRendererBridge)
