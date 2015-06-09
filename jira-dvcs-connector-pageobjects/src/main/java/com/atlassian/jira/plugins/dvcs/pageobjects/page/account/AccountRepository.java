@@ -101,7 +101,7 @@ public class AccountRepository extends AbstractComponentPageObject
 
     /**
      * Checks whether the "last sync" timestamp has changed, which indicates that a sync has finished.
-     * <p/>
+     * <p>
      * NOTE: this must be called <i>before</i> the synchronization is triggered so that the current "last sync"
      * timestamp is captured.
      *

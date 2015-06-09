@@ -14,7 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * page,  contained by a "container" HTML element. This class implements {@link PageElementFinder}, which guarantees
  * that any {@code @ElementBy} injection will look up elements <i>within</i> this page object container, rather than in
  * the global page scope.
- * <p/>
+ * <p>
  * Use this base class in particular to implement "list element" page objects, e.g. table rows, dropdown items etc.
  *
  * @since 3.3.4
