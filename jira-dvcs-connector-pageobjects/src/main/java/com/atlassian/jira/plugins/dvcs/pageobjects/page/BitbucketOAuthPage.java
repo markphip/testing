@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
+import com.atlassian.jira.pageobjects.framework.elements.PageElements;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuthUtils;
 import com.atlassian.jira.plugins.dvcs.pageobjects.util.PageElementUtils;
@@ -8,7 +9,14 @@ import com.atlassian.pageobjects.elements.ElementBy;
 import com.atlassian.pageobjects.elements.PageElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.webdriver.testing.rule.WebDriverSupport;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import org.openqa.selenium.By;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.PAGE_LOAD;
@@ -16,23 +24,23 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketOAuthPage implements Page
 {
-    @ElementBy(linkText = "Add consumer")
+    @ElementBy (linkText = "Add consumer")
     private PageElement addConsumerButton;
-    
-    @ElementBy(id = "bb-add-consumer-dialog", timeoutType = PAGE_LOAD)
+
+    @ElementBy (id = "edit-oauth-consumer-form", timeoutType = PAGE_LOAD)
     private PageElement bbAddConsumerDialog;
-    
-    @ElementBy(id = "consumer-name")
+
+    @ElementBy (id = "id_name")
     private PageElement consumerNameInput;
-    
-    @ElementBy(id = "consumer-description")
+
+    @ElementBy (id = "id_description")
     private PageElement consumerDescriptionInput;
-    
-    @ElementBy(tagName = "body")
+
+    @ElementBy (tagName = "body")
     private PageElement body;
-    
-    @ElementBy(xpath = "//section[@id='oauth-consumers']//tbody")
-    private PageElement consumersTable;
+
+    @ElementBy (id = "oauth-consumers")
+    private PageElement oauthConsumersSection;
 
     private final String account;
 
@@ -62,35 +70,115 @@ public class BitbucketOAuthPage implements Page
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
         consumerNameInput.click().type(consumerName);
         consumerDescriptionInput.type(consumerDescription);
-        bbAddConsumerDialog.find(By.className("button-panel-button")).click();
+        bbAddConsumerDialog.find(By.className("aui-button-primary")).click();
         waitUntilFalse(bbAddConsumerDialog.timed().isVisible());
 
-        return parseOAuthCredentials();
+        return parseOAuthCredentials(consumerName);
     }
 
-    private OAuth parseOAuthCredentials()
+    private OAuth parseOAuthCredentials(final String consumerName)
     {
-        // retrieve oauth details and fail early when we could not get them (maybe due to BB UI changes)
-        String applicationId = consumersTable.find(By.xpath("tr[@class='revealed']")).getAttribute("data-id");
+        final OAuthConsumerRow createdConsumer = findConsumer(consumerName);
+
+        String applicationId = createdConsumer.getId();
         assertThat(applicationId).overridingErrorMessage("newly added oauth consumer app id should not be empty").isNotEmpty();
-        String key = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-key']")).getText();
+        String key = createdConsumer.getKey();
         assertThat(key).overridingErrorMessage("newly added oauth key should not be empty").isNotEmpty();
-        String secret = consumersTable.find(By.xpath("tr[last()]//span[@class='oauth-secret']")).getText();
+        String secret = createdConsumer.getSecret();
         assertThat(secret).overridingErrorMessage("newly added oauth secret should not be empty").isNotEmpty();
 
         return new OAuth(key, secret, applicationId);
     }
 
+    private OAuthConsumerRow findConsumer(final String consumerName)
+    {
+        // Ideally we would select the correct table and only its tr elements but because there are tables in tables we need to
+        final List<PageElement> rows = oauthConsumersSection.findAll(By.tagName("tr"));
+        Predicate<PageElement> predicate = Predicates.or(PageElements.hasDataAttribute("id"), PageElements.hasClass("extra-info"));
+        final Iterable<PageElement> filteredRows = Iterables.filter(rows, predicate);
+
+        Iterator<PageElement> rowsIterator = filteredRows.iterator();
+
+        List<OAuthConsumerRow> consumerRows = new ArrayList<OAuthConsumerRow>();
+
+        while (rowsIterator.hasNext())
+        {
+            PageElement consumer = rowsIterator.next();
+            assertThat(consumer.getAttribute("data-id")).isNotEmpty();
+            assertThat(true).isEqualTo(rowsIterator.hasNext());
+            PageElement secret = rowsIterator.next();
+            assertThat("extra-info").isEqualTo(secret.getAttribute("class"));
+            consumerRows.add(new OAuthConsumerRow(consumer, secret));
+        }
+
+        final OAuthConsumerRow createdConsumer = Iterables.find(consumerRows, new Predicate<OAuthConsumerRow>()
+        {
+            @Override
+            public boolean apply(final OAuthConsumerRow input)
+            {
+                return consumerName.equals(input.getName());
+            }
+        });
+
+        assertThat(createdConsumer).isNotNull();
+        return createdConsumer;
+    }
+
     public void removeConsumer(String applicationId)
     {
-        PageElement oauthConsumer = body.find(By.id("consumer-" + applicationId));
+        final String consumerActionsForThisApplication = "consumer-actions-" + applicationId;
 
-        // click to show the actions inline dialog
-        oauthConsumer.find(By.className("actions")).find(By.tagName("button")).click();
+        // Find the '...' and click on it to make the delete visible
+        final PageElement consumerRow = body.find(By.id("consumer-" + applicationId));
+        final PageElement actionButton = consumerRow.find(By.tagName("button"));
+        assertThat(actionButton.getAttribute("aria-owns")).isEqualTo(consumerActionsForThisApplication);
+        actionButton.javascript().execute("jQuery(arguments[0]).click()");
 
-        // click on the Delete button
-        final PageElement inlineDialog = body.find(By.id("consumer-actions-" + applicationId));
+        // Trigger the delete
+        final PageElement inlineDialog = body.find(By.id(consumerActionsForThisApplication));
         final PageElement deleteButton = inlineDialog.find(By.linkText("Delete"));
-        deleteButton.click();
+        deleteButton.javascript().execute("jQuery(arguments[0]).click()");
+    }
+
+    private static class OAuthConsumerRow
+    {
+        private final PageElement consumer;
+        private final PageElement secret;
+
+        public OAuthConsumerRow(final PageElement consumer, final PageElement secret)
+        {
+            this.consumer = consumer;
+            this.secret = secret;
+        }
+
+        public String getName()
+        {
+            return consumer.find(By.cssSelector("div.name")).getText();
+        }
+
+        public String getId()
+        {
+            return consumer.getAttribute("data-id");
+        }
+
+        public String getKey()
+        {
+            ensureSecretIsVisible();
+            return secret.find(By.className("oauth-key")).getText();
+        }
+
+        public String getSecret()
+        {
+            ensureSecretIsVisible();
+            return secret.find(By.className("oauth-secret")).getText();
+        }
+
+        private void ensureSecretIsVisible()
+        {
+            if (!secret.isVisible())
+            {
+                consumer.find(By.linkText(getName())).javascript().execute("jQuery(arguments[0]).click()");
+            }
+        }
     }
 }
