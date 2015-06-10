@@ -1,0 +1,14 @@
+#disable_html_escaping()
+#* @vtlvariable name="action" type="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations" *#
+
+<html>
+    <head>
+        <title>$action.getText("common.words.error")</title>
+        <meta name="decorator" content="atl.general"/>
+    </head>
+    <body>
+        <div class="aui-page-panel unlicensed-panel">
+            $content
+        </div>
+    </body>
+</html>

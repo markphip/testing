@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.jira.plugins</groupId>
         <artifactId>jira-dvcs-connector-parent</artifactId>
-        <version>3.3.5-SNAPSHOT</version>
+        <version>3.3.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>jira-dvcs-connector-plugin</artifactId>
@@ -91,7 +91,7 @@
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira.compat</groupId>
-            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+            <artifactId>jira-cross-compatibility-lib-bridge-factory</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -398,7 +398,7 @@
                         </dependency>
                         <dependency>
                             <groupId>com.atlassian.jira.compat</groupId>
-                            <artifactId>jira-cross-compatibility-lib-bridge-api</artifactId>
+                            <artifactId>jira-cross-compatibility-lib-bridge-factory</artifactId>
                         </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
@@ -429,6 +429,16 @@
                             <groupId>com.atlassian.jira.plugins</groupId>
                             <artifactId>jira-greenhopper-plugin</artifactId>
                             <version>${greenhopper.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira</groupId>
+                            <artifactId>jira-projects-plugin</artifactId>
+                            <version>${jira.projects.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-software-plugin</artifactId>
+                            <version>${jira.software.version}</version>
                         </pluginArtifact>
                         <pluginArtifact>
                             <groupId>com.atlassian.jira.tests</groupId>
@@ -487,21 +497,26 @@
                             com.atlassian.jira.plugins.dvcs.ondemand
                         </Export-Package>
                         <Import-Package>
-                            com.atlassian.jira.plugin.webfragment.conditions,
                             com.atlassian.activeobjects.external,
-                            org.springframework.osgi.*;resolution:="optional",
-                            org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            com.atlassian.jira.application;resolution:="optional",
+                            com.atlassian.jira.plugin.webfragment.conditions,
+                            com.atlassian.jira.project.type;resolution:="optional",
+                            com.atlassian.jira.projects.unlicensed;resolution:="optional",
+                            com.atlassian.jira.util.johnson;resolution:="optional",
+                            com.atlassian.refapp.api;resolution:="optional",
+                            com.atlassian.refapp.api.*;resolution:="optional",
                             com.atlassian.scheduler;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.config;version="${atlassian.scheduler.version}";resolution:="optional",
                             com.atlassian.scheduler.status;version="${atlassian.scheduler.version}";resolution:="optional",
-                            com.atlassian.refapp.api;resolution:="optional",
-                            com.atlassian.refapp.api.*;resolution:="optional",
-                            oracle.sql;resolution:="optional",
-                            com.vividsolutions.jts.io;resolution:="optional",
                             com.vividsolutions.jts;resolution:="optional",
+                            com.vividsolutions.jts.io;resolution:="optional",
                             net.sf.cglib.proxy;resolution:="optional",
-                            org.jvnet.hudson.annotation_indexer;resolution:="optional",
+                            oracle.sql;resolution:="optional",
                             org.apache.log4j;resolution:="optional",
+                            org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            org.jvnet.hudson.annotation_indexer;resolution:="optional",
+                            org.springframework.osgi.*;resolution:="optional",
+                            sun.reflect.generics.reflectiveObjects;resolution:="optional",
                             !com.google.gson.stream,
                             !com.ibm.uvm.tools,
                             !com.sun.jdmk.comm,
