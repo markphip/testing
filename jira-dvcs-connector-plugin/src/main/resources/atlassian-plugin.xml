@@ -99,6 +99,7 @@
             <action name="com.atlassian.jira.plugins.dvcs.webwork.ConfigureDvcsOrganizations"
                     alias="ConfigureDvcsOrganizations" roles-required="admin">
                 <view name="input">/templates/dvcs/add-organization.vm</view>
+                <view name="unlicensed">/templates/dvcs/unlicensed.vm</view>
             </action>
 
             <!-- New organization driven actions -->
@@ -153,7 +154,7 @@
         <name>DVCS Name Item</name>
 
         <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
-        <condition class="com.atlassian.jira.plugin.webfragment.conditions.UserLoggedInCondition"/>
+        <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
     </web-item>
 
     <web-resource name="resources" key="resources">
@@ -233,6 +234,10 @@
 
         <resource type="download" name="jira-dvcs-connector-plugin.soy.js"
                   location="soy/jira-dvcs-connector-plugin.soy"/>
+    </web-resource>
+
+    <web-resource key="unlicensed-page-resources">
+        <resource type="download" name="dvcs-unlicensed.css" location="css/unlicensed.css" />
     </web-resource>
 
     <rest key="bitbucket-rest-resources" path="/bitbucket" version="1.0">

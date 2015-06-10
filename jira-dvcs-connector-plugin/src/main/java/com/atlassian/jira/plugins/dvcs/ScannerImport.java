@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs;
 
+import com.atlassian.jira.config.ConstantsManager;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.scheduling.PluginScheduler;
@@ -15,4 +16,7 @@ public class ScannerImport
 {
     @ComponentImport
     private PluginScheduler pluginScheduler;
+
+    @ComponentImport
+    private ConstantsManager constantsManager;
 }
