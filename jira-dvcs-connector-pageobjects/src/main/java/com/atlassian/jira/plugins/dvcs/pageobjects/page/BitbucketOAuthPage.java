@@ -76,6 +76,16 @@ public class BitbucketOAuthPage implements Page
         String consumerDescription = "Test OAuth Description [" + consumerName + "]";
         consumerNameInput.click().type(consumerName);
         consumerDescriptionInput.type(consumerDescription);
+
+        final List<PageElement> inputs = bbAddConsumerDialog.findAll(By.tagName("input"));
+        for (PageElement input : inputs)
+        {
+            if ("checkbox".equals(input.getAttribute("type")) && !input.isSelected())
+            {
+                input.select();
+            }
+        }
+
         bbAddConsumerDialog.find(By.className("aui-button-primary")).click();
         waitUntilFalse(bbAddConsumerDialog.timed().isVisible());
 
