@@ -18,6 +18,7 @@ import com.atlassian.pageobjects.elements.query.TimedCondition;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
 import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import com.atlassian.pageobjects.elements.timeout.Timeouts;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
@@ -28,6 +29,7 @@ import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
 import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static com.atlassian.pageobjects.elements.timeout.TimeoutType.SLOW_PAGE_LOAD;
 import static org.apache.commons.lang.math.NumberUtils.toLong;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
@@ -59,7 +61,15 @@ public class AccountRepository extends AbstractComponentPageObject
 
     public int getId()
     {
-        return Integer.parseInt(DataAttributeFinder.query(container).getDataAttribute("id"));
+        final String dataId = DataAttributeFinder.query(container).getDataAttribute("id");
+        if (StringUtils.isNotBlank(dataId))
+        {
+            return Integer.parseInt(dataId);
+        }
+        else
+        {
+            return Integer.parseInt(container.getAttribute("id").substring("dvcs-repo-row-".length()));
+        }
     }
 
     /**
@@ -111,10 +121,26 @@ public class AccountRepository extends AbstractComponentPageObject
     @Nonnull
     public TimedCondition isSynchronizationFinished()
     {
-        TimedQuery<Long> lastSync = Queries.forSupplier(timeouts,
-                () -> toLong(getSynchronizationIcon().getAttribute("data-last-sync")), SLOW_PAGE_LOAD);
-        long lastSyncBefore = lastSync.now();
-        return Conditions.forMatcher(lastSync, greaterThan(lastSyncBefore));
+        final String dataLastSyncAttribute = getSynchronizationIcon().getAttribute("data-last-sync");
+
+        if (StringUtils.isNotBlank(dataLastSyncAttribute))
+        {
+            TimedQuery<Long> lastSync = Queries.forSupplier(timeouts,
+                    () -> {
+                        return toLong(dataLastSyncAttribute);
+                    }, SLOW_PAGE_LOAD);
+            long lastSyncBefore = lastSync.now();
+            return Conditions.forMatcher(lastSync, greaterThan(lastSyncBefore));
+        }
+        else
+        {
+            // This is to support the old UI and probably contains a race condition where the sync finishes before we make our check.
+            TimedQuery<Boolean> isSyncing = Queries.forSupplier(timeouts,
+                    () -> {
+                        return getSynchronizationIcon().hasClass("running");
+                    }, SLOW_PAGE_LOAD);
+            return Conditions.forMatcher(isSyncing, equalTo(false));
+        }
     }
 
     @Nonnull
@@ -250,7 +276,8 @@ public class AccountRepository extends AbstractComponentPageObject
         {
             waitUntilTrue(linkingRepositoryDialog.withTimeout(TimeoutType.DIALOG_LOAD).timed().isVisible());
             linkingRepositoryDialog.clickOk();
-        } catch (AssertionError e)
+        }
+        catch (AssertionError e)
         {
             if (forceNoAdminPermissionCheck)
             {
@@ -268,7 +295,7 @@ public class AccountRepository extends AbstractComponentPageObject
 
     public static class ForceSyncDialog extends AbstractComponentPageObject
     {
-        @ElementBy(className = "full-sync-trigger")
+        @ElementBy (className = "full-sync-trigger")
         private PageElement fullSyncButton;
 
         public ForceSyncDialog(PageElement container)
@@ -290,7 +317,7 @@ public class AccountRepository extends AbstractComponentPageObject
 
     public static class LinkingRepositoryDialog extends WebDriverElement
     {
-        @ElementBy(xpath = "//div[@class='dialog-button-panel']/button")
+        @ElementBy (xpath = "//div[@class='dialog-button-panel']/button")
         private PageElement okButton;
 
         public LinkingRepositoryDialog(final By locator)
