@@ -156,7 +156,9 @@
         <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugins.dvcs.conditions.LicenseRolesEnabled" invert="true"/>
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition" invert="true">
+                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
+            </condition>
         </conditions>
     </web-item>
 
@@ -170,7 +172,9 @@
         <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugins.dvcs.conditions.LicenseRolesEnabled"/>
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition">
+                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
+            </condition>
         </conditions>
     </web-item>
 
