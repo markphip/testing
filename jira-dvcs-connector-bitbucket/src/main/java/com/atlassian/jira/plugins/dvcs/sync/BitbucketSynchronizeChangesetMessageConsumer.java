@@ -67,35 +67,24 @@ public class BitbucketSynchronizeChangesetMessageConsumer
             }
         });
 
-        process(message.getTags(), payload, page);
+        process(message, payload, page);
     }
 
-    /**
-     * Loads changesets not already in the database from the page of changesets into the database
-     *
-     * @param messageTags tags that are added to the messages when they are first created, used for tracing things (what
-     * sync this message was created for etc)
-     * @param page the page of changesets to be processed
-     * @param payload an object that is passed around that contains information specific to the processing of all the
-     * bitbucket pages
-     * @see {@link com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator#processBitbucketPrSync(Repository
-     * repo, boolean softSync, int auditId, boolean webHookSync)}
-     */
-    void process(String[] messageTags, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
+    private void process(Message<BitbucketSynchronizeChangesetMessage> message, BitbucketSynchronizeChangesetMessage payload, BitbucketChangesetPage page)
     {
-        List<BitbucketNewChangeset> newChangesets = page.getValues();
+        List<BitbucketNewChangeset> csets = page.getValues();
         boolean softSync = payload.isSoftSync();
-        Repository repo = payload.getRepository();
 
-        for (BitbucketNewChangeset newChangeset : newChangesets)
+        for (BitbucketNewChangeset ncset : csets)
         {
-            Changeset fromDB = changesetService.getByNode(repo.getId(), newChangeset.getHash());
+            Repository repo = payload.getRepository();
+            Changeset fromDB = changesetService.getByNode(repo.getId(), ncset.getHash());
             if (fromDB != null)
             {
                 continue;
             }
-            assignBranch(newChangeset, payload);
-            Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), newChangeset);
+            assignBranch(ncset, payload);
+            Changeset cset = ChangesetTransformer.fromBitbucketNewChangeset(repo.getId(), ncset);
             cset.setSynchronizedAt(new Date());
             Set<String> issues = linkedIssueService.getIssueKeys(cset.getMessage());
 
@@ -118,33 +107,13 @@ public class BitbucketSynchronizeChangesetMessageConsumer
 
         if (StringUtils.isNotBlank(page.getNext()))
         {
-            fireNextPage(page, payload, softSync, messageTags);
-        }
-        else
-        {
-            repo = repositoryService.get(repo.getId());
-            if (repo.isUpdateLinkAuthorised())
-            {
-                cachingCommunicator.linkRepository(repo, changesetService.findReferencedProjects(repo.getId()));
-            }
+            fireNextPage(page, payload, softSync, message.getTags());
         }
     }
 
-    /**
-     * Sets the branch for this changeset to the branch associated with it in the {code nodesToBranches} map in
-     * originalMessage.
-     * Note: originalMessage is a bit of a misnomer as it's mutated in this message to associate all
-     * parents of this commit which are new to jira as of this sync with this branch. Because only one branch is stored
-     * against a commit this implementation is incomplete when tracking commits with two parents,
-     * The branch of the oldest commit not yet loaded into the db is the one that is assigned to a parent of two commits
-     * (unless if the parent has already been loaded into the database, in which case this method is never called on it and it is left alone).
-     *
-     * @param cset incoming Changeset
-     * @param originalMessage an object that holds state specific to the synchronisation of this repository
-     */
     private void assignBranch(BitbucketNewChangeset cset, BitbucketSynchronizeChangesetMessage originalMessage)
     {
-        Map<String, String> changesetBranch = originalMessage.getNodesToBranches();//starts out being a map from branch heads to branch names
+        Map<String, String> changesetBranch = originalMessage.getNodesToBranches();
 
         String branch = changesetBranch.get(cset.getHash());
         cset.setBranch(branch);

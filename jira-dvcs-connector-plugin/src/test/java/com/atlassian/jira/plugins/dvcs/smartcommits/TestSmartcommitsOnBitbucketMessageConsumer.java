@@ -81,7 +81,6 @@ public final class TestSmartcommitsOnBitbucketMessageConsumer
     private void initializeMocks()
     {
         MockitoAnnotations.initMocks(this);
-        when(repositoryServiceMock.get(repositoryMock.getId())).thenReturn(repositoryMock);
     }
 
     @Test

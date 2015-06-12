@@ -699,7 +699,11 @@ public class GithubCommunicator implements DvcsCommunicator
     @Override
     public void linkRepository(Repository repository, Set<String> withProjectkeys)
     {
+    }
 
+    @Override
+    public void linkRepositoryIncremental(final Repository repository, final Set<String> withPossibleNewProjectkeys)
+    {
     }
 
     private void verifyRateLimitExceeded(final GitHubClient githubClient)
