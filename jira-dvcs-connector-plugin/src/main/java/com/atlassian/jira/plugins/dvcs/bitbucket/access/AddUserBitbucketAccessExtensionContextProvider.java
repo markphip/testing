@@ -43,7 +43,7 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
     private static final int TEAMS_DISPLAY_THRESHOLD = 3;
 
     @VisibleForTesting
-    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-dvcs-extension-resources";
+    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-extension-resources";
 
     private final ApplicationRoleManagerBridge applicationRoleManagerBridge;
 
