@@ -255,6 +255,8 @@
 
     <!-- Web Panels -->
     <web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser"
-               class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel"/>
+               class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel">
+        <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" invert="true" />
+    </web-panel>
 
 </atlassian-plugin>
