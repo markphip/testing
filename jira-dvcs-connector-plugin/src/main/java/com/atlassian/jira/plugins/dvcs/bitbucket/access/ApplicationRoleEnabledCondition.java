@@ -7,6 +7,12 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Checks whether application role is enabled. This condition is safe to use in older versions of JIRA as the
+ * implementation uses a bridge object.
+ *
+ * In JIRA versions prior to 7.0, this condition always evaluates to false.
+ */
 public class ApplicationRoleEnabledCondition implements Condition
 {
     private final ApplicationRoleManagerBridge applicationRoleManagerBridge;
