@@ -147,14 +147,35 @@
         </actions>
     </webwork1>
 
-    <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control"
+    <web-item key="bitbucket_bulk_repo_legacy" name="Bitbucket Bulk Repository" section="admin_plugins_menu/source_control"
               weight="10">
         <description>Manage DVCS Accounts</description>
         <label>DVCS Accounts</label>
         <name>DVCS Name Item</name>
 
-        <link>/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
-        <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+        <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition" invert="true">
+                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
+            </condition>
+        </conditions>
+    </web-item>
+
+    <web-item key="bitbucket_bulk_repo" name="Bitbucket Bulk Repository"
+              section="admin_applications_section/admin_applications_integrations_section"
+              weight="20">
+        <description>Manage DVCS Accounts</description>
+        <label>DVCS accounts</label>
+        <name>DVCS Name Item</name>
+
+        <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition">
+                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
+            </condition>
+        </conditions>
     </web-item>
 
     <web-resource name="resources" key="resources">
