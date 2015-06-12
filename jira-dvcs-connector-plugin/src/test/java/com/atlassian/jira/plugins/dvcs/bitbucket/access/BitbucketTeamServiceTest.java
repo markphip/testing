@@ -21,7 +21,6 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 @Listeners(MockitoTestNgListener.class)
 public class BitbucketTeamServiceTest
 {
