@@ -259,4 +259,17 @@
         <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" invert="true" />
     </web-panel>
 
+    <web-panel key="add-user-bitbucket-access-extension" location="webpanels.admin.adduser">
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
+        </conditions>
+        <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider" />
+        <resource name="view" type="velocity" location="/templates/dvcs/add-user-bitbucket-access-extension.vm"/>
+    </web-panel>
+
+    <web-resource key="add-user-bitbucket-access-extension-resources">
+        <resource type="download" name="add-user-bitbucket-access-extension.css" location="css/add-user-bitbucket-access-extension.css"/>
+        <resource type="download" name="add-user-bitbucket-access-extension.js" location="javascripts/add-user-bitbucket-access-extension.js"/>
+    </web-resource>
 </atlassian-plugin>
