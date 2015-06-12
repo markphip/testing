@@ -36,29 +36,16 @@ public class DeferredBitbucketLinker implements BitbucketLinker
     }
 
     private final Logger log = LoggerFactory.getLogger(DeferredBitbucketLinker.class);
+    private final BitbucketLinker bitbucketLinker;
     private final ClusterLockService clusterLockService;
     private final PluginSettingsFactory pluginSettingsFactory;
 
     @Autowired
-    @Qualifier ("bitbucketLinker") 
-    private BitbucketLinker bitbucketLinker;
-    
-    @Autowired
-    public DeferredBitbucketLinker(
+    public DeferredBitbucketLinker(@Qualifier ("bitbucketLinker") final BitbucketLinker bitbucketLinker,
             final ClusterLockServiceFactory clusterLockServiceFactory,
             @ComponentImport final PluginSettingsFactory pluginSettingsFactory)
     {
-        this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
-        this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
-    }
-
-    @VisibleForTesting
-    DeferredBitbucketLinker(
-            final BitbucketLinker bitbucketLinker,
-            final ClusterLockServiceFactory clusterLockServiceFactory,
-            final PluginSettingsFactory pluginSettingsFactory)
-    {
-        this.bitbucketLinker = checkNotNull(bitbucketLinker);
+        this.bitbucketLinker = bitbucketLinker;
         this.clusterLockService = clusterLockServiceFactory.getClusterLockService();
         this.pluginSettingsFactory = checkNotNull(pluginSettingsFactory);
     }

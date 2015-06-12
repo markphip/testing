@@ -51,12 +51,12 @@ import com.atlassian.jira.plugins.dvcs.util.Retryer;
 import com.atlassian.plugin.PluginAccessor;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.ApplicationProperties;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -82,6 +82,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     public static final String BITBUCKET = "bitbucket";
 
+    private final BitbucketLinker bitbucketLinker;
     private final String pluginVersion;
     private final BitbucketClientBuilderFactory bitbucketClientBuilderFactory;
     private final ApplicationProperties applicationProperties;
@@ -97,30 +98,18 @@ public class BitbucketCommunicator implements DvcsCommunicator
 
     @Resource
     private SyncDisabledHelper syncDisabledHelper;
-    
-    @Resource (name = "deferredBitbucketLinker")
-    private BitbucketLinker bitbucketLinker;
 
     @Autowired
-    public BitbucketCommunicator(
+    public BitbucketCommunicator(@Qualifier ("deferredBitbucketLinker") BitbucketLinker bitbucketLinker,
             @ComponentImport PluginAccessor pluginAccessor,
             BitbucketClientBuilderFactory bitbucketClientBuilderFactory, @ComponentImport ApplicationProperties ap)
     {
+        this.bitbucketLinker = bitbucketLinker;
         this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
         this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
         this.applicationProperties = checkNotNull(ap);
     }
 
-    @VisibleForTesting
-    public BitbucketCommunicator(BitbucketLinker bitbucketLinker, PluginAccessor pluginAccessor,
-            BitbucketClientBuilderFactory bitbucketClientBuilderFactory, ApplicationProperties ap)
-    {
-        this.bitbucketLinker = checkNotNull(bitbucketLinker);
-        this.pluginVersion = DvcsConstants.getPluginVersion(checkNotNull(pluginAccessor));
-        this.bitbucketClientBuilderFactory = bitbucketClientBuilderFactory;
-        this.applicationProperties = checkNotNull(ap);
-    }
-    
     /**
      * {@inheritDoc}
      */
