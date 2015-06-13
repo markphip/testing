@@ -5,3 +5,9 @@
 #add-user-bitbucket-access-extension-panel label[for='should-invite-user'] span {
     font-weight: bold;
 }
+
+.bitbucket-access-inline-dialog-content li {
+    margin: 10px 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

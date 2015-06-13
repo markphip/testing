@@ -1,0 +1,17 @@
+{namespace dvcs.connector.bitbucket.access}
+
+/**
+ * Templates to show additional Bitbucket teams in the inline dialog. This is only the case when there are more than
+ * three Bitbucket teams configured with default groups.
+ *
+ * @param teams Additional teams
+ */
+{template .moreTeamsInlineDialogContent}
+    <div class="bitbucket-access-inline-dialog-content">
+        <ul class="aui-nav">
+            {foreach $team in $teams}
+                <li title="{$team}">{$team}</li>
+            {/foreach}
+        </ul>
+    </div>
+{/template}
