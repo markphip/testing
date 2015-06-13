@@ -3,7 +3,7 @@ AJS.$(function() {
         AJS.$('#should-invite-user').attr('checked', true);
     }
 
-    AJS.InlineDialog(AJS.$("#add-user-bitbucket-access-extension-panel label[for='should-invite-user'] a"),
+    AJS.InlineDialog(AJS.$("#add-user-bitbucket-access-extension-panel a.more-teams"),
             "add-user-bitbucket-access-extension",
             function(content, trigger, showPopup){
                 content.html(dvcs.connector.bitbucket.access.moreTeamsInlineDialogContent({

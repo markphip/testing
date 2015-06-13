@@ -6,6 +6,12 @@
     font-weight: bold;
 }
 
+#add-user-bitbucket-access-extension-panel label[for='should-invite-user'] a.change-settings {
+    font-weight: normal;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
 .bitbucket-access-inline-dialog-content li {
     margin: 10px 20px;
     overflow: hidden;

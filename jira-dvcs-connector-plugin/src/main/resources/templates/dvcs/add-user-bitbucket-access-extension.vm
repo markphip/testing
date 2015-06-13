@@ -16,7 +16,7 @@
                     #set($label = $i18n.getText('add.user.bitbucket.access.extension.more.than.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>", $moreCount))
                 #end
 
-                <label for="should-invite-user">$label</label>
+                <label for="should-invite-user">$label <a class="change-settings" href="$helper.request.contextPath/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText('add.user.bitbucket.access.extension.change.default.groups')</a></label>
             </div>
         </div>
 
