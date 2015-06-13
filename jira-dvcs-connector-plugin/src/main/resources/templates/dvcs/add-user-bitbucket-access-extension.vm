@@ -7,13 +7,13 @@
                 <input class="checkbox" type="checkbox" name="should-invite-user" id="should-invite-user" />
 
                 #if($teamsWithDefaultGroups.size() == 1)
-                    #set($label = $i18n.getText('bitbucket.access.create.user.extension.one.account', "<span>$teamsWithDefaultGroups.get(0)</span>"))
+                    #set($label = $i18n.getText('add.user.bitbucket.access.extension.one.account', "<span>$teamsWithDefaultGroups.get(0)</span>"))
                 #elseif($teamsWithDefaultGroups.size() == 2)
-                    #set($label = $i18n.getText('bitbucket.access.create.user.extension.two.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>"))
+                    #set($label = $i18n.getText('add.user.bitbucket.access.extension.two.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>"))
                 #elseif($teamsWithDefaultGroups.size() == 3)
-                    #set($label = $i18n.getText('bitbucket.access.create.user.extension.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>"))
+                    #set($label = $i18n.getText('add.user.bitbucket.access.extension.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>"))
                 #else
-                    #set($label = $i18n.getText('bitbucket.access.create.user.extension.more.than.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>", $moreCount))
+                    #set($label = $i18n.getText('add.user.bitbucket.access.extension.more.than.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>", $moreCount))
                 #end
 
                 <label for="should-invite-user">$label</label>
