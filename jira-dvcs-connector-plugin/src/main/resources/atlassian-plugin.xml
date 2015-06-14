@@ -259,7 +259,7 @@
         <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" invert="true" />
     </web-panel>
 
-    <web-panel key="add-user-bitbucket-access-extension" location="webpanels.admin.adduser">
+    <web-panel key="add-user-bitbucket-access-extension" location="webpanels.admin.adduser.applicationaccess">
         <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
         <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider" />
         <resource name="view" type="velocity" location="/templates/dvcs/add-user-bitbucket-access-extension.vm"/>
