@@ -3,17 +3,13 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
-import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryToProjectMapping;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.impl.transform.RepositoryTransformer;
 import com.atlassian.jira.plugins.dvcs.model.DefaultProgress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.sync.Synchronizer;
-import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.sal.api.transaction.TransactionCallback;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import net.java.ao.Query;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -28,7 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -58,6 +53,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             return null;
         }
+
         OrganizationMapping organizationMapping = activeObjects.get(OrganizationMapping.class, repositoryMapping.getOrganizationId());
         final DefaultProgress progress = (DefaultProgress) synchronizer.getProgress(repositoryMapping.getID());
         return repositoryTransformer.transform(repositoryMapping, organizationMapping, progress);
@@ -109,6 +105,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
+
     }
 
     @Override
@@ -133,66 +130,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         final Collection<Repository> repositories = transformRepositories(Arrays.asList(repos));
 
         return new ArrayList<Repository>(repositories);
-    }
 
-    @Override
-    public List<String> getPreviouslyLinkedProjects(final int repositoryId)
-    {
-        final RepositoryToProjectMapping[] projects = activeObjects.find(RepositoryToProjectMapping.class, getQueryForProjectMappings(repositoryId));
-
-        List<String> projectKeys = new ArrayList<String>();
-
-        Iterable<String> projectKeyIterable = Iterables.transform(Arrays.asList(projects), new Function<RepositoryToProjectMapping, String>()
-        {
-            @Override
-            public String apply(final RepositoryToProjectMapping projectMapping)
-            {
-                return projectMapping.getProjectKey();
-            }
-        });
-
-        for (String projectKey : projectKeyIterable)
-        {
-            projectKeys.add(projectKey);
-        }
-        return projectKeys;
-    }
-
-    @Override
-    public void setPreviouslyLinkedProjects(final int forRepositoryId, final Set<String> projects)
-    {
-        ActiveObjectsUtils.delete(activeObjects, RepositoryToProjectMapping.class, getQueryForProjectMappings(forRepositoryId));
-        for (String key : projects)
-        {
-            associateNewKey(key, forRepositoryId);
-        }
-    }
-
-    private Query getQueryForProjectMappings(final int forRepositoryId)
-    {
-        Query select = Query.select()
-                .alias(RepositoryMapping.class, "repo")
-                .alias(RepositoryToProjectMapping.class, "proj")
-                .join(RepositoryMapping.class, "proj." + RepositoryToProjectMapping.REPOSITORY_ID + " = repo.ID")
-                .where("repo.ID = " + forRepositoryId);
-        return select;
-    }
-
-    private void associateNewKey(final String key, final int repositoryId)
-    {
-        activeObjects.executeInTransaction(new TransactionCallback<RepositoryToProjectMapping>()
-        {
-            @Override
-            public RepositoryToProjectMapping doInTransaction()
-            {
-                final Map<String, Object> map = new MapRemovingNullCharacterFromStringValues();
-                map.put(RepositoryToProjectMapping.PROJECT_KEY, key);
-                map.put(RepositoryToProjectMapping.REPOSITORY_ID, repositoryId);
-                RepositoryToProjectMapping mapping = activeObjects.create(RepositoryToProjectMapping.class, map);
-                mapping.save();
-                return mapping;
-            }
-        });
     }
 
     @Override
@@ -207,6 +145,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         {
             query.where(RepositoryMapping.LINKED + " = ? AND " + RepositoryMapping.DELETED + " = ? ", Boolean.TRUE, Boolean.FALSE);
         }
+
         return activeObjects.count(RepositoryMapping.class, query) > 0;
     }
 
@@ -251,6 +190,7 @@ public class RepositoryDaoImpl implements RepositoryDao
         else
         {
             return transform(repositoryMapping);
+
         }
     }
 
@@ -279,7 +219,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                     map.put(RepositoryMapping.ACTIVITY_LAST_SYNC, repository.getActivityLastSync());
                     map.put(RepositoryMapping.LOGO, repository.getLogo());
                     map.put(RepositoryMapping.IS_FORK, repository.isFork());
-                    map.put(RepositoryMapping.UPDATE_LINK_AUTHORISED, repository.isUpdateLinkAuthorised());
                     if (repository.getForkOf() != null)
                     {
                         map.put(RepositoryMapping.FORK_OF_NAME, repository.getForkOf().getName());
@@ -302,7 +241,6 @@ public class RepositoryDaoImpl implements RepositoryDao
                     rm.setActivityLastSync(repository.getActivityLastSync());
                     rm.setLogo(repository.getLogo());
                     rm.setFork(repository.isFork());
-                    rm.setUpdateLinkAuthorised(repository.isUpdateLinkAuthorised());
                     if (repository.getForkOf() != null)
                     {
                         rm.setForkOfName(repository.getForkOf().getName());
@@ -320,6 +258,7 @@ public class RepositoryDaoImpl implements RepositoryDao
                 return rm;
             }
         });
+
         return transform(repositoryMapping);
     }
 
