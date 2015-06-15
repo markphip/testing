@@ -11,7 +11,7 @@ AJS.$(function() {
     }
 
     function atLeastOneJiraApplicationIsSelected() {
-        return AJS.$(".application-picker-applications input.checkbox.application:checked").length >= 1;
+        return $jiraApplications.filter(':checked').length >= 1;
     }
 
     function disableBitbuckeAccessOnLoadIfNoJiraApplicationIsSelected() {
