@@ -53,7 +53,7 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
     private final PageBuilderService pageBuilderService;
 
     public AddUserBitbucketAccessExtensionContextProvider(@ComponentImport ApplicationProperties applicationProperties,
-            BitbucketTeamService bitbucketTeamService, PageBuilderService pageBuilderService)
+            BitbucketTeamService bitbucketTeamService, @ComponentImport PageBuilderService pageBuilderService)
     {
         this.applicationProperties = checkNotNull(applicationProperties);
         this.bitbucketTeamService = checkNotNull(bitbucketTeamService);
