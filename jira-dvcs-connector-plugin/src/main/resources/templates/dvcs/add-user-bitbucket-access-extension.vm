@@ -4,6 +4,8 @@
     <div id="add-user-bitbucket-access-extension-panel">
         <div class="field-group bitbucket-access-field-group">
             <div class="checkbox">
+                <a href="#" class="aui-icon aui-icon-small aui-iconfont-info hidden"></a>
+
                 <input class="checkbox" type="checkbox" name="should-invite-user" id="should-invite-user" />
 
                 #if($teamsWithDefaultGroups.size() == 1)
