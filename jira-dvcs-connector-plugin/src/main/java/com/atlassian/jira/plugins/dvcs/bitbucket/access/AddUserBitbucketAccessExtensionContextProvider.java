@@ -20,6 +20,9 @@ import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Context provider for the Bitbucket access extension on the add user page.
+ */
 public class AddUserBitbucketAccessExtensionContextProvider implements ContextProvider
 {
     @VisibleForTesting
