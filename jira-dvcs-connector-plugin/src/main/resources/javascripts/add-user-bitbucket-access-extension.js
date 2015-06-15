@@ -3,7 +3,7 @@ AJS.$(function() {
     var $bitbucketInfoIcon = AJS.$('.bitbucket-access-field-group .checkbox .aui-iconfont-info');
     var $jiraApplications = AJS.$('.application-picker-applications input.checkbox.application');
     var $jiraSoftwareAccessOption = AJS.$('.checkbox.application-jira-software');
-    var $selectedJiraApplications = AJS.$(".aplication-picker-applications input.checkbox.application:checked");
+    var $selectedJiraApplications = AJS.$(".application-picker-applications input.checkbox.application:checked");
 
     function selectBitbucketAccessOnLoadIfSoftwareIsSelected() {
         if($jiraSoftwareAccessOption.is(':checked')) {
