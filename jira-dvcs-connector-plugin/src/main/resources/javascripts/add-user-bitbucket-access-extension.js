@@ -1,7 +1,7 @@
 AJS.$(function() {
     var $bitbucketAccessOption = AJS.$('#should-invite-user');
     var $bitbucketInfoIcon = AJS.$('.bitbucket-access-field-group .checkbox .aui-iconfont-info');
-    var $jiraApplications = AJS.$('.aplication-picker-applications input.checkbox.application');
+    var $jiraApplications = AJS.$('.application-picker-applications input.checkbox.application');
     var $jiraSoftwareAccessOption = AJS.$('.checkbox.application-jira-software');
     var $selectedJiraApplications = AJS.$(".aplication-picker-applications input.checkbox.application:checked");
 
