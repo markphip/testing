@@ -22,6 +22,7 @@ import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicato
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
@@ -51,13 +52,14 @@ public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTes
         assertAgainstDefaultPR(pullRequests.get(0));
     }
 
+    // todo: wtf
     private void assertAgainstDefaultPR(PullRequest pullRequest)
     {
         assertPullRequestMatchesAO(pullRequest);
 
         assertThat(pullRequest.getIssueKeys(), containsInAnyOrder(ISSUE_KEY));
 
-        assertThat(pullRequest.getParticipants().size(), equalTo(1));
+        assertThat(pullRequest.getParticipants().size(), equalTo(3));
         Participant participant = pullRequest.getParticipants().get(0);
 
         assertThat(participant.getUsername(), equalTo(participant.getUsername()));
@@ -167,5 +169,24 @@ public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTes
     {
         List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ImmutableList.<String>of(), BITBUCKET);
         assertThat(pullRequests.size(), equalTo(0));
+    }
+    
+    @Test
+    @NonTransactional
+    public void participantsShouldBeSortedInAscendingAlphaOrder()
+    {
+        // execute
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ISSUE_KEYS, BITBUCKET);
+
+        // check
+        PullRequest pullRequest = pullRequests.get(0);
+        List<Participant> participants = pullRequest.getParticipants();
+        assertThat("There should be two participants", participants.size(), is(3));
+
+        String username1 = participants.get(0).getUsername();
+        String username2 = participants.get(1).getUsername();
+        String username3 = participants.get(2).getUsername();
+        assertThat("The participants should be in ascending alpha order of username",
+                username1.compareTo(username2) < 0 && username2.compareTo(username3) < 0);
     }
 }

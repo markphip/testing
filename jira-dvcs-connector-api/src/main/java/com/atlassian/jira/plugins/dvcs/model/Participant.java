@@ -70,4 +70,10 @@ public class Participant
     {
         return username.hashCode();
     }
+    
+    @Override 
+    public String toString()
+    {
+        return username;
+    }
 }

@@ -49,6 +49,10 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 {
     protected static final String ISSUE_KEY = "QDSL-1";
     protected static final ArrayList<String> ISSUE_KEYS = Lists.newArrayList(ISSUE_KEY);
+    
+    protected static final String REVIEWER_USERNAME_1 = "username 1";
+    protected static final String REVIEWER_USERNAME_2 = "username 2";
+    protected static final String REVIEWER_USERNAME_3 = "username 3";
 
     protected ChangesetAOPopulator changesetAOPopulator;
     protected RepositoryAOPopulator repositoryAOPopulator;
@@ -112,7 +116,13 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
         changesetMappingWithIssue = changesetAOPopulator.createCSM(changesetAOPopulator.getDefaultCSParams(), ISSUE_KEY, enabledRepository);
 
         pullRequestMappingWithIssue = pullRequestAOPopulator.createPR("PR FOR" + ISSUE_KEY, ISSUE_KEY, enabledRepository);
-        pullRequestParticipant = pullRequestAOPopulator.createParticipant("hoo", false, "reviewer", pullRequestMappingWithIssue);
+        pullRequestParticipant = pullRequestAOPopulator.createParticipant(
+                REVIEWER_USERNAME_3, false, "reviewer", pullRequestMappingWithIssue);
+        pullRequestParticipant = pullRequestAOPopulator.createParticipant(
+                REVIEWER_USERNAME_1, false, "reviewer", pullRequestMappingWithIssue);
+        pullRequestParticipant = pullRequestAOPopulator.createParticipant(
+                REVIEWER_USERNAME_2, false, "reviewer", pullRequestMappingWithIssue);
+
         pullRequestMappingWithIssue = entityManager.get(RepositoryPullRequestMapping.class, pullRequestMappingWithIssue.getID());
 
         branchMappingWithIssue = branchAOPopulator.createBranch("something branch", ISSUE_KEY, enabledRepository);
