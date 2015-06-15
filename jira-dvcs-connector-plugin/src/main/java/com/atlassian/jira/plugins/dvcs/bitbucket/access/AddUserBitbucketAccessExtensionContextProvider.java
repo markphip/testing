@@ -10,7 +10,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,9 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
 
     @VisibleForTesting
     static final String CONTEXT_KEY_MORE_COUNT = "moreCount";
+
+    @VisibleForTesting
+    static final String CONTEXT_KEY_MORE_TEAMS = "moreTeams";
 
     @VisibleForTesting
     static final String CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS = "teamsWithDefaultGroups";
@@ -72,25 +74,19 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
                 .map(Organization::getName)
                 .collect(toList());
 
-        requireResourcesAndData(bitbucketTeamNames);
+        requireResources();
         return ImmutableMap.of(
                 CONTEXT_KEY_INVITE_TO_GROUPS, inviteToGroups(bitbucketTeamsWithDefaultGroups),
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
                 CONTEXT_KEY_MORE_COUNT, max(0, bitbucketTeamsWithDefaultGroups.size() - TEAMS_DISPLAY_THRESHOLD),
+                CONTEXT_KEY_MORE_TEAMS, inlineDialogContent(bitbucketTeamNames),
                 CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, bitbucketTeamNames
         );
     }
 
-    private void requireResourcesAndData(List<String> bitbucketTeamNames)
+    private void requireResources()
     {
         pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
-
-        List<String> inlineDialogContent = inlineDialogContent(bitbucketTeamNames);
-        if (!inlineDialogContent.isEmpty())
-        {
-            pageBuilderService.assembler().data().requireData(REQUIRED_DATA_KEY,
-                    writer -> writer.write(new Gson().toJson(inlineDialogContent)));
-        }
     }
 
     private List<String> inlineDialogContent(List<String> bitbucketTeamNames)

@@ -4,7 +4,12 @@
     <div id="add-user-bitbucket-access-extension-panel">
         <div class="field-group bitbucket-access-field-group">
             <div class="checkbox">
-                <a href="#" class="aui-icon aui-icon-small aui-iconfont-info hidden"></a>
+                <a data-aui-trigger="" href="#" aria-controls="bitbucket-access-info-icon-inline-dialog-content" class="aui-icon aui-icon-small aui-iconfont-info hidden"></a>
+                <aui-inline-dialog2 id="bitbucket-access-info-icon-inline-dialog-content" class="aui-layer aui-inline-dialog" data-aui-alignment="bottom center" data-aui-responds-to="toggle" aria-hidden="true" persistent="false">
+                    <div class="aui-inline-dialog-contents">
+                        $i18n.getText('add.user.bitbucket.access.extension.info.icon.details')
+                    </div>
+                </aui-inline-dialog2>
 
                 <input class="checkbox" type="checkbox" name="should-invite-user" id="should-invite-user" />
 
@@ -19,6 +24,17 @@
                 #end
 
                 <label for="should-invite-user">$label<br><a class="change-settings" href="$jiraBaseUrl/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText('add.user.bitbucket.access.extension.change.default.groups')</a></label>
+                #if($moreTeams.size() > 0)
+                    <aui-inline-dialog2 id="bitbucket-access-inline-dialog-content" class="aui-layer aui-inline-dialog" data-aui-alignment="bottom left" data-aui-responds-to="toggle" aria-hidden="true" persistent="false">
+                        <div class="aui-inline-dialog-contents">
+                            <ul class="aui-nav">
+                                #foreach($team in $moreTeams)
+                                    <li>$team</li>
+                                #end
+                            </ul>
+                        </div>
+                    </aui-inline-dialog2>
+                #end
             </div>
         </div>
 

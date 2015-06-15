@@ -288,10 +288,5 @@
     <web-resource key="add-user-bitbucket-access-extension-resources">
         <resource type="download" name="add-user-bitbucket-access-extension.css" location="css/add-user-bitbucket-access-extension.css"/>
         <resource type="download" name="add-user-bitbucket-access-extension.js" location="javascripts/add-user-bitbucket-access-extension.js"/>
-        <resource type="download" name="add-user-bitbucket-access-extension.soy.js" location="soy/add-user-bitbucket-access-extension.soy"/>
-
-        <transformation extension="soy">
-            <transformer key="soyTransformer"/>
-        </transformation>
     </web-resource>
 </atlassian-plugin>

@@ -10,12 +10,6 @@
     font-size: 12px;
 }
 
-.bitbucket-access-inline-dialog-content li {
-    margin: 10px 20px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.bitbucket-access-info-icon-inline-dialog-content {
-    padding: 20px;
+#bitbucket-access-inline-dialog-content li+li {
+    margin-top: 10px;
 }

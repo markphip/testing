@@ -34,39 +34,9 @@ AJS.$(function() {
         return $bitbucketAccessOption.attr('disabled');
     }
 
-    function prepareBitbucketTeamInlineDialog() {
-        var teams = WRM.data.claim('bitbucket-access-inline-dialog-content');
-        AJS.InlineDialog(AJS.$("#add-user-bitbucket-access-extension-panel a.more-teams"), "add-user-bitbucket-access-extension",
-                function(content, trigger, showPopup){
-                    content.html(dvcs.connector.bitbucket.access.moreTeamsInlineDialogContent({
-                        teams: teams
-                    }));
-
-                    showPopup();
-                    return false;
-                }, {
-                    width: 250,
-                    offsetX: -20
-                }
-        );
-    }
-
-    function prepareInfoIconInlineDialog() {
-        AJS.InlineDialog($bitbucketInfoIcon, "bitbucket-access-info-icon",
-                function(content, trigger, showPopup){
-                    content.html(dvcs.connector.bitbucket.access.infoIconInlineDialogContent({}));
-                    showPopup();
-                    return false;
-                }, {
-                    offsetX: -140
-                }
-        );
-    }
-
+    require(['aui/inline-dialog2']);
     selectBitbucketAccessOnLoadIfSoftwareIsSelected();
     disableBitbuckeAccessOnLoadIfNoJiraApplicationIsSelected();
-    prepareBitbucketTeamInlineDialog();
-    prepareInfoIconInlineDialog();
     $jiraApplications.on('change', function() {
         var atLeastOneJiraAppIsSelected = atLeastOneJiraApplicationIsSelected();
         var bbOptionDisabled = bitbucketAccessOptionIsDisabled();

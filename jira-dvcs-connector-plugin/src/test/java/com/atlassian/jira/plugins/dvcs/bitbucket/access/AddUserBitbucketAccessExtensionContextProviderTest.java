@@ -10,8 +10,6 @@ import com.atlassian.webresource.api.assembler.RequiredData;
 import com.atlassian.webresource.api.assembler.RequiredResources;
 import com.atlassian.webresource.api.assembler.WebResourceAssembler;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
@@ -19,7 +17,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,18 +25,15 @@ import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_INVITE_TO_GROUPS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_JIRA_BASE_URL;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_COUNT;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_TEAMS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.REQUIRED_DATA_KEY;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.REQUIRED_WEB_RESOURCE_COMPLETE_KEY;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -130,21 +124,6 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
     }
 
     @Test
-    public void shouldRequireData() throws IOException
-    {
-        addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        ArgumentCaptor<Jsonable> argument = ArgumentCaptor.forClass(Jsonable.class);
-        verify(requiredData).requireData(argThat(equalTo(REQUIRED_DATA_KEY)), argument.capture());
-
-        StringWriter stringWriter = new StringWriter();
-        argument.getValue().write(stringWriter);
-        List<String> additionalTeamNames = new Gson().fromJson(stringWriter.toString(), List.class);
-
-        assertThat(additionalTeamNames, is(asList("Fusion Renaissance", "Yet another team")));
-    }
-
-    @Test
     public void shouldNotRequireDataWhenTeamCountDoesNotExceedThree() throws IOException
     {
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1, organization3, organization4));
@@ -187,6 +166,14 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
         Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         assertThat(context, hasEntry(CONTEXT_KEY_MORE_COUNT, 2));
+    }
+
+    @Test
+    public void shouldContainMoreTeams()
+    {
+        Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+
+        assertThat(context, hasEntry(CONTEXT_KEY_MORE_TEAMS, asList("Fusion Renaissance", "Yet another team")));
     }
 
     @Test
