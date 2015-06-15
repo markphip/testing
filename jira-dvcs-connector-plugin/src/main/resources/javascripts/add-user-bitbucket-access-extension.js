@@ -3,7 +3,6 @@ AJS.$(function() {
     var $bitbucketInfoIcon = AJS.$('.bitbucket-access-field-group .checkbox .aui-iconfont-info');
     var $jiraApplications = AJS.$('.application-picker-applications input.checkbox.application');
     var $jiraSoftwareAccessOption = AJS.$('.checkbox.application-jira-software');
-    var $selectedJiraApplications = AJS.$(".application-picker-applications input.checkbox.application:checked");
 
     function selectBitbucketAccessOnLoadIfSoftwareIsSelected() {
         if($jiraSoftwareAccessOption.is(':checked')) {
@@ -12,7 +11,7 @@ AJS.$(function() {
     }
 
     function atLeastOneJiraApplicationIsSelected() {
-        return $selectedJiraApplications.length >= 1;
+        return AJS.$(".application-picker-applications input.checkbox.application:checked").length >= 1;
     }
 
     function disableBitbuckeAccessOnLoadIfNoJiraApplicationIsSelected() {
@@ -45,7 +44,8 @@ AJS.$(function() {
                     showPopup();
                     return false;
                 }, {
-                    width: 250
+                    width: 250,
+                    offsetX: -20
                 }
         );
     }
@@ -56,6 +56,8 @@ AJS.$(function() {
                     content.html(dvcs.connector.bitbucket.access.infoIconInlineDialogContent({}));
                     showPopup();
                     return false;
+                }, {
+                    offsetX: -140
                 }
         );
     }
@@ -65,11 +67,14 @@ AJS.$(function() {
     prepareBitbucketTeamInlineDialog();
     prepareInfoIconInlineDialog();
     $jiraApplications.on('change', function() {
-        if(atLeastOneJiraApplicationIsSelected() && bitbucketAccessOptionIsDisabled()) {
+        var atLeastOneJiraAppIsSelected = atLeastOneJiraApplicationIsSelected();
+        var bbOptionDisabled = bitbucketAccessOptionIsDisabled();
+
+        if(atLeastOneJiraAppIsSelected && bbOptionDisabled) {
             enableBitbucketAccessOption();
         }
 
-        if(!atLeastOneJiraApplicationIsSelected() && !bitbucketAccessOptionIsDisabled()) {
+        if(!atLeastOneJiraAppIsSelected && !bbOptionDisabled) {
             disableBitbucketAccessOption();
         }
     });
