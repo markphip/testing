@@ -42,9 +42,6 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
     private static final String ORGANIZATION_GROUP_SEPARATOR = ":";
 
     @VisibleForTesting
-    static final String REQUIRED_DATA_KEY = "bitbucket-access-inline-dialog-content";
-
-    @VisibleForTesting
     static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-extension-resources";
 
     private static final int TEAMS_DISPLAY_THRESHOLD = 3;
