@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @ExportAsService (SmartcommitsChangesetsProcessor.class)
 @Component
 public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChangesetsProcessor, DisposableBean
@@ -32,17 +34,22 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     private static final Logger log = LoggerFactory.getLogger(DefaultSmartcommitsChangesetsProcessor.class);
 
     private final ListeningExecutorService executor;
+    private final SmartcommitsDarkFeature smartcommitsFeature;
     private final SmartcommitsService smartcommitService;
     private final CommitMessageParser commitParser;
     private final ChangesetDao changesetDao;
 
     @Autowired
-    public DefaultSmartcommitsChangesetsProcessor(ChangesetDao changesetDao, SmartcommitsService smartcommitService,
-            CommitMessageParser commitParser)
+    public DefaultSmartcommitsChangesetsProcessor(
+            @Nonnull final ChangesetDao changesetDao,
+            @Nonnull final SmartcommitsDarkFeature smartcommitsFeature,
+            @Nonnull final SmartcommitsService smartcommitService,
+            @Nonnull final CommitMessageParser commitParser)
     {
-        this.changesetDao = changesetDao;
-        this.smartcommitService = smartcommitService;
-        this.commitParser = commitParser;
+        this.changesetDao = checkNotNull(changesetDao);
+        this.smartcommitService = checkNotNull(smartcommitService);
+        this.smartcommitsFeature = checkNotNull(smartcommitsFeature);
+        this.commitParser = checkNotNull(commitParser);
 
         // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
         // leads to an extra thread being created for the lifetime of the Promise (see Guava JdkFutureAdapters)
@@ -69,6 +76,12 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     @Override
     public Promise<Void> startProcess(Progress forProgress, Repository repository, ChangesetService changesetService)
     {
+        if (smartcommitsFeature.isDisabled())
+        {
+            log.debug("Smart commits processing disabled by feature flag.");
+            return Promises.promise(null);
+        }
+
         return Promises.forListenableFuture(executor.submit(
                 new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService)
         ));

@@ -8,55 +8,28 @@ import com.atlassian.pageobjects.elements.timeout.TimeoutType;
 import org.openqa.selenium.By;
 
 /**
- * Controls dialog of {@link AccountsPageAccount}.
- *
- * @author Stanislav Dvorscak
- *
+ * Controls dialog of {@link Account}.
  */
-public class AccountsPageAccountControlsDialog extends WebDriverElement
+public class AccountControlsDialog extends WebDriverElement
 {
 
-    /**
-     * Reference to "Refresh List" link.
-     */
     @ElementBy(linkText = "Refresh list")
     private PageElement refreshLink;
 
-    /**
-     * Reference "Reset OAuth Settings" link.
-     */
     @ElementBy(linkText = "Reset OAuth Settings")
     private PageElement regenerateLink;
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     * @param parent
-     * @param timeoutType
-     */
-    public AccountsPageAccountControlsDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
+    public AccountControlsDialog(By locator, WebDriverLocatable parent, TimeoutType timeoutType)
     {
         super(locator, parent, timeoutType);
     }
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     * @param parent
-     */
-    public AccountsPageAccountControlsDialog(By locator, WebDriverLocatable parent)
+    public AccountControlsDialog(By locator, WebDriverLocatable parent)
     {
         super(locator, parent);
     }
 
-    /**
-     * Constructor.
-     *
-     * @param locator
-     */
-    public AccountsPageAccountControlsDialog(By locator)
+    public AccountControlsDialog(By locator)
     {
         super(locator);
     }

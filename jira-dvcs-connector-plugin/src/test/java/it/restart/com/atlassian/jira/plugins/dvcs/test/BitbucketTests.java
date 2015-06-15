@@ -6,20 +6,19 @@ import com.atlassian.jira.pageobjects.pages.viewissue.IssueMenu;
 import com.atlassian.jira.pageobjects.pages.viewissue.MoveIssuePage;
 import com.atlassian.jira.pageobjects.pages.viewissue.ViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.JiraLoginPageController;
-import com.atlassian.jira.plugins.dvcs.pageobjects.common.MagicVisitor;
+import com.atlassian.jira.plugins.dvcs.pageobjects.common.BitbucketTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.common.OAuth;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketCommitEntry;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.OrganizationDiv;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.RepositoryDiv;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketLoginPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.BitbucketOAuthPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.JiraViewIssuePage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.OAuthCredentials;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController;
 import com.atlassian.jira.plugins.dvcs.pageobjects.page.RepositoriesPageController.AccountType;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.jira.plugins.dvcs.pageobjects.remoterestpoint.ChangesetLocalRestpoint;
 import com.atlassian.jira.plugins.dvcs.util.HttpSenderUtils;
 import com.atlassian.jira.plugins.dvcs.util.PasswordUtil;
@@ -37,7 +36,6 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -48,6 +46,8 @@ import java.util.List;
 
 import static com.atlassian.jira.permission.ProjectPermissions.BROWSE_PROJECTS;
 import static com.atlassian.jira.plugins.dvcs.pageobjects.BitBucketCommitEntriesAssert.assertThat;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilFalse;
+import static com.atlassian.pageobjects.elements.query.Poller.waitUntilTrue;
 import static it.restart.com.atlassian.jira.plugins.dvcs.test.IntegrationTestUserDetails.ACCOUNT_NAME;
 import static it.util.TestAccounts.DVCS_CONNECTOR_TEST_ACCOUNT;
 import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
@@ -55,7 +55,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests, ActivityStreamsTest
 {
-    private static JiraTestedProduct jira = TestedProductFactory.create(JiraTestedProduct.class);
+    private static final JiraTestedProduct JIRA = TestedProductFactory.create(JiraTestedProduct.class);
+    private static final BitbucketTestedProduct BIT_BUCKET = new BitbucketTestedProduct(JIRA.getTester());
+
     private OAuth oAuth;
     private static final List<String> BASE_REPOSITORY_NAMES = Arrays.asList("public-hg-repo", "private-hg-repo", "public-git-repo", "private-git-repo");
     private static final String GADGET_ID = "gadget-10001";
@@ -63,32 +65,29 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @BeforeClass
     public void beforeClass()
     {
-        // log in to JIRA
-        new JiraLoginPageController(jira).login();
-        // log in to Bitbucket
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogin(JIRA_BB_CONNECTOR_ACCOUNT, PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT));
-        // setup up OAuth from bitbucket
-        oAuth = new MagicVisitor(jira).visit(BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).addConsumer();
-        // jira.visit(JiraBitbucketOAuthPage.class).setCredentials(oAuth.key, oAuth.secret);
-        jira.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
+        new JiraLoginPageController(JIRA).login();
+
+        oAuth = BIT_BUCKET.loginAndGoTo(JIRA_BB_CONNECTOR_ACCOUNT, PasswordUtil.getPassword(JIRA_BB_CONNECTOR_ACCOUNT),
+                BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).addConsumer();
+
+        JIRA.backdoor().plugins().disablePlugin("com.atlassian.jira.plugins.jira-development-integration-plugin");
     }
 
     @AfterClass
     public void afterClass()
     {
         // delete all organizations
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         rpc.getPage().deleteAllOrganizations();
-        // remove OAuth in bitbucket
-        new MagicVisitor(jira).visit(BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).removeConsumer(oAuth.applicationId);
-        // log out from bitbucket
-        new MagicVisitor(jira).visit(BitbucketLoginPage.class).doLogout();
+
+        BIT_BUCKET.visit(BitbucketOAuthPage.class, JIRA_BB_CONNECTOR_ACCOUNT).removeConsumer(oAuth.applicationId);
+        BIT_BUCKET.logout();
     }
 
     @BeforeMethod
     public void beforeMethod()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         rpc.getPage().deleteAllOrganizations();
     }
 
@@ -102,7 +101,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         assertThat(organization.getRepositoryNames()).containsAll(BASE_REPOSITORY_NAMES);
 
         // check add user extension
-        PageElement dvcsExtensionsPanel = jira.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
+        PageElement dvcsExtensionsPanel = JIRA.visit(JiraAddUserPage.class).getDvcsExtensionsPanel();
         assertThat(dvcsExtensionsPanel.isVisible());
     }
 
@@ -185,7 +184,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testPostCommitHookAddedAndRemoved()
     {
-        testPostCommitHookAddedAndRemoved(JIRA_BB_CONNECTOR_ACCOUNT, AccountType.BITBUCKET, "public-hg-repo", jira, getOAuthCredentials());
+        testPostCommitHookAddedAndRemoved(JIRA_BB_CONNECTOR_ACCOUNT, AccountType.BITBUCKET, "public-hg-repo", JIRA, getOAuthCredentials());
     }
 
     @Override
@@ -202,7 +201,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     @Override
     public void testActivityPresentedForQA5()
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         rpc.addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
         enableRepositoryAsAdmin("public-hg-repo").synchronize();
@@ -221,7 +220,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         page.checkIssueActivityPresentedForQA5();
 
         // delete repository
-        rpc = new RepositoriesPageController(jira);
+        rpc = new RepositoriesPageController(JIRA);
         rpc.getPage().deleteAllOrganizations();
 
         page = visitActivityStreamGadget(GADGET_ID, true);
@@ -246,7 +245,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
             page.checkIssueActivityPresentedForQA5();
 
             // logout user
-            jira.getTester().getDriver().manage().deleteAllCookies();
+            JIRA.getTester().getDriver().manage().deleteAllCookies();
 
             page = visitActivityStreamGadget(GADGET_ID, false);
             // anonymous user should not see QA-5 activity stream
@@ -255,7 +254,7 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         finally
         {
             // always clean up the anonymous setting change
-            new JiraLoginPageController(jira).login();
+            new JiraLoginPageController(JIRA).login();
             setupAnonymousAccessForbidden();
         }
     }
@@ -270,21 +269,9 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
         setSize(new Dimension(1024, 1280));
 
-        GreenHopperBoardPage greenHopperBoardPage = jira.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
+        GreenHopperBoardPage greenHopperBoardPage = JIRA.getPageBinder().navigateToAndBind(GreenHopperBoardPage.class);
         greenHopperBoardPage.goToQABoardPlan();
         greenHopperBoardPage.assertCommitsAppearOnIssue("QA-1", 5);
-    }
-
-    // code copied from WindowSizeRule from atlassian-selenium,
-    // will be reworked to have a proper TestNG implementation of the WindowSize annotation
-    private void setSize(Dimension dimension)
-    {
-        final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
-
-        support.getDriver().manage().window().setPosition(new Point(0, 0));
-        support.getDriver().manage().window().setSize(dimension);
-        // _not_ a mistake... don't ask
-        support.getDriver().manage().window().setSize(dimension);
     }
 
     @Test
@@ -317,11 +304,11 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
 
-        AccountsPageAccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
+        AccountRepository repository = enableRepository(DVCS_CONNECTOR_TEST_ACCOUNT, "testemptyrepo", true);
 
         // check that repository is enabled
-        Assert.assertTrue(repository.isEnabled());
-        Assert.assertTrue(repository.hasWarning());
+        waitUntilTrue(repository.isEnabled());
+        waitUntilTrue(repository.hasWarning());
     }
 
     @Override
@@ -330,11 +317,11 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     {
         addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
 
-        AccountsPageAccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
+        AccountRepository repository = enableRepositoryAsAdmin("private-git-repo");
 
         // check that repository is enabled
-        Assert.assertTrue(repository.isEnabled());
-        Assert.assertFalse(repository.hasWarning());
+        waitUntilTrue(repository.isEnabled());
+        waitUntilFalse(repository.hasWarning());
     }
 
     @Override
@@ -344,12 +331,12 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT, getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, DVCS_CONNECTOR_TEST_ACCOUNT);
 
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        for (AccountRepository repository : account.getRepositories())
         {
-            Assert.assertTrue(repository.isEnabled());
+            waitUntilTrue(repository.isEnabled());
         }
     }
 
@@ -360,18 +347,37 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
         OrganizationDiv organization = addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
         organization.enableAllRepos();
 
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, ACCOUNT_NAME);
-        for (AccountsPageAccountRepository repository : account.getRepositories())
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, ACCOUNT_NAME);
+        for (AccountRepository repository : account.getRepositories())
         {
-            Assert.assertTrue(repository.isEnabled());
-            Assert.assertFalse(repository.hasWarning());
+            waitUntilTrue(repository.isEnabled());
+            waitUntilFalse(repository.hasWarning());
         }
+    }
+
+    @Test
+    public void testFullSync()
+    {
+        addOrganization(AccountType.BITBUCKET, ACCOUNT_NAME, getOAuthCredentials(), false);
+        enableRepositoryAsAdmin("public-hg-repo").fullSynchronize();
     }
 
     //-------------------------------------------------------------------
     //--------- these methods should go to some common utility/class ----
     //-------------------------------------------------------------------
+
+    // code copied from WindowSizeRule from atlassian-selenium,
+    // will be reworked to have a proper TestNG implementation of the WindowSize annotation
+    private void setSize(Dimension dimension)
+    {
+        final WebDriverSupport<? extends WebDriver> support = WebDriverSupport.fromAutoInstall();
+
+        support.getDriver().manage().window().setPosition(new Point(0, 0));
+        support.getDriver().manage().window().setSize(dimension);
+        // _not_ a mistake... don't ask
+        support.getDriver().manage().window().setSize(dimension);
+    }
 
     private OAuthCredentials getOAuthCredentials()
     {
@@ -380,92 +386,90 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
 
     private List<BitBucketCommitEntry> getCommitsForIssue(String issueKey, int exectedNumberOfCommits)
     {
-        return jira.visit(JiraViewIssuePage.class, issueKey)
+        return JIRA.visit(JiraViewIssuePage.class, issueKey)
                 .openBitBucketPanel()
                 .waitForNumberOfMessages(exectedNumberOfCommits, 1000L, 10);
     }
 
     private void setupAnonymousAccessAllowed()
     {
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=" + BROWSE_PROJECTS.permissionKey());
-        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
-        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
-        jira.getTester().getDriver().findElement(By.id("type_group")).click();
-        jira.getTester().getDriver().findElement(By.id("add_submit")).click();
+        JIRA.getTester().gotoUrl(JIRA.getProductInstance().getBaseUrl() + "/secure/admin/AddPermission!default.jspa?schemeId=0&permissions=" + BROWSE_PROJECTS.permissionKey());
+        JIRA.getTester().getDriver().waitUntilElementIsVisible(By.id("type_group"));
+        JIRA.getTester().getDriver().waitUntilElementIsVisible(By.id("add_submit"));
+        JIRA.getTester().getDriver().findElement(By.id("type_group")).click();
+        JIRA.getTester().getDriver().findElement(By.id("add_submit")).click();
     }
 
     private void setupAnonymousAccessForbidden()
     {
-        jira.getTester().gotoUrl(jira.getProductInstance().getBaseUrl() + "/secure/admin/EditPermissions!default.jspa?schemeId=0");
+        JIRA.getTester().gotoUrl(JIRA.getProductInstance().getBaseUrl() + "/secure/admin/EditPermissions!default.jspa?schemeId=0");
         String deleteLinkId = "del_perm_" + BROWSE_PROJECTS.permissionKey() + "_";
-        jira.getTester().getDriver().waitUntilElementIsVisible(By.id(deleteLinkId));
-        jira.getTester().getDriver().findElement(By.id(deleteLinkId)).click();
-        jira.getTester().getDriver().waitUntilElementIsVisible(By.id("delete_submit"));
-        jira.getTester().getDriver().findElement(By.id("delete_submit")).click();
+        JIRA.getTester().getDriver().waitUntilElementIsVisible(By.id(deleteLinkId));
+        JIRA.getTester().getDriver().findElement(By.id(deleteLinkId)).click();
+        JIRA.getTester().getDriver().waitUntilElementIsVisible(By.id("delete_submit"));
+        JIRA.getTester().getDriver().findElement(By.id("delete_submit")).click();
     }
 
     private OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync)
     {
-
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         try
         {
             return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync);
         }
         catch (NoSuchElementException e)
         {
-            rpc = new RepositoriesPageController(jira);
+            rpc = new RepositoriesPageController(JIRA);
             return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync);
         }
     }
 
-
     public OrganizationDiv addOrganization(AccountType accountType, String accountName, OAuthCredentials oAuthCredentials, boolean autosync, boolean expectError)
     {
-        RepositoriesPageController rpc = new RepositoriesPageController(jira);
+        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
         return rpc.addOrganization(accountType, accountName, oAuthCredentials, autosync, expectError);
     }
 
     private DashboardActivityStreamsPage visitActivityStreamGadget(final String gadgetId, final boolean isEditMode)
     {
         // Activity streams gadget expected at dashboard page!
-        DashboardActivityStreamsPage page = jira.visit(DashboardActivityStreamsPage.class, isEditMode);
+        DashboardActivityStreamsPage page = JIRA.visit(DashboardActivityStreamsPage.class, isEditMode);
         assertThat(page.isActivityStreamsGadgetVisible()).isTrue();
 
-        WebElement iframeElm = jira.getTester().getDriver().getDriver().findElement(By.id(gadgetId));
+        WebElement iframeElm = JIRA.getTester().getDriver().getDriver().findElement(By.id(gadgetId));
         String iframeSrc = iframeElm.getAttribute("src");
-        jira.getTester().gotoUrl(iframeSrc);
+        JIRA.getTester().gotoUrl(iframeSrc);
 
-        page = jira.getPageBinder().bind(DashboardActivityStreamsPage.class, isEditMode);
+        page = JIRA.getPageBinder().bind(DashboardActivityStreamsPage.class, isEditMode);
         return page;
     }
 
     /**
      * enable a repo under the {@link IntegrationTestUserDetails#ACCOUNT_NAME} account.
      */
-    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String repositoryName)
+    private AccountRepository enableRepositoryAsAdmin(final String repositoryName)
     {
         return enableRepositoryAsAdmin(ACCOUNT_NAME, repositoryName);
     }
 
-    private AccountsPageAccountRepository enableRepositoryAsAdmin(final String accountName, final String repositoryName)
+    private AccountRepository enableRepositoryAsAdmin(final String accountName, final String repositoryName)
     {
         return enableRepository(accountName, repositoryName, false);
     }
 
-    private AccountsPageAccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
+    private AccountRepository enableRepository(final String accountName, final String repositoryName, final boolean noAdminPermission)
     {
-        AccountsPage accountsPage = jira.visit(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(AccountsPageAccount.AccountType.BITBUCKET, accountName);
+        DvcsAccountsPage accountsPage = JIRA.visit(DvcsAccountsPage.class);
+        Account account = accountsPage.getAccount(Account.AccountType.BITBUCKET, accountName);
         return account.enableRepository(repositoryName, noAdminPermission);
     }
 
     private void moveIssueToProject(final String issueKey, final String newProject)
     {
-        ViewIssuePage viewIssuePage = jira.goToViewIssue(issueKey);
+        ViewIssuePage viewIssuePage = JIRA.goToViewIssue(issueKey);
         IssueMenu issueMenu = viewIssuePage.getIssueMenu();
         issueMenu.invoke(DefaultIssueActions.MOVE);
-        final MoveIssuePage moveIssuePage = jira.getPageBinder().bind(MoveIssuePage.class, issueKey);
+        final MoveIssuePage moveIssuePage = JIRA.getPageBinder().bind(MoveIssuePage.class, issueKey);
         moveIssuePage.setNewProject(newProject).next().next().move();
     }
 

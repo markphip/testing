@@ -97,10 +97,10 @@
 			</li>
 		</ul>
 		<div class="buttons">
-			<a href="#" onclick="softSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button aui-button-primary">
+			<a href="#" onclick="softSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button aui-button-primary soft-sync-trigger">
 				Soft synchronization
 			</a>
-			<a href="#" onclick="fullSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button">
+			<a href="#" onclick="fullSync({$repositoryId}); AJS.$('.gh_messages.repository{$repositoryId}').slideDown(); return false;" class="aui-button full-sync-trigger">
 				<span class="aui-icon aui-icon-small aui-iconfont-warning dvcs-color-yellow"></span> Full synchronization
 			</a>
 		</div>

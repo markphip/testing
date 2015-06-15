@@ -2,6 +2,9 @@ package com.atlassian.jira.plugins.dvcs.pageobjects.page;
 
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.jira.plugins.dvcs.pageobjects.component.BitBucketOrganization;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.Account;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountRepository;
+import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.DvcsAccountsPage;
 import com.atlassian.pageobjects.Page;
 import com.atlassian.pageobjects.PageBinder;
 import com.atlassian.pageobjects.elements.ElementBy;
@@ -10,9 +13,6 @@ import com.atlassian.pageobjects.elements.PageElementFinder;
 import com.atlassian.pageobjects.elements.SelectElement;
 import com.atlassian.pageobjects.elements.query.Poller;
 import com.atlassian.pageobjects.elements.query.TimedQuery;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPage;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccount;
-import com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository;
 import org.hamcrest.Matcher;
 import org.openqa.selenium.By;
 
@@ -61,13 +61,11 @@ public abstract class BaseConfigureOrganizationsPage implements Page
 
     protected JiraTestedProduct jiraTestedProduct;
 
-
     @Override
     public String getUrl()
     {
         return "/secure/admin/ConfigureDvcsOrganizations!default.jspa";
     }
-
 
     public List<BitBucketOrganization> getOrganizations()
     {
@@ -83,12 +81,10 @@ public abstract class BaseConfigureOrganizationsPage implements Page
         return list;
     }
 
-    public AccountsPageAccount getOrganization(AccountsPageAccount.AccountType accountType, String accountName)
+    public Account getOrganization(Account.AccountType accountType, String accountName)
     {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
-
-        return account;
+        DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
+        return accountsPage.getAccount(accountType, accountName);
     }
 
     public BaseConfigureOrganizationsPage deleteAllOrganizations()
@@ -199,27 +195,21 @@ public abstract class BaseConfigureOrganizationsPage implements Page
     }
 
     /**
-     * Enables and synchronizes given repository
+     * Enables and synchronizes given repository.
      *
      * @param accountType type of account
      * @param accountName account name
      * @param repositoryName repository name
-     * @return {@link com.atlassian.jira.plugins.dvcs.pageobjects.page.account.AccountsPageAccountRepository} element
+     * @return the enabled repository
      */
-    public AccountsPageAccountRepository enableAndSyncRepository(AccountsPageAccount.AccountType accountType, String accountName, String repositoryName)
+    public AccountRepository enableAndSyncRepository(Account.AccountType accountType, String accountName, String repositoryName)
     {
-        AccountsPage accountsPage = pageBinder.bind(AccountsPage.class);
-        AccountsPageAccount account = accountsPage.getAccount(accountType, accountName);
+        DvcsAccountsPage accountsPage = pageBinder.bind(DvcsAccountsPage.class);
+        Account account = accountsPage.getAccount(accountType, accountName);
 
-        AccountsPageAccountRepository repository = account.getRepository(repositoryName);
+        AccountRepository repository = account.getRepository(repositoryName);
         repository.enable();
         repository.synchronize();
-
-        // if synchronization fails, let's try again
-        if (repository.getMessage().contains(SYNC_FAILED_MESSAGE))
-        {
-            repository.synchronize();
-        }
 
         return repository;
     }

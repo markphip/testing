@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * ie ConfigureDvcsOrganizations!default.jspa?source=devtools&selectHost=github#expand
  */
-public class TestAddNewAccountDialogFromURL extends BaseOrganizationTest
+public class TestAddNewAccountDialogFromUrl extends BaseOrganizationTest
 {
     private AutoOpenDialogConfigureOrganizationsPage commonConfigureOrganizationPage;
 
@@ -79,7 +79,7 @@ public class TestAddNewAccountDialogFromURL extends BaseOrganizationTest
 
     private void goToConfigureOrganizationPage(Boolean expand, String selectHost)
     {
-        commonConfigureOrganizationPage = jira.getPageBinder().navigateToAndBind(
+        commonConfigureOrganizationPage = JIRA.getPageBinder().navigateToAndBind(
                 AutoOpenDialogConfigureOrganizationsPage.class,
                 expand,
                 selectHost);
