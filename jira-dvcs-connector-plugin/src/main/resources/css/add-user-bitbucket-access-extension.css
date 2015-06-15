@@ -7,9 +7,7 @@
 }
 
 #add-user-bitbucket-access-extension-panel label[for='should-invite-user'] a.change-settings {
-    font-weight: normal;
-    font-size: 12px;
-    margin-left: 10px;
+    font-size: 13px;
 }
 
 .bitbucket-access-inline-dialog-content li {
