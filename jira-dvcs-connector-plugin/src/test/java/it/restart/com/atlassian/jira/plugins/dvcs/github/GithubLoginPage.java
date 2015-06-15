@@ -15,22 +15,25 @@ import static it.util.TestAccounts.JIRA_BB_CONNECTOR_ACCOUNT;
 public class GithubLoginPage implements Page
 {
     @ElementBy(id = "login_field")
-    private PageElement githubWebLoginField;
+    private PageElement loginField;
 
     @ElementBy(id = "logout")
-    private PageElement oldGithubWebLogoutLink;
+    private PageElement oldLogoutLink;
 
-    @ElementBy(xpath = "//*[@aria-label='Sign out']")
-    private PageElement githubWebLogoutLink;
+    @ElementBy(className = "dropdown-signout")
+    private PageElement logoutLink;
+
+    @ElementBy(xpath = "//a[@aria-label='View profile and more']")
+    private PageElement profileDropdown;
 
     @ElementBy(id = "password")
-    private PageElement githubWebPasswordField;
+    private PageElement passwordField;
 
     @ElementBy(name = "commit")
-    private PageElement githubWebSubmitButton;
+    private PageElement submitButton;
 
     @ElementBy(xpath = "//input[@value='Sign out']")
-    private PageElement getGithubWebLogoutConfirm;
+    private PageElement logoutConfirm;
 
     @Inject
     private JiraTestedProduct jiraTestedProduct;
@@ -62,15 +65,15 @@ public class GithubLoginPage implements Page
     public void doLogin(String username, String password)
     {
         // if logout link is present, other user remained logged in
-        if (githubWebLogoutLink.isPresent())
+        if (logoutLink.isPresent())
         {
             doLogout();
             jiraTestedProduct.getTester().gotoUrl(getUrl());
         }
 
-        githubWebLoginField.type(username);
-        githubWebPasswordField.type(password);
-        githubWebSubmitButton.click();
+        loginField.type(username);
+        passwordField.type(password);
+        submitButton.click();
     }
     
     /**
@@ -79,13 +82,15 @@ public class GithubLoginPage implements Page
      */
     public void doLogout()
     {
-        if (githubWebLogoutLink.isPresent())
+        if (logoutLink.isPresent())
         {
-            githubWebLogoutLink.click();
+            profileDropdown.click();
+            Poller.waitUntilTrue(logoutLink.timed().isVisible());
+            logoutLink.click();
         }
-        else if (oldGithubWebLogoutLink.isPresent())
+        else if (oldLogoutLink.isPresent())
         {
-            oldGithubWebLogoutLink.click();
+            oldLogoutLink.click();
         }
         else
         {
@@ -94,8 +99,8 @@ public class GithubLoginPage implements Page
         try
         {
             // GitHub sometimes requires logout confirm
-            Poller.waitUntilTrue(getGithubWebLogoutConfirm.timed().isPresent());
-            getGithubWebLogoutConfirm.click();
+            Poller.waitUntilTrue(logoutConfirm.timed().isPresent());
+            logoutConfirm.click();
         }
         catch (AssertionError e)
         {
