@@ -29,12 +29,6 @@ public class DvcsSyncEndAnalyticsEvent
         this.tookMillis = tookMillis;
     }
 
-//    @EventName
-//    public String determineEventName()
-//    {
-//        return "jira.dvcsconnector.sync.end";
-//    }
-
     public boolean isSoft()
     {
         return soft;

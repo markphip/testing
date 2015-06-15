@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.service.remote;
 
 import com.atlassian.cache.memory.MemoryCacheManager;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import org.mockito.Mock;
@@ -16,13 +17,14 @@ public class CachingCommunicatorTest
     @Mock private DvcsCommunicator mockDvcsCommunicator;
     @Mock private DvcsUser mockDvcsUser;
     @Mock private Repository mockRepository;
+    @Mock private AnalyticsService analyticsService;
     private CachingCommunicator cachingCommunicator;
 
     @BeforeTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-        cachingCommunicator = new CachingCommunicator(new MemoryCacheManager());
+        cachingCommunicator = new CachingCommunicator(new MemoryCacheManager(),analyticsService);
         cachingCommunicator.setDelegate(mockDvcsCommunicator);
     }
 

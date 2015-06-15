@@ -43,7 +43,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final Logger logger = LoggerFactory.getLogger(ConfigureDvcsOrganizations.class);
 
     private String postCommitRepositoryType;
-    private String source;
+    private String source = DEFAULT_SOURCE;
 
     private final EventPublisher eventPublisher;
     private final FeatureManager featureManager;
@@ -166,7 +166,7 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     public Source getSourceOrDefault()
     {
         if(StringUtils.isNotBlank(source)){
-            return Source.valueOf(source);
+            return Source.valueOf(source.toUpperCase());
         }else{
             return Source.UNKNOWN;
         }

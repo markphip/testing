@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues;
 
-/**
- * Created by gtaylor on 29/05/15.
- */
 public enum DvcsType
 {
     BITBUCKET("bitbucket"),
@@ -11,13 +8,15 @@ public enum DvcsType
 
     final String type;
 
-    DvcsType(String type){
+    DvcsType(String type)
+    {
         this.type = type;
     }
 
     @Override
-    public String toString(){
-        return(type);
+    public String toString()
+    {
+        return (type);
     }
 
 }

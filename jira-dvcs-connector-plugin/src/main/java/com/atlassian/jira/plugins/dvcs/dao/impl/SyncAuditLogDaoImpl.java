@@ -112,8 +112,8 @@ public class SyncAuditLogDaoImpl implements SyncAuditLogDao
         boolean pullRequests = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_PULLREQUESTS);
         boolean webhook = syncTypeString.contains(SyncAuditLogMapping.SYNC_TYPE_WEBHOOKS);
 
-        eventPublisher.publish(new DvcsSyncEndAnalyticsEvent(soft, commits, pullRequests, webhook, sync.getEndDate(), sync.getStartDate()
-                .getTime() - sync.getEndDate().getTime()));
+        eventPublisher.publish(new DvcsSyncEndAnalyticsEvent(soft, commits, pullRequests, webhook, sync.getEndDate(),
+                sync.getEndDate().getTime() - sync.getStartDate().getTime()));
     }
 
     @Override

@@ -1,8 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues;
 
-/**
- * Created by gtaylor on 29/05/15.
- */
 public enum FailureReason
 {
     OAUTH_GENERIC("oauth.generic"),
@@ -14,12 +11,14 @@ public enum FailureReason
 
     private String analyticsName;
 
-    FailureReason(String analyticsName){
+    FailureReason(String analyticsName)
+    {
         this.analyticsName = analyticsName;
     }
 
     @Override
-    public String toString(){
+    public String toString()
+    {
         return this.analyticsName;
     }
 

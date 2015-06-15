@@ -3,13 +3,14 @@ package com.atlassian.jira.plugins.dvcs.listener;
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.UserWithAttributes;
 import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
+import com.atlassian.crowd.event.user.UserCreatedEvent;
 import com.atlassian.crowd.exception.OperationNotPermittedException;
 import com.atlassian.crowd.exception.runtime.OperationFailedException;
 import com.atlassian.crowd.exception.runtime.UserNotFoundException;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
@@ -46,7 +47,7 @@ public class DvcsAddUserListener
 
     /** BBC-957: Attribute key to recognise Service Desk Customers during user creation */
     private static final String SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY = "synch.servicedesk.requestor";
-    
+
     /** The event publisher. */
     private final EventPublisher eventPublisher;
 
@@ -62,9 +63,13 @@ public class DvcsAddUserListener
     
     private final CrowdService crowd;
 
+    private final AnalyticsService analyticsService;
+
+    private final InviteUserCheckerFactory inviteUserCheckerFactory;
+
     /**
      * The Constructor.
-     * 
+     *
      * @param eventPublisher
      *            the event publisher
      * @param organizationService
@@ -77,7 +82,9 @@ public class DvcsAddUserListener
                                DvcsCommunicatorProvider communicatorProvider,
                                UserManager userManager,
                                GroupManager groupManager,
-                               CrowdService crowd)
+                               CrowdService crowd,
+                               AnalyticsService analyticsService,
+                                InviteUserCheckerFactory inviteUserCheckerFactory)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
@@ -85,12 +92,39 @@ public class DvcsAddUserListener
         this.userManager = userManager;
         this.groupManager = groupManager;
         this.crowd = crowd;
-        
+        this.analyticsService = analyticsService;
+        this.inviteUserCheckerFactory = inviteUserCheckerFactory;
     }
     
     //---------------------------------------------------------------------------------------
     // Handler methods
     //---------------------------------------------------------------------------------------
+    @EventListener
+    public void fireAnalyticsWhenUserWithInvitesIsCreated(final UserCreatedEvent event)
+    {
+        String user = event.getUser().getName();
+        UserWithAttributes attributes = crowd.getUserWithAttributes(user);
+        String uiChoice = attributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
+
+        if (isServiceDeskRequestor(attributes) || isPresentAndEmptyUiChoice(uiChoice))
+        {
+            return;
+        }
+        UserInviteChecker inviteChecker = inviteUserCheckerFactory.createInviteUserChecker(event.getUser(), uiChoice);
+        if (inviteChecker.willReceiveGroupInvite())
+        {
+            //fire analytics
+            analyticsService.publishUserCreatedThatHasInvite();
+        }
+    }
+
+    private boolean isServiceDeskRequestor(UserWithAttributes userWithAttributes){
+        return Boolean.toString(true).equals(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY));
+    }
+
+    private boolean isPresentAndEmptyUiChoice(String uiChoice){
+        return uiChoice != null && StringUtils.isBlank(uiChoice);
+    }
 
     @EventListener
     public void onUserAddViaInterface(final UserAddedEvent event) 
@@ -103,7 +137,6 @@ public class DvcsAddUserListener
         try
         {
             log.debug("Running onUserAddViaInterface ...");
-            
             String username = event.getRequestParameters().get("username")[0];
             String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
                     UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
@@ -116,10 +149,9 @@ public class DvcsAddUserListener
             	userInvitations = Joiner.on(
 	                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
 	                    organizationIdsAndGroupSlugs);
-            	eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
             } else
             {
-            	// setting blank String to be sure that the crowd will not return null 
+            	// setting blank String to be sure that the crowd will not return null
             	// https://sdog.jira.com/browse/BBC-432
             	userInvitations = " ";
             }
@@ -144,7 +176,7 @@ public class DvcsAddUserListener
         }
 
     }
-   
+
     /**
      * This way we are handling the google user from studio which has not been activated yet.
      * They will get Bitbucket invitation after the first successful login.
@@ -186,14 +218,12 @@ public class DvcsAddUserListener
                     // do the invitation for the first time login
                     if (loginCount == 1)
                     {
-
                         firstTimeLogin(event);
 
                     }
                 }
             }
         }, "Failed to properly handle event " + event + " for user " + event.getUser().getName());
-
     }
 
     private void firstTimeLogin(final UserAttributeStoredEvent event)
@@ -204,11 +234,8 @@ public class DvcsAddUserListener
         String uiChoice = attributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
         log.debug("UI choice for user " + event.getUser().getName() + " : " + uiChoice);
 
-
         // BBC-957: ignore Service Desk Customers when processing the event.
-        boolean isServiceDeskRequestor = Boolean.toString(true).equals(attributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY));
-
-        if(!isServiceDeskRequestor)
+        if(!isServiceDeskRequestor(attributes))
         {
             if (uiChoice == null)
             {

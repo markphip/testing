@@ -2,7 +2,7 @@ package com.atlassian.jira.plugins.dvcs.analytics;
 
 import com.atlassian.analytics.api.annotations.EventName;
 
-@EventName("jira.dvcsconnector.sync.start")
+@EventName ("jira.dvcsconnector.sync.start")
 public class DvcsSyncStartAnalyticsEvent
 {
     private boolean soft;
@@ -22,12 +22,6 @@ public class DvcsSyncStartAnalyticsEvent
         this.pullrequests = pullrequests;
         this.webhook = webhook;
     }
-
-//    @EventName
-//    public String determineEventName()
-//    {
-//        return "jira.dvcsconnector.sync.start";
-//    }
 
     public boolean isSoft()
     {

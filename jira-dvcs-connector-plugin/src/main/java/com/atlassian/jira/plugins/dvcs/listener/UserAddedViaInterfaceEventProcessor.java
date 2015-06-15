@@ -20,7 +20,7 @@ import java.util.Map;
  * {@link Runnable} processor that handles logic beside invitations for user added to JIRA via
  * user interface.
  */
-public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable
+public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable, UserInviteChecker
 {
 	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
 
@@ -146,6 +146,17 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 		{
 			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
 			communicator.inviteUser(organization, groupSlugs, email);
+		}
+	}
+
+	@Override
+	public boolean willReceiveGroupInvite()
+	{
+		if (StringUtils.isBlank(serializedGroupsUiChoice))
+		{
+			return false;
+		}else{
+			return true;
 		}
 	}
 

@@ -1,7 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.analytics;
 
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.AnalyticsEventNameExtras;
 import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Outcome;
 import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
 import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Stage;
 
@@ -15,8 +15,8 @@ public class DvcsConfigAddLifecycleAnalyticsEvent extends DvcsConfigAnalyticsEve
         super(source, "add." + type + "." + stage);
     }
 
-    public DvcsConfigAddLifecycleAnalyticsEvent(Source source, Stage stage, DvcsType type, AnalyticsEventNameExtras extra)
+    public DvcsConfigAddLifecycleAnalyticsEvent(Source source, Stage stage, DvcsType type, Outcome outcome)
     {
-        super(source, "add." + type + "." + stage + "." + extra);
+        super(source, "add." + type + "." + stage + "." + outcome);
     }
 }

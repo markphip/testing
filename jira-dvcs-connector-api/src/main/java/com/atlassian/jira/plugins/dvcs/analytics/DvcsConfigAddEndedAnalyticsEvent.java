@@ -17,7 +17,8 @@ public class DvcsConfigAddEndedAnalyticsEvent extends DvcsConfigAddLifecycleAnal
     public DvcsConfigAddEndedAnalyticsEvent(Source source, DvcsType type, Outcome outcome, FailureReason reason)
     {
         super(source, Stage.ENDED, type, outcome);
-        if(reason != null){
+        if (reason != null)
+        {
             this.reason = reason.toString();
         }
     }

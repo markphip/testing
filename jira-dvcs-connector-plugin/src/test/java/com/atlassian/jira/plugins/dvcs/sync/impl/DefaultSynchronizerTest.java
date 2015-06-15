@@ -8,6 +8,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -286,6 +287,9 @@ public class DefaultSynchronizerTest
     @Mock
     private ClusterLock clusterLock;
 
+    @Mock
+    private AnalyticsService analyticsService;
+
     @BeforeMethod
     public void setUp() throws Exception
     {
@@ -452,8 +456,8 @@ public class DefaultSynchronizerTest
 
         when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
 
-        final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
-        final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager);
+        final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
+        final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
 
         SyncDisabledHelper syncDisabledHelper = new SyncDisabledHelper();
         ReflectionTestUtils.setField(syncDisabledHelper, "featureManager", featureManager);
@@ -1218,7 +1222,7 @@ public class DefaultSynchronizerTest
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
 
         BitbucketCommunicator communicatorMock = mock(BitbucketCommunicator.class);
-        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
+        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
         bitbucketCachingCommunicator.setDelegate(communicatorMock);
         when(dvcsCommunicatorProvider.getCommunicator(eq(BitbucketCommunicator.BITBUCKET))).thenReturn(bitbucketCachingCommunicator);
 
@@ -1236,7 +1240,7 @@ public class DefaultSynchronizerTest
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
 
         GithubCommunicator communicatorMock = mock(GithubCommunicator.class);
-        CachingCommunicator cachingCommunicator = new CachingCommunicator(cacheManager);
+        CachingCommunicator cachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
         cachingCommunicator.setDelegate(communicatorMock);
         when(dvcsCommunicatorProvider.getCommunicator(eq(GithubCommunicator.GITHUB))).thenReturn(cachingCommunicator);
 

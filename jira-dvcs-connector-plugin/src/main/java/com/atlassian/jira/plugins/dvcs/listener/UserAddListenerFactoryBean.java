@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.listener;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.event.api.EventPublisher;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
@@ -41,6 +42,12 @@ public class UserAddListenerFactoryBean implements InitializingBean, DisposableB
     @ComponentImport
     @Resource
     private CrowdService crowdService;
+
+    @Resource
+    private AnalyticsService analyticsService;
+
+    @Resource
+    private InviteUserCheckerFactory inviteUserCheckerFactory;
 
     private DvcsAddUserListener dvcsAddUserListener;
 
@@ -109,7 +116,13 @@ public class UserAddListenerFactoryBean implements InitializingBean, DisposableB
             Class.forName("com.atlassian.jira.event.web.action.admin.UserAddedEvent");
 
             dvcsAddUserListener = new DvcsAddUserListener(eventPublisher,
-                    organizationService, communicatorProvider, userManager, groupManager, crowdService);
+                    organizationService,
+                    communicatorProvider,
+                    userManager,
+                    groupManager,
+                    crowdService,
+                    analyticsService,
+                    inviteUserCheckerFactory);
 
             dvcsAddUserListener.register();
 

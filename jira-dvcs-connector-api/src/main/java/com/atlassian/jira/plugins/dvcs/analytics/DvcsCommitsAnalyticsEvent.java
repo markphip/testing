@@ -6,10 +6,9 @@ import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsCom
 
 /**
  * Analytics event class to indicate actions on the issue.
- *
- * Possible events are 'tabclick' when the 'Commit' tab is clicked and 'tabshowing' when the
- * 'Commit' tab is rendered and showing.
- * Possible sources are 'issue' for tab in issue and 'agile' for Jira Agile tab.
+ * <p>
+ * Possible events are 'tabclick' when the 'Commit' tab is clicked and 'tabshowing' when the 'Commit' tab is rendered
+ * and showing. Possible sources are 'issue' for tab in issue and 'agile' for Jira Agile tab.
  */
 public class DvcsCommitsAnalyticsEvent
 {

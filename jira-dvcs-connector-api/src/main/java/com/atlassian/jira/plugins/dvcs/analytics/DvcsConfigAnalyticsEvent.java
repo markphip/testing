@@ -11,6 +11,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public abstract class DvcsConfigAnalyticsEvent
 {
+
+
     protected final String source;
     protected final String prefix;
 
@@ -23,7 +25,7 @@ public abstract class DvcsConfigAnalyticsEvent
     @EventName
     public String determineEventName()
     {
-        return "jira.dvcsconnector.config." + prefix + "." + source;
+        return "jira.dvcsconnector.config." + prefix;
     }
 
     // using EqualsBuilder and HashCodeBuilder here as they are used in tests only
@@ -44,4 +46,10 @@ public abstract class DvcsConfigAnalyticsEvent
     {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    public String getSource()
+    {
+        return source;
+    }
+
 }

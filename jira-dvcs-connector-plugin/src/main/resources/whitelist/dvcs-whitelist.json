@@ -1,5 +1,15 @@
 {
   "jira.dvcsconnector.adduser.bitbucketinvitation": [],
+  "jira.dvcsconnector.commit.linkclick": [
+    {
+      "data": [
+        "user",
+        "commit",
+        "file",
+        "morefiles"
+      ]
+    }
+  ],
   "jira.dvcsconnector.commit.tabshowing": [
     "authenticated",
     {
@@ -104,7 +114,7 @@
       ]
     }
   ],
-  "jira.dvcsconnector.config. add.githubenterprise.ended.succeeded": [
+  "jira.dvcsconnector.config.add.githubenterprise.ended.succeeded": [
     {
       "source": [
         "unknown",
@@ -123,7 +133,7 @@
       ]
     }
   ],
-  "jira.dvcsconnector.config. add.bitbucket.ended.failed": [
+  "jira.dvcsconnector.config.add.bitbucket.ended.failed": [
     {
       "source": [
         "unknown",
@@ -237,63 +247,6 @@
       ]
     }
   ],
-  "jira.dvcsconnector.config.add.bitbucket.started.failed": [
-    {
-      "source": [
-        "unknown",
-        "devtools"
-      ]
-    },
-    {
-      "reason": [
-        "",
-        "oauth.generic",
-        "oauth.sourcecontrol",
-        "oauth.response",
-        "oauth.token",
-        "oauth.unauth",
-        "validation"
-      ]
-    }
-  ],
-  "jira.dvcsconnector.config.add.github.started.failed": [
-    {
-      "source": [
-        "unknown",
-        "devtools"
-      ]
-    },
-    {
-      "reason": [
-        "",
-        "oauth.generic",
-        "oauth.sourcecontrol",
-        "oauth.response",
-        "oauth.token",
-        "oauth.unauth",
-        "validation"
-      ]
-    }
-  ],
-  "jira.dvcsconnector.config.add.githubenterprise.started.failed": [
-    {
-      "source": [
-        "unknown",
-        "devtools"
-      ]
-    },
-    {
-      "reason": [
-        "",
-        "oauth.generic",
-        "oauth.sourcecontrol",
-        "oauth.response",
-        "oauth.token",
-        "oauth.unauth",
-        "validation"
-      ]
-    }
-  ],
   "jira.dvcsconnector.sync.start": [
     "soft",
     "commits",
@@ -307,6 +260,33 @@
     "webhook",
     "finishedOn",
     "tookMillis"
+  ],
+  "jira.dvcsconnector.bitbucketinvitation.adduser": [],
+  "jira.dvcsconnector.bitbucketinvitation.sent": [],
+  "jira.dvcsconnector.bitbucketinvitation.group.updated": ["groupsEnabled"],
+  "jira.dvcsconnector.config.shown": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.started": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.cancelled": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
   ]
 }
 
