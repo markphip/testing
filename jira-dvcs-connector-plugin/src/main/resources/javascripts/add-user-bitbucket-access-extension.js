@@ -35,10 +35,11 @@ AJS.$(function() {
     }
 
     function prepareBitbucketTeamInlineDialog() {
+        var teams = WRM.data.claim('bitbucket-access-inline-dialog-content');
         AJS.InlineDialog(AJS.$("#add-user-bitbucket-access-extension-panel a.more-teams"), "add-user-bitbucket-access-extension",
                 function(content, trigger, showPopup){
                     content.html(dvcs.connector.bitbucket.access.moreTeamsInlineDialogContent({
-                        teams: WRM.data.claim('bitbucket-access-inline-dialog-content')
+                        teams: teams
                     }));
 
                     showPopup();
