@@ -1,7 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.bitbucket.access;
 
+import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugin.web.ContextProvider;
 import com.atlassian.webresource.api.assembler.PageBuilderService;
 import com.google.common.annotations.VisibleForTesting;
@@ -13,6 +15,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.Map;
 
+import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
@@ -22,6 +25,9 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
 {
     @VisibleForTesting
     static final String CONTEXT_KEY_INVITE_TO_GROUPS = "inviteToGroups";
+
+    @VisibleForTesting
+    static final String CONTEXT_KEY_JIRA_BASE_URL = "jiraBaseUrl";
 
     @VisibleForTesting
     static final String CONTEXT_KEY_MORE_COUNT = "moreCount";
@@ -41,13 +47,16 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
 
     private static final int TEAMS_DISPLAY_THRESHOLD = 3;
 
+    private final ApplicationProperties applicationProperties;
+
     private final BitbucketTeamService bitbucketTeamService;
 
     private final PageBuilderService pageBuilderService;
 
-    public AddUserBitbucketAccessExtensionContextProvider(BitbucketTeamService bitbucketTeamService,
-            PageBuilderService pageBuilderService)
+    public AddUserBitbucketAccessExtensionContextProvider(@ComponentImport ApplicationProperties applicationProperties,
+            BitbucketTeamService bitbucketTeamService, PageBuilderService pageBuilderService)
     {
+        this.applicationProperties = checkNotNull(applicationProperties);
         this.bitbucketTeamService = checkNotNull(bitbucketTeamService);
         this.pageBuilderService = checkNotNull(pageBuilderService);
     }
@@ -66,6 +75,7 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
         requireResourcesAndData(bitbucketTeamNames);
         return ImmutableMap.of(
                 CONTEXT_KEY_INVITE_TO_GROUPS, inviteToGroups(bitbucketTeamsWithDefaultGroups),
+                CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
                 CONTEXT_KEY_MORE_COUNT, max(0, bitbucketTeamsWithDefaultGroups.size() - TEAMS_DISPLAY_THRESHOLD),
                 CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, bitbucketTeamNames
         );

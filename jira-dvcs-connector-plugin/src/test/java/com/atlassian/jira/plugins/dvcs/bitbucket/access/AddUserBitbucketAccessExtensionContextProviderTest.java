@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.bitbucket.access;
 
+import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
@@ -23,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_INVITE_TO_GROUPS;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_JIRA_BASE_URL;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_COUNT;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.REQUIRED_DATA_KEY;
@@ -45,8 +48,13 @@ import static org.mockito.Mockito.when;
 @Listeners (MockitoTestNgListener.class)
 public class AddUserBitbucketAccessExtensionContextProviderTest
 {
+    private static final String JIRA_BASE_URL = "https://jira.atlassian.com/jira";
+
     @InjectMocks
     private AddUserBitbucketAccessExtensionContextProvider addUserBitbucketAccessExtensionContextProvider;
+
+    @Mock
+    private ApplicationProperties applicationProperties;
 
     @Mock
     private BitbucketTeamService bitbucketTeamService;
@@ -76,6 +84,8 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
     @BeforeMethod
     public void prepare()
     {
+        when(applicationProperties.getString(JIRA_BASEURL)).thenReturn(JIRA_BASE_URL);
+
         List<Organization> bitbucketTeams = prepareBitbucketTeams();
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(bitbucketTeams);
 
@@ -161,6 +171,14 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
         Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         assertThat(context, hasEntry(CONTEXT_KEY_INVITE_TO_GROUPS, ""));
+    }
+
+    @Test
+    public void shouldContainJiraBaseUrl()
+    {
+        Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+
+        assertThat(context, hasEntry(CONTEXT_KEY_JIRA_BASE_URL, JIRA_BASE_URL));
     }
 
     @Test
