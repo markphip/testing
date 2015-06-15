@@ -127,7 +127,8 @@ public class PullRequestDaoQueryDsl
                             .where(repositoryMapping.DELETED.eq(false)
                                     .and(repositoryMapping.LINKED.eq(true))
                                     .and(predicate))
-                            .orderBy(prMapping.CREATED_ON.desc());
+                            .orderBy(prMapping.CREATED_ON.desc())
+                            .orderBy(participantMapping.USERNAME.asc());
 
                     if (StringUtils.isNotBlank(dvcsType))
                     {
