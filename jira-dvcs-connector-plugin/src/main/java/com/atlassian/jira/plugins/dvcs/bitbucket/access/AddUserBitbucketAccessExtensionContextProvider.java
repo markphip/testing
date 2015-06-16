@@ -91,7 +91,7 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
     public Map<String, Object> getContextMap(Map<String, Object> context)
     {
         List<Organization> bitbucketTeamsWithDefaultGroups = bitbucketTeamService.getTeamsWithDefaultGroups();
-        List<String> bitbucketTeamNames = transform(bitbucketTeamService.getTeamsWithDefaultGroups(), new Function<Organization, String>()
+        List<String> bitbucketTeamNames = transform(bitbucketTeamsWithDefaultGroups, new Function<Organization, String>()
         {
             @Override
             public String apply(Organization organization)
