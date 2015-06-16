@@ -6,17 +6,17 @@ public enum DvcsType
     GITHUB("github"),
     GITHUB_ENTERPRISE("githubenterprise");
 
-    final String type;
+    final String dvcsType;
 
     DvcsType(String type)
     {
-        this.type = type;
+        this.dvcsType = type;
     }
 
     @Override
     public String toString()
     {
-        return (type);
+        return (dvcsType);
     }
 
 }

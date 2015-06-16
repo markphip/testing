@@ -1,6 +1,5 @@
 package com.atlassian.jira.plugins.dvcs.analytics;
 
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Screen;
 import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
 
 /**
@@ -8,8 +7,10 @@ import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
  */
 public class DvcsConfigPageShownAnalyticsEvent extends DvcsConfigAnalyticsEvent
 {
+    public static final String SHOWN = "shown";
+
     public DvcsConfigPageShownAnalyticsEvent(Source source)
     {
-        super(source, Screen.SHOWN.toString());
+        super(source, SHOWN);
     }
 }

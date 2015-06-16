@@ -1,13 +1,13 @@
 package com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues;
 
-public enum DvcsCommitsAnalyticsEventSource
+public enum EventSource
 {
     ISSUE("issue"),
     AGILE("agile");
 
     final String eventSource;
 
-    DvcsCommitsAnalyticsEventSource(String eventSource)
+    EventSource(String eventSource)
     {
         this.eventSource = eventSource;
     }

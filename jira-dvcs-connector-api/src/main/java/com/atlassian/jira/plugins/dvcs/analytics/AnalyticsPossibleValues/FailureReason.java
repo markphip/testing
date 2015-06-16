@@ -9,17 +9,17 @@ public enum FailureReason
     OAUTH_UNAUTH("oauth.unauth"),
     VALIDATION("validation");
 
-    private String analyticsName;
+    private String failureReason;
 
-    FailureReason(String analyticsName)
+    FailureReason(String failureReason)
     {
-        this.analyticsName = analyticsName;
+        this.failureReason = failureReason;
     }
 
     @Override
     public String toString()
     {
-        return this.analyticsName;
+        return this.failureReason;
     }
 
 }
