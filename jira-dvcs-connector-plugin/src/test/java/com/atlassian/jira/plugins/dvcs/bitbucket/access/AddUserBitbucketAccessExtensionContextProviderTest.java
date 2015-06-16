@@ -4,7 +4,6 @@ import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
-import com.atlassian.json.marshal.Jsonable;
 import com.atlassian.webresource.api.assembler.PageBuilderService;
 import com.atlassian.webresource.api.assembler.RequiredData;
 import com.atlassian.webresource.api.assembler.RequiredResources;
@@ -16,7 +15,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,9 +31,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -121,16 +117,6 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
         addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         verify(requiredResources).requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
-    }
-
-    @Test
-    public void shouldNotRequireDataWhenTeamCountDoesNotExceedThree() throws IOException
-    {
-        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1, organization3, organization4));
-
-        addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        verify(requiredData, never()).requireData(any(String.class), any(Jsonable.class));
     }
 
     @Test

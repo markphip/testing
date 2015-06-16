@@ -25,18 +25,38 @@ import static java.util.stream.Collectors.toList;
  */
 public class AddUserBitbucketAccessExtensionContextProvider implements ContextProvider
 {
+    /**
+     * This context key points to a String that looks like: 1:developers;1:administrators;2:developers.
+     * The number represents Organization ID (Bitbucket team is an Organization) and the string that follows
+     * the ID represents groups that we're inviting the user to. This format is chosen to conform to existing
+     * code that will do the actual inviting.
+     */
     @VisibleForTesting
     static final String CONTEXT_KEY_INVITE_TO_GROUPS = "inviteToGroups";
 
+    /**
+     * This context key points to JIRA's base url. We use this so we can specify a link to the 'DVCS accounts' page.
+     */
     @VisibleForTesting
     static final String CONTEXT_KEY_JIRA_BASE_URL = "jiraBaseUrl";
 
+    /**
+     * When we have more than 3 Bitbucket teams, we list the first 3 teams and wrote ", and N other". This
+     * context key points to the value for N.
+     */
     @VisibleForTesting
     static final String CONTEXT_KEY_MORE_COUNT = "moreCount";
 
+    /**
+     * This context key points to a collection of team names that are not displayed and will be displayed in
+     * the inline dialog when the user clicks on the "N other" link.
+     */
     @VisibleForTesting
     static final String CONTEXT_KEY_MORE_TEAMS = "moreTeams";
 
+    /**
+     * This context key points to the full collection of team names. We take the first three and display them.
+     */
     @VisibleForTesting
     static final String CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS = "teamsWithDefaultGroups";
 
