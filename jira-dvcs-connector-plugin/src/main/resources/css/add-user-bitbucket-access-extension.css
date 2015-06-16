@@ -2,10 +2,6 @@
     padding-top: 1px;
 }
 
-#add-user-bitbucket-access-extension-panel label[for='should-invite-user'] span {
-    font-weight: bold;
-}
-
 #add-user-bitbucket-access-extension-panel label[for='should-invite-user'] a.change-settings {
     font-size: 12px;
 }
