@@ -37,13 +37,11 @@ public class PullRequestTransformerTest
     @Mock private PullRequestParticipantMapping participantMapping3;
     
     @Mock private Repository repository;
-    
     @Mock private RepositoryService repositoryService;
     
     @InjectMocks
     private PullRequestTransformer pullRequestTransformer;
-    
-    
+
     @Before
     public void setup()
     {
@@ -54,6 +52,19 @@ public class PullRequestTransformerTest
         setupParticipant(participantMapping1, PARTICIPANT_1);
         setupParticipant(participantMapping2, PARTICIPANT_2);
         setupParticipant(participantMapping3, PARTICIPANT_3);
+    }
+
+    @Nonnull
+    private RepositoryPullRequestMappingMock mockPullRequestMapping()
+    {
+        final RepositoryPullRequestMappingMock mock = new RepositoryPullRequestMappingMock();
+
+        mock.setRemoteId(REMOTE_ID);
+        mock.setLastStatus(REPO_LAST_STATUS);
+        mock.setToRepositoryId(REPO_ID);
+        when(repositoryService.get(REPO_ID)).thenReturn(repository);
+        
+        return mock;
     }
 
     private void setupParticipant(@Nonnull final PullRequestParticipantMapping participantMapping,
@@ -79,6 +90,7 @@ public class PullRequestTransformerTest
         assertThat("The participants are in ascending order", pullRequest.getParticipants(), is(expected));
     }
 
+    @Nonnull
     private PullRequestParticipantMapping[] getParticipantsOutOfAlphaOrder()
     {
         return new PullRequestParticipantMapping[]
@@ -89,16 +101,4 @@ public class PullRequestTransformerTest
         };
     }
 
-    @Nonnull
-    private RepositoryPullRequestMappingMock mockPullRequestMapping()
-    {
-        final RepositoryPullRequestMappingMock mock = new RepositoryPullRequestMappingMock();
-
-        mock.setRemoteId(REMOTE_ID);
-        mock.setLastStatus(REPO_LAST_STATUS);
-        mock.setToRepositoryId(REPO_ID);
-        when(repositoryService.get(REPO_ID)).thenReturn(repository);
-        
-        return mock;
-    }
 }
