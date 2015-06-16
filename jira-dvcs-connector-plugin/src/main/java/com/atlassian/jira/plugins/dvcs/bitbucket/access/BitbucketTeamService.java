@@ -3,13 +3,15 @@ package com.atlassian.jira.plugins.dvcs.bitbucket.access;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.stream.Collectors.toList;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
  * A service to get all Bitbucket teams that have default groups.
@@ -36,9 +38,13 @@ class BitbucketTeamService
      */
     List<Organization> getTeamsWithDefaultGroups()
     {
-        return organizationService.getAll(false, BITBUCKET_DVCS_TYPE)
-                .stream()
-                .filter(o -> !o.getDefaultGroups().isEmpty())
-                .collect(toList());
+        return newArrayList(filter(organizationService.getAll(false, BITBUCKET_DVCS_TYPE), new Predicate<Organization>()
+        {
+            @Override
+            public boolean apply(Organization organization)
+            {
+                return !organization.getDefaultGroups().isEmpty();
+            }
+        }));
     }
 }
