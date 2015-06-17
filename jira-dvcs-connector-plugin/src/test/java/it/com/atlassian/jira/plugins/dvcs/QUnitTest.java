@@ -1,15 +1,16 @@
 package it.com.atlassian.jira.plugins.dvcs;
 
-import com.atlassian.jira.pageobjects.BaseJiraWebTest;
 import com.atlassian.jira.pageobjects.JiraTestedProduct;
 import com.atlassian.pageobjects.TestedProductFactory;
 import com.atlassian.qunit.test.runner.QUnitPageObjectsHelper;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 
 import java.io.File;
 
-public class QUnitTest extends BaseJiraWebTest
+@Listeners ({ WebDriverScreenshotListener.class })
+public class QUnitTest
 {
     private final File outputDirectory;
     private final JiraTestedProduct product = TestedProductFactory.create(JiraTestedProduct.class);
