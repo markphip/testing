@@ -18,7 +18,8 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
                     isSoftwareApplicationSelected: this.sandbox.stub(),
                     getSelectedApplicationCount: this.sandbox.stub(),
                     onApplicationSelectionChange: this.sandbox.stub(),
-                    onSubmit: this.sandbox.stub()
+                    onSubmit: this.sandbox.stub(),
+                    append: this.sandbox.stub()
                 };
 
                 this.bitbucketAccess = {
@@ -30,7 +31,8 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
                     isSelected: this.sandbox.stub()
                 };
 
-                this.bitbucketAccessController = new BitbucketAccessController(this.addUserForm, this.bitbucketAccess);
+                var bitbucketInviteToGroups = "1:developers;1:admin;2:developers";
+                this.bitbucketAccessController = new BitbucketAccessController(this.addUserForm, this.bitbucketAccess, bitbucketInviteToGroups);
             },
 
             teardown: function() {
@@ -89,7 +91,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.addUserForm.onSubmit);
         });
         
-        test("Should disable bitbucket access when no application is selected and bitbucket access is enabled", function(){
+        test("Should disable bitbucket access on application selection change when no application is selected and bitbucket access is enabled", function(){
             this.addUserForm.getSelectedApplicationCount.returns(0);
             this.bitbucketAccess.isEnabled.returns(true);
 
@@ -98,7 +100,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.disable);
         });
 
-        test("Should do nothing when no application is selected and bitbucket access is disabled", function(){
+        test("Should do nothing on application selection change when no application is selected and bitbucket access is disabled", function(){
             this.addUserForm.getSelectedApplicationCount.returns(0);
             this.bitbucketAccess.isEnabled.returns(false);
 
@@ -107,7 +109,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.notCalled(this.bitbucketAccess.disable);
         });
 
-        test("Should enable bitbucket access when some applications are selected and bitbucket access is disabled", function(){
+        test("Should enable bitbucket access on application selection change when some applications are selected and bitbucket access is disabled", function(){
             this.addUserForm.getSelectedApplicationCount.returns(3);
             this.bitbucketAccess.isEnabled.returns(false);
 
@@ -116,13 +118,29 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.enable);
         });
 
-        test("Should do nothing when some applications are selected and bitbucket access is enabled", function(){
+        test("Should do nothing on application selection change when some applications are selected and bitbucket access is enabled", function(){
             this.addUserForm.getSelectedApplicationCount.returns(3);
             this.bitbucketAccess.isEnabled.returns(true);
 
             this.bitbucketAccessController.onApplicationSelectionChange();
 
             sinon.assert.notCalled(this.bitbucketAccess.enable);
+        });
+
+        test("Should append hidden input field on form submit when Bitbucket access is selected", function(){
+            this.bitbucketAccess.isSelected.returns(true);
+
+            this.bitbucketAccessController.onFormSubmit();
+
+            sinon.assert.calledWithExactly(this.addUserForm.append, '<input type="hidden" name="dvcs_org_selector" value="1:developers;1:admin;2:developers" />');
+        });
+
+        test("Should do nothing on form submit when Bitbucket access is not selected", function() {
+            this.bitbucketAccess.isSelected.returns(false);
+
+            this.bitbucketAccessController.onFormSubmit();
+
+            sinon.assert.notCalled(this.addUserForm.append);
         });
     })
 });

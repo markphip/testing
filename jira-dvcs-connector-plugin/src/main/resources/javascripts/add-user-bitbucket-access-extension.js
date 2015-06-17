@@ -19,7 +19,8 @@ AJS.$(function() {
 
         var addUserForm = new AddUserForm($jiraApplications, $addUserForm, $jiraSoftwareAccessOption);
         var bitbucketAccess = new BitbucketAccess($bitbucketAccessOption, $bitbucketInfoIcon);
-        var bitbucketAccessController = new BitbucketAccessContoller(addUserForm, bitbucketAccess);
+        var bitbucketInviteToGroups = WRM.data.claim('bitbucket-invite-to-groups');
+        var bitbucketAccessController = new BitbucketAccessContoller(addUserForm, bitbucketAccess, bitbucketInviteToGroups);
         bitbucketAccessController.start();
     });
 });

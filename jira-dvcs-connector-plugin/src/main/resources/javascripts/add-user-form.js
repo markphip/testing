@@ -22,6 +22,10 @@ define("dvcs/add-user-form", function () {
 
         onSubmit: function(callback) {
             this.$form.on('submit', callback);
+        },
+
+        append: function(toAppend) {
+            this.$form.append(toAppend);
         }
     };
 

@@ -5,9 +5,10 @@ define("dvcs/bitbucket-access-controller", [
 ) {
     "use strict";
 
-    var BitbucketAccessController = function(addUserForm, bitbucketAccess) {
+    var BitbucketAccessController = function(addUserForm, bitbucketAccess, bitbucketInviteToGroups) {
         this.addUserForm = addUserForm;
         this.bitbucketAccess = bitbucketAccess;
+        this.bitbucketGroupsInputField = '<input type="hidden" name="dvcs_org_selector" value="' + bitbucketInviteToGroups + '" />';
     };
 
     BitbucketAccessController.prototype = {
@@ -44,7 +45,9 @@ define("dvcs/bitbucket-access-controller", [
         },
 
         onFormSubmit: function() {
-
+            if (this.bitbucketAccess.isSelected()) {
+                this.addUserForm.append(this.bitbucketGroupsInputField);
+            }
         }
     };
 
