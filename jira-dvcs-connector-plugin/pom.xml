@@ -445,6 +445,11 @@
                             <artifactId>jira-testkit-plugin</artifactId>
                             <version>${testkit.version}</version>
                         </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.qunit</groupId>
+                            <artifactId>atlassian-qunit-plugin</artifactId>
+                            <version>${atlassian.qunit.plugin.version}</version>
+                        </pluginArtifact>
                     </pluginArtifacts>
                     <skipTests>${skipTests}</skipTests>
                     <testGroups>

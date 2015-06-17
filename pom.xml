@@ -55,6 +55,7 @@
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcomponents.for.selenium.version>4.3.2</apache.httpcomponents.for.selenium.version>
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
+        <atlassian.qunit.plugin.version>1.0.0-m5</atlassian.qunit.plugin.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>

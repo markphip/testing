@@ -285,7 +285,18 @@
         <resource name="view" type="velocity" location="/templates/dvcs/add-user-bitbucket-access-extension.vm"/>
     </web-panel>
 
+    <web-resource key="add-user-bitbucket-access-components">
+        <resource type="download" name="dvcs-bitbucket-access.js" location="javascripts/bitbucket-access.js" />
+        <resource type="download" name="dvcs-add-user-form.js" location="javascripts/add-user-form.js" />
+        <resource type="download" name="dvcs-bitbucket-access-controller.js" location="javascripts/bitbucket-access-controller.js" />
+    </web-resource>
+    <resource type="qunit" name="javascripts/bitbucket-access-test.js" location="javascripts/bitbucket-access-test.js" />
+    <resource type="qunit" name="javascripts/add-user-form-test.js" location="javascripts/add-user-form-test.js" />
+    <resource type="qunit" name="javascripts/bitbucket-access-controller-test.js" location="javascripts/bitbucket-access-controller-test.js" />
+
     <web-resource key="add-user-bitbucket-access-extension-resources">
+        <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-components</dependency>
+
         <resource type="download" name="add-user-bitbucket-access-extension.css" location="css/add-user-bitbucket-access-extension.css"/>
         <resource type="download" name="add-user-bitbucket-access-extension.js" location="javascripts/add-user-bitbucket-access-extension.js"/>
     </web-resource>
