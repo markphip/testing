@@ -9,12 +9,12 @@ import org.junit.Test;
 
 import java.io.File;
 
-public class TestQUnit extends BaseJiraWebTest
+public class QUnitTest extends BaseJiraWebTest
 {
     private final File outputDirectory;
     private final JiraTestedProduct product = TestedProductFactory.create(JiraTestedProduct.class);
 
-    public TestQUnit()
+    public QUnitTest()
     {
         String location = System.getProperty("jira.qunit.testoutput.location");
 
