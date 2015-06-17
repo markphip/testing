@@ -20,18 +20,20 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_INVITE_TO_GROUPS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_JIRA_BASE_URL;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_COUNT;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_TEAMS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider.REQUIRED_WEB_RESOURCE_COMPLETE_KEY;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -112,30 +114,24 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
     }
 
     @Test
-    public void shouldRequireWebResource()
+    public void shouldRequireResourcesAndData()
     {
         addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         verify(requiredResources).requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
+        verify(requiredData).requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY,
+                "1:developers;3:administrators;3:developers;4:administrators;5:developers;6:administrators;6:developers");
     }
 
     @Test
-    public void shouldContainAStringRepresentationOfAllGroupsUserWillBeInvitedTo()
-    {
-        Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_INVITE_TO_GROUPS,
-                "1:developers;3:administrators;3:developers;4:administrators;5:developers;6:administrators;6:developers"));
-    }
-
-    @Test
-    public void shouldContainEmptyStringWhenThereAreNoBitbucketTeamsWithDefaultGroups()
+    public void shouldNotRequireResourcesAndDataWhenThereAreNoBitbucketTeamsWithDefaultGroups()
     {
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
 
-        Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+        addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
-        assertThat(context, hasEntry(CONTEXT_KEY_INVITE_TO_GROUPS, ""));
+        verify(requiredResources, never()).requireWebResource(any(String.class));
+        verify(requiredData, never()).requireData(any(String.class), any(String.class));
     }
 
     @Test

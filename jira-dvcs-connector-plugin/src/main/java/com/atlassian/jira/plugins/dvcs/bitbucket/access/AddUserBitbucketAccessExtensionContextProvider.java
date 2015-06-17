@@ -27,15 +27,6 @@ import static java.util.Collections.emptyList;
 public class AddUserBitbucketAccessExtensionContextProvider implements ContextProvider
 {
     /**
-     * This context key points to a String that looks like: 1:developers;1:administrators;2:developers.
-     * The number represents Organization ID (Bitbucket team is an Organization) and the string that follows
-     * the ID represents groups that we're inviting the user to. This format is chosen to conform to existing
-     * code that will do the actual inviting.
-     */
-    @VisibleForTesting
-    static final String CONTEXT_KEY_INVITE_TO_GROUPS = "inviteToGroups";
-
-    /**
      * This context key points to JIRA's base url. We use this so we can specify a link to the 'DVCS accounts' page.
      */
     @VisibleForTesting
@@ -64,6 +55,9 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
     private static final String ORGANIZATION_GROUP_PAIR_SEPARATOR = ";";
 
     private static final String ORGANIZATION_GROUP_SEPARATOR = ":";
+
+    @VisibleForTesting
+    static final String REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY = "bitbucket-invite-to-groups";
 
     @VisibleForTesting
     static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-extension-resources";
@@ -100,9 +94,8 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
             }
         });
 
-        requireResources();
+        requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
         return ImmutableMap.of(
-                CONTEXT_KEY_INVITE_TO_GROUPS, inviteToGroups(bitbucketTeamsWithDefaultGroups),
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
                 CONTEXT_KEY_MORE_COUNT, max(0, bitbucketTeamsWithDefaultGroups.size() - TEAMS_DISPLAY_THRESHOLD),
                 CONTEXT_KEY_MORE_TEAMS, inlineDialogContent(bitbucketTeamNames),
@@ -110,14 +103,21 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
         );
     }
 
-    private void requireResources()
+    private void requireResourcesAndData(List<Organization> bitbucketTeamsWithDefaultGroups)
     {
+        if (bitbucketTeamsWithDefaultGroups.isEmpty())
+        {
+           return;
+        }
+
+        String inviteToGroups = inviteToGroups(bitbucketTeamsWithDefaultGroups);
         pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
+        pageBuilderService.assembler().data().requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY, inviteToGroups);
     }
 
     private List<String> inlineDialogContent(List<String> bitbucketTeamNames)
     {
-        if(bitbucketTeamNames.size() > TEAMS_DISPLAY_THRESHOLD)
+        if (bitbucketTeamNames.size() > TEAMS_DISPLAY_THRESHOLD)
         {
             return bitbucketTeamNames.subList(TEAMS_DISPLAY_THRESHOLD, bitbucketTeamNames.size());
         }

@@ -1,6 +1,6 @@
 #disable_html_escaping()
 
-#if(!$inviteToGroups.isEmpty())
+#if(!$teamsWithDefaultGroups.isEmpty())
     <div id="add-user-bitbucket-access-extension-panel">
         <div class="field-group bitbucket-access-field-group">
             <div class="checkbox">
@@ -37,7 +37,5 @@
                 #end
             </div>
         </div>
-
-        <input type="hidden" name="dvcs_org_selector" value="${inviteToGroups}" />
     </div>
 #end
