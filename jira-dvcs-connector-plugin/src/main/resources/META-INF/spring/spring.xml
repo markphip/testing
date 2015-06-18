@@ -14,20 +14,17 @@
 
     <bean id="cachingBitbucketCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <constructor-arg ref="analyticsService"/>
         <property name="delegate" ref="bitbucketCommunicator"/>
     </bean>
 
     <bean id="cachingGithubCommunicator" class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <constructor-arg ref="analyticsService"/>
         <property name="delegate" ref="githubCommunicator"/>
     </bean>
 
     <bean id="cachingGithubEnterpriseCommunicator"
           class="com.atlassian.jira.plugins.dvcs.service.remote.CachingCommunicator">
         <constructor-arg ref="cacheManager"/>
-        <constructor-arg ref="analyticsService"/>
         <property name="delegate" ref="githubEnterpriseCommunicator"/>
     </bean>
 
