@@ -48,7 +48,7 @@ public class DvcsAddUserListenerTest
     @Mock
     UserWithAttributes userWithAttributes;
     @Mock
-    InviteUserCheckerFactory inviteUserCheckerFactory;
+    UserInviteCheckerFactory userInviteCheckerFactory;
     @Mock
     UserInviteChecker userInviteChecker;
 
@@ -67,7 +67,7 @@ public class DvcsAddUserListenerTest
         when(user.getName()).thenReturn(username);
         when(crowd.getUserWithAttributes(username)).thenReturn(userWithAttributes);
 
-        classUnderTest = new DvcsAddUserListener(eventPublisher, organizationService, communicatiorProvider, userManager, groupManager, crowd, analyticsService, inviteUserCheckerFactory);
+        classUnderTest = new DvcsAddUserListener(eventPublisher, organizationService, communicatiorProvider, userManager, groupManager, crowd, analyticsService, userInviteCheckerFactory);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class DvcsAddUserListenerTest
     {
         when(userWithAttributes.getValue(UI_USER_INVITATIONS_PARAM_NAME)).thenReturn("uiChoice");
         when(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY)).thenReturn("false");
-        when(inviteUserCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
+        when(userInviteCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
         when(userInviteChecker.willReceiveGroupInvite()).thenReturn(true);
 
         classUnderTest.fireAnalyticsWhenUserWithInvitesIsCreated(userCreatedEvent);
@@ -89,7 +89,7 @@ public class DvcsAddUserListenerTest
     {
         when(userWithAttributes.getValue(UI_USER_INVITATIONS_PARAM_NAME)).thenReturn("uiChoice");
         when(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY)).thenReturn("true");
-        when(inviteUserCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
+        when(userInviteCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
         when(userInviteChecker.willReceiveGroupInvite()).thenReturn(false);
 
         classUnderTest.fireAnalyticsWhenUserWithInvitesIsCreated(userCreatedEvent);
@@ -102,7 +102,7 @@ public class DvcsAddUserListenerTest
     {
         when(userWithAttributes.getValue(UI_USER_INVITATIONS_PARAM_NAME)).thenReturn("uiChoice");
         when(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY)).thenReturn("false");
-        when(inviteUserCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
+        when(userInviteCheckerFactory.createInviteUserChecker(any(User.class), any(String.class))).thenReturn(userInviteChecker);
         when(userInviteChecker.willReceiveGroupInvite()).thenReturn(false);
 
         classUnderTest.fireAnalyticsWhenUserWithInvitesIsCreated(userCreatedEvent);

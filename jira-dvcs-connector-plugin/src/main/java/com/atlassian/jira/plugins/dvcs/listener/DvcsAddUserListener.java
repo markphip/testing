@@ -65,7 +65,7 @@ public class DvcsAddUserListener
 
     private final AnalyticsService analyticsService;
 
-    private final InviteUserCheckerFactory inviteUserCheckerFactory;
+    private final UserInviteCheckerFactory userInviteCheckerFactory;
 
     public DvcsAddUserListener(EventPublisher eventPublisher,
                                OrganizationService organizationService,
@@ -74,7 +74,7 @@ public class DvcsAddUserListener
                                GroupManager groupManager,
                                CrowdService crowd,
                                AnalyticsService analyticsService,
-                               InviteUserCheckerFactory inviteUserCheckerFactory)
+                               UserInviteCheckerFactory userInviteCheckerFactory)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
@@ -83,7 +83,7 @@ public class DvcsAddUserListener
         this.groupManager = groupManager;
         this.crowd = crowd;
         this.analyticsService = analyticsService;
-        this.inviteUserCheckerFactory = inviteUserCheckerFactory;
+        this.userInviteCheckerFactory = userInviteCheckerFactory;
     }
     
     //---------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ public class DvcsAddUserListener
         {
             return;
         }
-        UserInviteChecker inviteChecker = inviteUserCheckerFactory.createInviteUserChecker(event.getUser(), uiChoice);
+        UserInviteChecker inviteChecker = userInviteCheckerFactory.createInviteUserChecker(event.getUser(), uiChoice);
         if (inviteChecker.willReceiveGroupInvite())
         {
             //fire analytics

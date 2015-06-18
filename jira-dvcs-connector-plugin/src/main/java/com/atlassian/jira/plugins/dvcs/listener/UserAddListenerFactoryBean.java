@@ -47,7 +47,7 @@ public class UserAddListenerFactoryBean implements InitializingBean, DisposableB
     private AnalyticsService analyticsService;
 
     @Resource
-    private InviteUserCheckerFactory inviteUserCheckerFactory;
+    private UserInviteCheckerFactory userInviteCheckerFactory;
 
     private DvcsAddUserListener dvcsAddUserListener;
 
@@ -122,7 +122,7 @@ public class UserAddListenerFactoryBean implements InitializingBean, DisposableB
                     groupManager,
                     crowdService,
                     analyticsService,
-                    inviteUserCheckerFactory);
+                    userInviteCheckerFactory);
 
             dvcsAddUserListener.register();
 
