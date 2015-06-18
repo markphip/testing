@@ -260,7 +260,6 @@ public class AddBitbucketOrganizationTest
         final AccountInfo accountInfo = mock(AccountInfo.class);
         when(organizationService.getAccountInfo(anyString(), anyString(), Mockito.eq(BitbucketCommunicator.BITBUCKET))).thenReturn(accountInfo);
         addBitbucketOrganization.doValidation();
-//        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
 
