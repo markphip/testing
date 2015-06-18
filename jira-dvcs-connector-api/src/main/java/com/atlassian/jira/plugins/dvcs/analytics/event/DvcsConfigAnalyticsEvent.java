@@ -1,7 +1,6 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -11,7 +10,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public abstract class DvcsConfigAnalyticsEvent
 {
-
 
     protected final String source;
     protected final String prefix;

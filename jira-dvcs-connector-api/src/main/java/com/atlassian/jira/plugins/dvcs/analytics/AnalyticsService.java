@@ -18,7 +18,7 @@ public interface AnalyticsService
     public void publishUserCreatedThatHasInvite();
 
     /**
-     * Publishes an analytics event signalling that a user has been created with a bitbucket invite
+     * Publishes an analytics event signalling that a user invite has been sent
      */
     public void publishInviteSent();
 

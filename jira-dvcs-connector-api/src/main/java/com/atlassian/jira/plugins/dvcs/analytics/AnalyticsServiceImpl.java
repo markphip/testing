@@ -1,13 +1,16 @@
 package com.atlassian.jira.plugins.dvcs.analytics;
 
 import com.atlassian.event.api.EventPublisher;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsAddUserAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsInviteGroupChanged;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsUserBitbucketInviteSent;
 import org.springframework.stereotype.Component;
+import javax.inject.Inject;
 
 @Component ("analyticsService")
 public class AnalyticsServiceImpl implements AnalyticsService
 {
-    @Autowired
+    @Inject
     private EventPublisher eventPublisher;
 
     @Override

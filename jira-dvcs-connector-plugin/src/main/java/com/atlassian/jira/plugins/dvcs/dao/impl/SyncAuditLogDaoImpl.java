@@ -3,7 +3,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl;
 import com.atlassian.activeobjects.external.ActiveObjects;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncEndAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsSyncEndAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.util.ActiveObjectsUtils;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;

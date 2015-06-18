@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 public enum Source
 {
@@ -17,6 +17,4 @@ public enum Source
     {
         return this.source;
     }
-
-
 }

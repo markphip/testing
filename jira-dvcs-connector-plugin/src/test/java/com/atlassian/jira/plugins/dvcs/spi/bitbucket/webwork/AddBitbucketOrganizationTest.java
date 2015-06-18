@@ -3,12 +3,12 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.junit.rules.AvailableInContainer;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Outcome;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Outcome;
+import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -271,8 +271,8 @@ public class AddBitbucketOrganizationTest
         String response = addBitbucketOrganization.doExecute();
         assertThat(response, equalTo(Action.NONE));
 
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET, Outcome.FAILED, null));
         verifyNoMoreInteractions(eventPublisher);
     }
 

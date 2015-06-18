@@ -1,8 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;

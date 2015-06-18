@@ -4,8 +4,8 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.compatibility.bridge.project.UnlicensedProjectPageRendererBridge;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigPageShownAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -58,8 +58,6 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private static final String SYNCHRONIZATION_ALL_DISABLED_MESSAGE = "Atlassian has temporarily disabled synchronization for maintenance. Activity during this period will sync once connectivity is restored. Thank you for your patience.";
     private static final String UNLICENSED_PAGE_WEB_RESOURCE = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:unlicensed-page-resources";
 
-    private String postCommitRepositoryType;
-    private String source = DEFAULT_SOURCE;
     @VisibleForTesting
     static final String UNLICENSED = "unlicensed";
 
@@ -75,7 +73,8 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final UnlicensedProjectPageRendererBridge unlicensedProjectPageRendererBridge;
 
     private String postCommitRepositoryType;
-    private String source;
+    private String source = DEFAULT_SOURCE;
+
 
     @Autowired
     public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher,
@@ -212,9 +211,12 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
 
     public Source getSourceOrDefault()
     {
-        if(StringUtils.isNotBlank(source)){
+        if (StringUtils.isNotBlank(source))
+        {
             return Source.valueOf(source.toUpperCase());
-        }else{
+        }
+        else
+        {
             return Source.UNKNOWN;
         }
     }

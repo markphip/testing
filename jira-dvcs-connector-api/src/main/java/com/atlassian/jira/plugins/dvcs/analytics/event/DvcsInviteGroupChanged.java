@@ -1,6 +1,6 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
-        import com.atlassian.analytics.api.annotations.EventName;
+import com.atlassian.analytics.api.annotations.EventName;
 
 /**
  * Analytics event to indicate that the number of invite groups enable has changed.

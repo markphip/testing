@@ -67,16 +67,6 @@ public class DvcsAddUserListener
 
     private final InviteUserCheckerFactory inviteUserCheckerFactory;
 
-    /**
-     * The Constructor.
-     *
-     * @param eventPublisher
-     *            the event publisher
-     * @param organizationService
-     *            the organization service
-     * @param communicatorProvider
-     *            the communicator provider
-     */
     public DvcsAddUserListener(EventPublisher eventPublisher,
                                OrganizationService organizationService,
                                DvcsCommunicatorProvider communicatorProvider,
@@ -84,7 +74,7 @@ public class DvcsAddUserListener
                                GroupManager groupManager,
                                CrowdService crowd,
                                AnalyticsService analyticsService,
-                                InviteUserCheckerFactory inviteUserCheckerFactory)
+                               InviteUserCheckerFactory inviteUserCheckerFactory)
     {
         this.eventPublisher = eventPublisher;
         this.organizationService = organizationService;
@@ -118,11 +108,13 @@ public class DvcsAddUserListener
         }
     }
 
-    private boolean isServiceDeskRequestor(UserWithAttributes userWithAttributes){
+    private boolean isServiceDeskRequestor(UserWithAttributes userWithAttributes)
+    {
         return Boolean.toString(true).equals(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY));
     }
 
-    private boolean isPresentAndEmptyUiChoice(String uiChoice){
+    private boolean isPresentAndEmptyUiChoice(String uiChoice)
+    {
         return uiChoice != null && StringUtils.isBlank(uiChoice);
     }
 

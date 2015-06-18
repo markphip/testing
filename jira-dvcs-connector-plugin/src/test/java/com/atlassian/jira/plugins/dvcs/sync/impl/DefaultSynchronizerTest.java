@@ -456,8 +456,8 @@ public class DefaultSynchronizerTest
 
         when(bitbucketClientBuilderFactory.forRepository(Matchers.any(Repository.class))).thenReturn(bitbucketClientBuilder);
 
-        final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
-        final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
+        final CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
+        final CachingCommunicator githubCachingCommunicator = new CachingCommunicator(cacheManager);
 
         SyncDisabledHelper syncDisabledHelper = new SyncDisabledHelper();
         ReflectionTestUtils.setField(syncDisabledHelper, "featureManager", featureManager);
@@ -1222,7 +1222,7 @@ public class DefaultSynchronizerTest
         when(repositoryMock.getDvcsType()).thenReturn(BitbucketCommunicator.BITBUCKET);
 
         BitbucketCommunicator communicatorMock = mock(BitbucketCommunicator.class);
-        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
+        CachingCommunicator bitbucketCachingCommunicator = new CachingCommunicator(cacheManager);
         bitbucketCachingCommunicator.setDelegate(communicatorMock);
         when(dvcsCommunicatorProvider.getCommunicator(eq(BitbucketCommunicator.BITBUCKET))).thenReturn(bitbucketCachingCommunicator);
 
@@ -1240,7 +1240,7 @@ public class DefaultSynchronizerTest
         when(repositoryMock.getDvcsType()).thenReturn(GithubCommunicator.GITHUB);
 
         GithubCommunicator communicatorMock = mock(GithubCommunicator.class);
-        CachingCommunicator cachingCommunicator = new CachingCommunicator(cacheManager,analyticsService);
+        CachingCommunicator cachingCommunicator = new CachingCommunicator(cacheManager);
         cachingCommunicator.setDelegate(communicatorMock);
         when(dvcsCommunicatorProvider.getCommunicator(eq(GithubCommunicator.GITHUB))).thenReturn(cachingCommunicator);
 

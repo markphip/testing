@@ -1,12 +1,12 @@
 package com.atlassian.jira.plugins.dvcs.webwork;
 
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Outcome;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Outcome;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.web.action.JiraWebActionSupport;
 import com.atlassian.plugin.spring.scanner.annotation.component.Scanned;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -99,9 +99,12 @@ public class CommonDvcsConfigurationAction extends JiraWebActionSupport
 
     public Source getSourceOrDefault()
     {
-        if(StringUtils.isNotBlank(source)){
+        if (StringUtils.isNotBlank(source))
+        {
             return Source.valueOf(source.toUpperCase());
-        }else{
+        }
+        else
+        {
             return Source.UNKNOWN;
         }
     }

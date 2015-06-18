@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 public enum DvcsType
 {
@@ -16,7 +16,7 @@ public enum DvcsType
     @Override
     public String toString()
     {
-        return (dvcsType);
+        return dvcsType;
     }
 
 }

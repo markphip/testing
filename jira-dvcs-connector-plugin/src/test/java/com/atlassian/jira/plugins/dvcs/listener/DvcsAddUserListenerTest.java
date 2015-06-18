@@ -82,7 +82,6 @@ public class DvcsAddUserListenerTest
 
         verify(analyticsService).publishUserCreatedThatHasInvite();
         verifyNoMoreInteractions(analyticsService);
-
     }
 
     @Test

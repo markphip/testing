@@ -1,32 +1,26 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 
-import java.util.Date;
-
-@EventName("jira.dvcsconnector.sync.end")
-public class DvcsSyncEndAnalyticsEvent
+@EventName ("jira.dvcsconnector.sync.start")
+public class DvcsSyncStartAnalyticsEvent
 {
     private boolean soft;
     private boolean commits;
     private boolean pullrequests;
     private boolean webhook;
-    private Date finishedOn;
-    private long tookMillis;
 
-    public DvcsSyncEndAnalyticsEvent()
+    public DvcsSyncStartAnalyticsEvent()
     {
     }
 
-    public DvcsSyncEndAnalyticsEvent(boolean soft, boolean commits, boolean pullrequests, boolean webhook, Date finishedOn, long tookMillis)
+    public DvcsSyncStartAnalyticsEvent(boolean soft, boolean commits, boolean pullrequests, boolean webhook)
     {
         super();
         this.soft = soft;
         this.commits = commits;
         this.pullrequests = pullrequests;
         this.webhook = webhook;
-        this.finishedOn = finishedOn;
-        this.tookMillis = tookMillis;
     }
 
     public boolean isSoft()
@@ -67,26 +61,6 @@ public class DvcsSyncEndAnalyticsEvent
     public void setWebhook(boolean webhook)
     {
         this.webhook = webhook;
-    }
-
-    public Date getFinishedOn()
-    {
-        return finishedOn;
-    }
-
-    public void setFinishedOn(Date finishedOn)
-    {
-        this.finishedOn = finishedOn;
-    }
-
-    public long getTookMillis()
-    {
-        return tookMillis;
-    }
-
-    public void setTookMillis(long tookMillis)
-    {
-        this.tookMillis = tookMillis;
     }
 
 }

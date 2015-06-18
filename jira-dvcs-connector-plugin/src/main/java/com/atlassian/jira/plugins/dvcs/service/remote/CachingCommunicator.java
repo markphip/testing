@@ -6,7 +6,6 @@ import com.atlassian.cache.CacheLoader;
 import com.atlassian.cache.CacheManager;
 import com.atlassian.cache.CacheSettings;
 import com.atlassian.cache.CacheSettingsBuilder;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Branch;
@@ -109,14 +108,12 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     private final Cache<UserKey, DvcsUser> usersCache;
     private final Cache<OrganisationKey, List<Group>> groupsCache;
     private DvcsCommunicator delegate;
-    private AnalyticsService analyticsService;
 
-    public CachingCommunicator(@ComponentImport final CacheManager cacheManager, final AnalyticsService analyticsService)
+    public CachingCommunicator(@ComponentImport final CacheManager cacheManager)
     {
         // self-loading caches returned from getCache are always clean/empty
         usersCache = cacheManager.getCache(getClass().getName() + ".usersCache", new UserLoader(), CACHE_SETTINGS);
         groupsCache = cacheManager.getCache(getClass().getName() + ".groupsCache", new GroupLoader(), CACHE_SETTINGS);
-        this.analyticsService = analyticsService;
     }
 
     public void setDelegate(DvcsCommunicator delegate)
@@ -165,7 +162,6 @@ public class CachingCommunicator implements CachingDvcsCommunicator
     @Override
     public void inviteUser(Organization organization, Collection<String> groupSlugs, String userEmail)
     {
-        analyticsService.publishInviteSent();
         delegate.inviteUser(organization, groupSlugs, userEmail);
     }
 

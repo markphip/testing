@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.spi.bitbucket;
 
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -100,6 +101,9 @@ public class BitbucketCommunicator implements DvcsCommunicator
     
     @Resource (name = "deferredBitbucketLinker")
     private BitbucketLinker bitbucketLinker;
+
+    @Resource
+    private AnalyticsService analyticsService;
 
     @Autowired
     public BitbucketCommunicator(
@@ -654,6 +658,7 @@ public class BitbucketCommunicator implements DvcsCommunicator
             {
                 log.debug("Going invite " + userEmail + " to group " + groupSlug + " of bitbucket organization " + organization.getName());
                 remoteClient.getAccountRest().inviteUser(organization.getName(), userEmail, organization.getName(), groupSlug);
+                analyticsService.publishInviteSent();
             }
         }
         catch (BitbucketRequestException exception)

@@ -1,10 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
-
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.DvcsType;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Outcome;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.FailureReason;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Source;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.Stage;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 /**
  * Analytics event to indicate that an add organization process has ended.

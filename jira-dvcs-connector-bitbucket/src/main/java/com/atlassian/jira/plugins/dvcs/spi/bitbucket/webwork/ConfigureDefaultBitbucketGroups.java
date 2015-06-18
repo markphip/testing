@@ -37,26 +37,27 @@ public class ConfigureDefaultBitbucketGroups extends JiraWebActionSupport
 		this.analyticsService = analyticsService;
     }
 
-    @Override
-    protected void doValidation()
-    {
+	@Override
+	protected void doValidation()
+	{
 	}
 
-    @Override
-    @RequiresXsrfCheck
-    protected String doExecute() throws Exception
-    {
+	@Override
+	@RequiresXsrfCheck
+	protected String doExecute() throws Exception
+	{
 		analyticsService.publishInviteGroupChange(organizationDefaultGroups.length);
 
-    	List<String> slugs = new ArrayList<String>();
-    	if (organizationDefaultGroups != null && organizationDefaultGroups.length > 0) {
-    		slugs.addAll(Arrays.asList(organizationDefaultGroups));
-    	}
+		List<String> slugs = new ArrayList<String>();
+		if (organizationDefaultGroups != null && organizationDefaultGroups.length > 0)
+		{
+			slugs.addAll(Arrays.asList(organizationDefaultGroups));
+		}
 
-    	organizationService.setDefaultGroupsSlugs(Integer.parseInt(organizationIdDefaultGroups), slugs);
+		organizationService.setDefaultGroupsSlugs(Integer.parseInt(organizationIdDefaultGroups), slugs);
 
-        return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
-    }
+		return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()));
+	}
 
 	public String getOrganizationIdDefaultGroups()
 	{

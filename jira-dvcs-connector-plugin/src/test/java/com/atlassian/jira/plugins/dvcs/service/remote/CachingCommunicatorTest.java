@@ -24,7 +24,7 @@ public class CachingCommunicatorTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-        cachingCommunicator = new CachingCommunicator(new MemoryCacheManager(),analyticsService);
+        cachingCommunicator = new CachingCommunicator(new MemoryCacheManager());
         cachingCommunicator.setDelegate(mockDvcsCommunicator);
     }
 

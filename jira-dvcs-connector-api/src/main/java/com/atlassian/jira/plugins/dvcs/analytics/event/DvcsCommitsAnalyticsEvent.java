@@ -1,7 +1,6 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
-import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsPossibleValues.EventSource;
 
 /**
  * Analytics event class to indicate actions on the issue.

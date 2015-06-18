@@ -155,7 +155,9 @@ public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventPr
 		if (StringUtils.isBlank(serializedGroupsUiChoice))
 		{
 			return false;
-		}else{
+		}
+		else
+		{
 			return true;
 		}
 	}
