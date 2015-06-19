@@ -300,6 +300,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>com.atlassian.qunit</groupId>
+                <artifactId>atlassian-qunit-plugin-util</artifactId>
+                <version>${atlassian.qunit.plugin.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>

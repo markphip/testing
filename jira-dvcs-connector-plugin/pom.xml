@@ -348,7 +348,6 @@
         <dependency>
             <groupId>com.atlassian.qunit</groupId>
             <artifactId>atlassian-qunit-plugin-util</artifactId>
-            <version>${atlassian.qunit.plugin.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
