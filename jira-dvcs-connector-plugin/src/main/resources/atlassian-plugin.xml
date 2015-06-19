@@ -279,6 +279,7 @@
     <web-panel key="add-user-bitbucket-access-extension" location="webpanels.admin.adduser.applicationaccess">
         <conditions type="AND">
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
         </conditions>
         <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider" />
