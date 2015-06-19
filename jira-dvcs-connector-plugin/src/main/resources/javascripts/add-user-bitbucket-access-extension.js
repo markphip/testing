@@ -4,12 +4,13 @@ AJS.$(function() {
         'dvcs/bitbucket-access',
         'dvcs/bitbucket-access-controller',
         'jquery',
-        'aui/inline-dialog2' //Initialise the inlineDialog2. This is all that is required.
+        'aui/inline-dialog2'
     ], function(
         AddUserForm,
         BitbucketAccess,
         BitbucketAccessContoller,
-        $
+        $,
+        InlineDialog2 //Unused. To use inline dialog 2, all I need to do is 'require' it.
     ) {
         var $addUserForm = $('#user-create');
         var $bitbucketAccessOption = $('#should-invite-user');
