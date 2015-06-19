@@ -23,7 +23,7 @@
                     #set($label = $i18n.getText('add.user.bitbucket.access.extension.more.than.three.accounts', "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>", "<span>$teamsWithDefaultGroups.get(2)</span>", $moreCount))
                 #end
 
-                <label for="should-invite-user">$label<br><a class="change-settings" href="$jiraBaseUrl/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText('add.user.bitbucket.access.extension.change.default.groups')</a></label>
+                <label for="should-invite-user">$label<br><a class="change-settings" href="$jiraBaseUrl/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText('add.user.bitbucket.access.extension.change.default.groups', $teamsWithDefaultGroups.size())</a></label>
                 #if(!$moreTeams.isEmpty())
                     <aui-inline-dialog2 id="bitbucket-access-inline-dialog-content" class="aui-layer aui-inline-dialog" data-aui-alignment="bottom left" data-aui-responds-to="toggle" aria-hidden="true" persistent="false">
                         <div class="aui-inline-dialog-contents">
