@@ -26,6 +26,6 @@ public class AddUserBitbucketAccessExtensionCondition implements Condition
     @Override
     public boolean shouldDisplay(Map<String, Object> context)
     {
-        return bitbucketTeamService.getTeamsWithDefaultGroups().size() > 0;
+        return !bitbucketTeamService.getTeamsWithDefaultGroups().isEmpty();
     }
 }
