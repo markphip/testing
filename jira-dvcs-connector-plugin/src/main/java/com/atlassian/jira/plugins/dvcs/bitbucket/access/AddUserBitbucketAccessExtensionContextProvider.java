@@ -127,7 +127,7 @@ public class AddUserBitbucketAccessExtensionContextProvider implements ContextPr
 
     private String inviteToGroups(List<Organization> organizations)
     {
-        List<String> organizationGroupPairs = Lists.newArrayList();
+        final List<String> organizationGroupPairs = Lists.newArrayList();
         for (Organization organization : organizations)
         {
             for (Group group : organization.getDefaultGroups())
