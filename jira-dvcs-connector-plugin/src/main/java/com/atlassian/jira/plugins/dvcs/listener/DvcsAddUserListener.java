@@ -3,28 +3,22 @@ package com.atlassian.jira.plugins.dvcs.listener;
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.crowd.embedded.api.UserWithAttributes;
 import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
-import com.atlassian.crowd.exception.OperationNotPermittedException;
-import com.atlassian.crowd.exception.runtime.OperationFailedException;
-import com.atlassian.crowd.exception.runtime.UserNotFoundException;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
 import com.atlassian.jira.security.groups.GroupManager;
-import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.jira.user.util.UserManager;
-import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+
+import static com.atlassian.jira.plugins.dvcs.listener.UserAddedEventListener.UI_USER_INVITATIONS_PARAM_NAME;
 
 /**
  * Listens to user events (just for <code>CREATED</code> type).
@@ -32,8 +26,7 @@ import java.util.Set;
  * Handler methods run asynchronously and are safe to fail. That means that it
  * does not corrupt process of adding the user because of some unexpected error
  * at this place.
- * 
- * @see #onUserAddViaInterface(UserAddedEvent)
+ *
  * @see #onUserAttributeStore(UserAttributeStoredEvent)
  */
 public class DvcsAddUserListener
@@ -41,8 +34,6 @@ public class DvcsAddUserListener
 
     /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(DvcsAddUserListener.class);
-
-    private static final String UI_USER_INVITATIONS_PARAM_NAME = "com.atlassian.jira.dvcs.invite.groups";
 
     /** BBC-957: Attribute key to recognise Service Desk Customers during user creation */
     private static final String SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY = "synch.servicedesk.requestor";
@@ -91,60 +82,6 @@ public class DvcsAddUserListener
     //---------------------------------------------------------------------------------------
     // Handler methods
     //---------------------------------------------------------------------------------------
-
-    @EventListener
-    public void onUserAddViaInterface(final UserAddedEvent event) 
-    {
-        if (event == null)
-        {
-            return;
-        }
-        
-        try
-        {
-            log.debug("Running onUserAddViaInterface ...");
-            
-            String username = event.getRequestParameters().get("username")[0];
-            String[] organizationIdsAndGroupSlugs = event.getRequestParameters().get(
-                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM);
-      
-            ApplicationUser user = userManager.getUserByName(username);
-
-            String userInvitations;
-            if (organizationIdsAndGroupSlugs != null)
-            {
-            	userInvitations = Joiner.on(
-	                    UserAddedViaInterfaceEventProcessor.ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).join(
-	                    organizationIdsAndGroupSlugs);
-            	eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
-            } else
-            {
-            	// setting blank String to be sure that the crowd will not return null 
-            	// https://sdog.jira.com/browse/BBC-432
-            	userInvitations = " ";
-            }
-            
-            crowd.setUserAttribute(
-                    ApplicationUsers.toDirectoryUser(user),
-                    UI_USER_INVITATIONS_PARAM_NAME,
-                    Collections.singleton(userInvitations)
-                    );
-       
-        } catch (UserNotFoundException e)
-        {
-            log.warn("UserNotFoundException : " + e.getMessage());
-        } catch (OperationFailedException e)
-        {
-            log.warn("OperationFailedException : " + e.getMessage());
-        } catch (OperationNotPermittedException e)
-        {
-            log.warn("OperationNotPermittedException : " + e.getMessage());
-        } catch (Exception e) {
-            log.warn("Unexpected exception " + e.getClass() +  " : " + e.getMessage());
-        }
-
-    }
-   
     /**
      * This way we are handling the google user from studio which has not been activated yet.
      * They will get Bitbucket invitation after the first successful login.
