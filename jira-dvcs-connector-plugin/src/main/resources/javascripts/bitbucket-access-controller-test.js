@@ -40,7 +40,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             }
         });
 
-        test("Should establish initial state and register listeners when start is invoked", function(){
+        test("Should establish initial state and register listeners when start is invoked", function() {
             this.sandbox.spy(this.bitbucketAccessController, "establishInitialState");
             this.sandbox.spy(this.bitbucketAccessController, "registerListeners");
 
@@ -51,7 +51,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
 
         });
 
-        test("Should select bitbucket access when Software is selected", function(){
+        test("Should select bitbucket access when Software is selected", function() {
             this.addUserForm.isSoftwareApplicationSelected.returns(true);
 
             this.bitbucketAccessController.establishInitialState();
@@ -59,7 +59,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.select);
         });
 
-        test("Should not select bitbucket access when Software is not selected", function(){
+        test("Should not select bitbucket access when Software is not selected", function() {
             this.addUserForm.isSoftwareApplicationSelected.returns(false);
 
             this.bitbucketAccessController.establishInitialState();
@@ -67,7 +67,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.notCalled(this.bitbucketAccess.select);
         });
 
-        test("Should disable bitbucket access when no application is selected", function(){
+        test("Should disable bitbucket access when no application is selected", function() {
             this.addUserForm.getSelectedApplicationCount.returns(0);
 
             this.bitbucketAccessController.establishInitialState();
@@ -75,7 +75,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.disable);
         });
 
-        test("Should not disable bitbucket access when some applications are selected", function(){
+        test("Should not disable bitbucket access when some applications are selected", function() {
             this.addUserForm.getSelectedApplicationCount.returns(3);
 
             this.bitbucketAccessController.establishInitialState();
@@ -83,7 +83,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.notCalled(this.bitbucketAccess.disable);
         });
 
-        test("Should listen to change and submit events", function(){
+        test("Should listen to change and submit events", function() {
 
             this.bitbucketAccessController.registerListeners();
 
@@ -91,7 +91,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.addUserForm.onSubmit);
         });
         
-        test("Should disable bitbucket access on application selection change when no application is selected and bitbucket access is enabled", function(){
+        test("Should disable bitbucket access on application selection change when no application is selected and bitbucket access is enabled", function() {
             this.addUserForm.getSelectedApplicationCount.returns(0);
             this.bitbucketAccess.isEnabled.returns(true);
 
@@ -100,7 +100,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.disable);
         });
 
-        test("Should do nothing on application selection change when no application is selected and bitbucket access is disabled", function(){
+        test("Should do nothing on application selection change when no application is selected and bitbucket access is disabled", function() {
             this.addUserForm.getSelectedApplicationCount.returns(0);
             this.bitbucketAccess.isEnabled.returns(false);
 
@@ -109,7 +109,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.notCalled(this.bitbucketAccess.disable);
         });
 
-        test("Should enable bitbucket access on application selection change when some applications are selected and bitbucket access is disabled", function(){
+        test("Should enable bitbucket access on application selection change when some applications are selected and bitbucket access is disabled", function() {
             this.addUserForm.getSelectedApplicationCount.returns(3);
             this.bitbucketAccess.isEnabled.returns(false);
 
@@ -118,7 +118,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledOnce(this.bitbucketAccess.enable);
         });
 
-        test("Should do nothing on application selection change when some applications are selected and bitbucket access is enabled", function(){
+        test("Should do nothing on application selection change when some applications are selected and bitbucket access is enabled", function() {
             this.addUserForm.getSelectedApplicationCount.returns(3);
             this.bitbucketAccess.isEnabled.returns(true);
 
@@ -127,7 +127,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.notCalled(this.bitbucketAccess.enable);
         });
 
-        test("Should append hidden input field on form submit when Bitbucket access is selected", function(){
+        test("Should append hidden input field on form submit when Bitbucket access is selected", function() {
             this.bitbucketAccess.isSelected.returns(true);
 
             this.bitbucketAccessController.onFormSubmit();

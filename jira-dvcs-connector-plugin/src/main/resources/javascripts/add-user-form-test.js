@@ -31,31 +31,31 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             }
         });
 
-        test("Should return true when isSoftwareApplicationSelected when Software application is selected", function(){
+        test("Should return true when isSoftwareApplicationSelected when Software application is selected", function() {
             this.softwareAccess.attr.withArgs("checked").returns(true);
 
             equal(this.addUserForm.isSoftwareApplicationSelected(), true);
         });
 
-        test("Should return false when isSoftwareApplicationSelected when Software application is not selected", function(){
+        test("Should return false when isSoftwareApplicationSelected when Software application is not selected", function() {
             this.softwareAccess.attr.withArgs("checked").returns(false);
 
             equal(this.addUserForm.isSoftwareApplicationSelected(), false);
         });
         
-        test("Should return 0 when getSelectedApplicationCount is invoked and no applications are selected", function(){
+        test("Should return 0 when getSelectedApplicationCount is invoked and no applications are selected", function() {
             this.applications.filter.withArgs(":checked").returns([]);
 
             equal(this.addUserForm.getSelectedApplicationCount(), 0);
         });
 
-        test("Should return number of applications selected when getSelectedApplicationCount is invoked", function(){
+        test("Should return number of applications selected when getSelectedApplicationCount is invoked", function() {
             this.applications.filter.withArgs(":checked").returns([{}, {}, {}]);
 
             equal(this.addUserForm.getSelectedApplicationCount(), 3);
         });
 
-        test("Should register a change event listener when onApplicationSelectionChange is invoked", function(){
+        test("Should register a change event listener when onApplicationSelectionChange is invoked", function() {
             var callback = function() {};
 
             this.addUserForm.onApplicationSelectionChange(callback);
@@ -63,7 +63,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add
             sinon.assert.calledWithExactly(this.applications.on, "change", callback);
         });
 
-        test("Should register a submit event listener when onSubmit is invoked", function(){
+        test("Should register a submit event listener when onSubmit is invoked", function() {
             var callback = function() {};
 
             this.addUserForm.onSubmit(callback);
