@@ -98,7 +98,7 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
 
     private Organization organization(int id, String name, String ... defaultGroupNames)
     {
-        Set<Group> defaultGroups = Sets.newLinkedHashSet();
+        final Set<Group> defaultGroups = Sets.newLinkedHashSet();
         for (String defaultGroupName : defaultGroupNames)
         {
             Group defaultGroup = mock(Group.class);
