@@ -24,7 +24,7 @@
                 #end
 
                 <label for="should-invite-user">$label<br><a class="change-settings" href="$jiraBaseUrl/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText('add.user.bitbucket.access.extension.change.default.groups')</a></label>
-                #if($moreTeams.size() > 0)
+                #if(!$moreTeams.isEmpty())
                     <aui-inline-dialog2 id="bitbucket-access-inline-dialog-content" class="aui-layer aui-inline-dialog" data-aui-alignment="bottom left" data-aui-responds-to="toggle" aria-hidden="true" persistent="false">
                         <div class="aui-inline-dialog-contents">
                             <ul class="aui-nav">
