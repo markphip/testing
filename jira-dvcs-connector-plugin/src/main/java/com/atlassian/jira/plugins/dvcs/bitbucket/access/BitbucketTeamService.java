@@ -17,7 +17,7 @@ import static com.google.common.collect.Lists.newArrayList;
  * A service to get all Bitbucket teams that have default groups.
  */
 @Component
-class BitbucketTeamService
+public class BitbucketTeamService
 {
     @VisibleForTesting
     static final String BITBUCKET_DVCS_TYPE = "bitbucket";
@@ -25,7 +25,7 @@ class BitbucketTeamService
     private final OrganizationService organizationService;
 
     @Autowired
-    BitbucketTeamService(OrganizationService organizationService)
+    public BitbucketTeamService(OrganizationService organizationService)
     {
         this.organizationService = checkNotNull(organizationService);
     }
