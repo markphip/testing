@@ -22,20 +22,20 @@ public class ConfigureDefaultBitbucketGroups extends JiraWebActionSupport
 	private static final long serialVersionUID = 6246027331604675862L;
 
 	final Logger logger = LoggerFactory.getLogger(ConfigureDefaultBitbucketGroups.class);
-	
+
 	private String organizationIdDefaultGroups;
-	
+
 	private String [] organizationDefaultGroups;
 
 	private final OrganizationService organizationService;
 
 	private AnalyticsService analyticsService;
 
-    public ConfigureDefaultBitbucketGroups(OrganizationService organizationService, AnalyticsService analyticsService)
-    {
-        this.organizationService = organizationService;
+	public ConfigureDefaultBitbucketGroups(OrganizationService organizationService, AnalyticsService analyticsService)
+	{
+		this.organizationService = organizationService;
 		this.analyticsService = analyticsService;
-    }
+	}
 
 	@Override
 	protected void doValidation()
