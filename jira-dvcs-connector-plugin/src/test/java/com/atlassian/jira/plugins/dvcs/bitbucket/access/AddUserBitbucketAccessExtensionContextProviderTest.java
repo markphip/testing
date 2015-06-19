@@ -53,13 +53,13 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
 
     private Organization organization1;
 
+    private Organization organization2;
+
     private Organization organization3;
 
     private Organization organization4;
 
     private Organization organization5;
-
-    private Organization organization6;
 
     @Mock
     private PageBuilderService pageBuilderService;
@@ -89,11 +89,11 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
     private List<Organization> prepareBitbucketTeams()
     {
         organization1 = organization(1, "Atlassian", "developers");
-        organization3 = organization(3, "Fusion", "administrators", "developers");
-        organization4 = organization(4, "Atlassian Labs", "administrators");
-        organization5 = organization(5, "Fusion Renaissance", "developers");
-        organization6 = organization(6, "Yet another team", "administrators", "developers");
-        return asList(organization1, organization3, organization4, organization5, organization6);
+        organization2 = organization(2, "Fusion", "administrators", "developers");
+        organization3 = organization(3, "Atlassian Labs", "administrators");
+        organization4 = organization(4, "Fusion Renaissance", "developers");
+        organization5 = organization(5, "Yet another team", "administrators", "developers");
+        return asList(organization1, organization2, organization3, organization4, organization5);
     }
 
     private Organization organization(int id, String name, String ... defaultGroupNames)
@@ -120,7 +120,7 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
 
         verify(requiredResources).requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
         verify(requiredData).requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY,
-                "1:developers;3:administrators;3:developers;4:administrators;5:developers;6:administrators;6:developers");
+                "1:developers;2:administrators;2:developers;3:administrators;4:developers;5:administrators;5:developers");
     }
 
     @Test
@@ -164,7 +164,7 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
         Map<String,Object> context = addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         assertThat(context, hasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS,
-                asList(organization1.getName(), organization3.getName(), organization4.getName(), organization5.getName(), organization6.getName())));
+                asList(organization1.getName(), organization2.getName(), organization3.getName(), organization4.getName(), organization5.getName())));
     }
 
     @Test
