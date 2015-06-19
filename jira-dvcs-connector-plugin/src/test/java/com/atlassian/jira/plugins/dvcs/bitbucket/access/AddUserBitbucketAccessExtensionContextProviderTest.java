@@ -31,10 +31,9 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
@@ -130,8 +129,7 @@ public class AddUserBitbucketAccessExtensionContextProviderTest
 
         addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
-        verify(requiredResources, never()).requireWebResource(any(String.class));
-        verify(requiredData, never()).requireData(any(String.class), any(String.class));
+        verifyZeroInteractions(requiredResources, requiredData);
     }
 
     @Test
