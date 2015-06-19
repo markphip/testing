@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 @Listeners (MockitoTestNgListener.class)
 public class AddUserBitbucketAccessExtensionContextProviderTest
 {
-    private static final String JIRA_BASE_URL = "https://jira.atlassian.com/jira";
+    private static final String JIRA_BASE_URL = "http://example.com";
 
     @InjectMocks
     private AddUserBitbucketAccessExtensionContextProvider addUserBitbucketAccessExtensionContextProvider;
