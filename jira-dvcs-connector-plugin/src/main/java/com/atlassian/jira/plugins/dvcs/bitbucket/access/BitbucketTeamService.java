@@ -33,7 +33,7 @@ public class BitbucketTeamService
     /**
      * Get all Bitbucket teams with default groups
      *
-     * @return A list Bitbucket teams with default groups. If no such team
+     * @return A list of Bitbucket teams with default groups. If no such team
      *         exists, an empty list is returned.
      */
     List<Organization> getTeamsWithDefaultGroups()
