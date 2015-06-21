@@ -18,6 +18,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.lang.Integer.parseInt;
 
+/**
+ * Listens for {@link com.atlassian.crowd.event.user.UserAttributeStoredEvent} and checks
+ * whether the attribute being updated is the login count attribute. If this is the case,
+ * infers whether this is the user's first login and if so invoke
+ * {@link com.atlassian.jira.plugins.dvcs.listener.FirstLoginHandler#onFirstLogin(String)}.
+ */
 @Component
 public class UserAttributeStoredEventListener implements InitializingBean, DisposableBean
 {
