@@ -270,7 +270,8 @@ public class GithubCommunicator implements DvcsCommunicator
         }
         catch (IOException e)
         {
-            log.debug("Error retrieving repository information", e);
+            log.info("Attempt to find fork of " + ghRepository.getName()+ " failed", e);
+            ghRepository.setFork(false);
         }
     }
 
