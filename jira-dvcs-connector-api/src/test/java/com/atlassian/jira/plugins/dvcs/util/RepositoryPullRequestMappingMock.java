@@ -7,27 +7,37 @@ import net.java.ao.EntityManager;
 
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import javax.annotation.Nullable;
 
 public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMapping
 {
-    private String author;
-    private String executedBy;
-    private String sourceBranch;
-    private String destinationBranch;
+    private Date createdOn;
     private Date updatedOn;
-    private String name;
+    private int commentCount;
+    private long remoteId;
+    private int domainId;
+    private int repoId;
+    private PullRequestParticipantMapping[] participants = new PullRequestParticipantMapping[0];
     private RepositoryCommitMapping[] commits = new RepositoryCommitMapping[0];
+    private String author;
+    private String destinationBranch;
+    private String executedBy;
+    private String lastStatus;
+    private String name;
+    private String sourceBranch;
+    private String sourceRepo;
+    private String url;
 
     @Override
     public Long getRemoteId()
     {
-        return null;
+        return remoteId;
     }
 
     @Override
     public int getToRepositoryId()
     {
-        return 0;
+        return repoId;
     }
 
     @Override
@@ -39,7 +49,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public String getUrl()
     {
-        return null;
+        return url;
     }
 
     @Override
@@ -57,13 +67,13 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public String getLastStatus()
     {
-        return null;
+        return lastStatus;
     }
 
     @Override
     public Date getCreatedOn()
     {
-        return null;
+        return createdOn;
     }
 
     @Override
@@ -87,19 +97,19 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public String getSourceRepo()
     {
-        return null;
+        return sourceRepo;
     }
 
     @Override
     public PullRequestParticipantMapping[] getParticipants()
     {
-        return new PullRequestParticipantMapping[0];
+        return participants;
     }
 
     @Override
     public int getCommentCount()
     {
-        return 0;
+        return commentCount;
     }
 
     @Override
@@ -109,15 +119,15 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     }
 
     @Override
-    public void setRemoteId(final Long id)
+    public void setRemoteId(final Long remoteId)
     {
-
+        this.remoteId = remoteId;
     }
 
     @Override
     public void setToRepositoryId(final int repoId)
     {
-
+        this.repoId = repoId;
     }
 
     @Override
@@ -129,7 +139,7 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public void setUrl(final String url)
     {
-
+        this.url = url;
     }
 
     @Override
@@ -147,13 +157,13 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public void setLastStatus(final String status)
     {
-
+        this.lastStatus = status;
     }
 
     @Override
     public void setCreatedOn(final Date date)
     {
-
+        this.createdOn = date;
     }
 
     @Override
@@ -171,13 +181,13 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public void setSourceRepo(final String sourceRepo)
     {
-
+        this.sourceRepo = sourceRepo;
     }
 
     @Override
     public void setCommentCount(final int commentCount)
     {
-
+        this.commentCount = commentCount;
     }
 
     @Override
@@ -189,13 +199,13 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     @Override
     public int getDomainId()
     {
-        return 0;
+        return domainId;
     }
 
     @Override
     public void setDomainId(final int domainId)
     {
-
+        this.domainId = domainId;
     }
 
     @Override
@@ -243,5 +253,10 @@ public class RepositoryPullRequestMappingMock implements RepositoryPullRequestMa
     public void setCommits(final RepositoryCommitMapping[] commits)
     {
         this.commits = commits;
+    }
+    
+    public void setParticipants(@Nullable final PullRequestParticipantMapping[] participants)
+    {
+        this.participants = participants;
     }
 }
