@@ -6,7 +6,9 @@ import com.atlassian.jira.plugins.dvcs.github.api.model.GitHubRepositoryHook;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetail;
 import com.atlassian.jira.plugins.dvcs.model.ChangesetFileDetailsEnvelope;
+import com.atlassian.jira.plugins.dvcs.model.Credential;
 import com.atlassian.jira.plugins.dvcs.model.DvcsUser;
+import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
 import com.atlassian.jira.plugins.dvcs.service.message.MessageAddress;
 import com.atlassian.jira.plugins.dvcs.service.message.MessagingService;
@@ -35,6 +37,7 @@ import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.RequestError;
 import org.eclipse.egit.github.core.User;
+import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.RepositoryService;
@@ -54,6 +57,7 @@ import org.testng.annotations.Test;
 import org.testng.collections.Lists;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -109,11 +113,27 @@ public class GithubCommunicatorTest
     private GitHubEventService gitHubEventService;
     @Mock
     private UserServiceFactory userServiceFactory;
+    @Mock
+    private Organization organization;
+    @Mock
+    private Credential credential;
+    @Mock
+    private GitHubClient mockGithubClient;
+
+
     @Spy
     private GithubClientWithTimeout gitHubClient = new GithubClientWithTimeout("localhost", 8080, "http");
 
     private final String HOST_URL = "hostURL";
-    private final String ACCOUNT_Name = "ACCOUNT_Name";
+    private final String ACCOUNT_NAME = "ACCOUNT_NAME";
+    private final String ACCESS_TOKEN = "accessToken";
+    private final String REPO_NAME = "repoName";
+    private final String FORK_REPO_NAME = "forkRepoName";
+    private final User owner = new User();
+    private List<Repository> storedRepositories = new ArrayList<Repository>();
+    private org.eclipse.egit.github.core.Repository forkRepo = new org.eclipse.egit.github.core.Repository();
+    private org.eclipse.egit.github.core.Repository otherRepo = new org.eclipse.egit.github.core.Repository();
+    private List<org.eclipse.egit.github.core.Repository> repoList =  ImmutableList.<org.eclipse.egit.github.core.Repository>of(otherRepo,forkRepo);
 
     // tested object
     private GithubCommunicator communicator;
@@ -234,6 +254,15 @@ public class GithubCommunicatorTest
     {
         MockitoAnnotations.initMocks(this);
 
+
+        otherRepo.setFork(false);
+        otherRepo.setOwner(owner);
+        otherRepo.setName(REPO_NAME);
+        forkRepo.setFork(true);
+        forkRepo.setOwner(owner);
+        forkRepo.setName(FORK_REPO_NAME);
+        owner.setLogin(ACCOUNT_NAME);
+
         communicator = new GithubCommunicator(mock(OAuthStore.class), githubClientProvider);
         communicator.setGitHubRESTClient(gitHubRESTClient);
         ReflectionTestUtils.setField(communicator, "applicationProperties", applicationProperties);
@@ -265,6 +294,7 @@ public class GithubCommunicatorTest
 
         when(repository.getSlug()).thenReturn("SLUG");
         when(repository.getOrgName()).thenReturn("ORG");
+
     }
 
     @Test
@@ -438,26 +468,47 @@ public class GithubCommunicatorTest
     @Test
     public void TestIsUsernameCorrect() throws Exception
     {
-        when(userService.getUser(ACCOUNT_Name)).thenReturn(githubUser);
+        when(userService.getUser(ACCOUNT_NAME)).thenReturn(githubUser);
 
-        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
+        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_NAME));
     }
 
     @Test
     public void TestIsUsernameIncorrect() throws Exception
     {
-        when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
+        when(userService.getUser(ACCOUNT_NAME)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(1);
 
-        assertFalse(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
+        assertFalse(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_NAME));
     }
 
     @Test
     public void TestIsUsernameIncorrectAndBlownRateLimit() throws Exception
     {
-        when(userService.getUser(ACCOUNT_Name)).thenReturn(null);
+        when(userService.getUser(ACCOUNT_NAME)).thenReturn(null);
         when(gitHubClient.getRemainingRequests()).thenReturn(0);
 
-        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_Name));
+        assertTrue(communicator.isUsernameCorrect(HOST_URL, ACCOUNT_NAME));
     }
+
+
+    @Test
+    public void TestForkInfoExceptionHandledGracefully() throws IOException
+    {
+        when(githubClientProvider.getRepositoryService(organization)).thenReturn(repositoryService);
+        when(organization.getCredential()).thenReturn(credential);
+        when(credential.getAccessToken()).thenReturn(ACCESS_TOKEN);
+        when(repositoryService.getClient()).thenReturn(mockGithubClient);
+        when(mockGithubClient.setOAuth2Token(ACCESS_TOKEN)).thenReturn(mockGithubClient);
+        when(organization.getName()).thenReturn(ACCOUNT_NAME);
+        when(repositoryService.getRepositories()).thenReturn(repoList);
+        when(repositoryService.getRepository(Matchers.anyString(), Matchers.anyString())).thenThrow(new IOException());
+
+        List<Repository> repos = communicator.getRepositories(organization, storedRepositories);
+
+        //We should still be adding the repo to the collection even if its fork info call throws an exception
+        //and it should not stop us adding other repos either
+        assertEquals(repos.size(), 2);
+    }
+
 }
