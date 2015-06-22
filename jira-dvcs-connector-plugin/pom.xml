@@ -345,6 +345,11 @@
             <artifactId>activeobjects-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.qunit</groupId>
+            <artifactId>atlassian-qunit-plugin-util</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -444,6 +449,11 @@
                             <groupId>com.atlassian.jira.tests</groupId>
                             <artifactId>jira-testkit-plugin</artifactId>
                             <version>${testkit.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.qunit</groupId>
+                            <artifactId>atlassian-qunit-plugin</artifactId>
+                            <version>${atlassian.qunit.plugin.version}</version>
                         </pluginArtifact>
                     </pluginArtifacts>
                     <skipTests>${skipTests}</skipTests>

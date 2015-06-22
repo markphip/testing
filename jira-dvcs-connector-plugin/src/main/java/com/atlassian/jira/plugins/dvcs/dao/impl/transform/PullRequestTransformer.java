@@ -14,7 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 public class PullRequestTransformer
 {
@@ -74,8 +77,32 @@ public class PullRequestTransformer
             Participant participant = new Participant(participantMapping.getUsername(), participantMapping.isApproved(), participantMapping.getRole());
             participants.add(participant);
         }
+        // sort by username so that there is a stable ordering of the PR participants (reviewers) for our contract tests
+        Collections.sort(participants, participantComparator());
 
         return participants;
+    }
+    
+    @Nonnull
+    private Comparator<Participant> participantComparator()
+    {
+        return new Comparator<Participant>()
+        {
+            @Override
+            public int compare(final Participant p1, final Participant p2)
+            {
+                if (p1.getUsername() == null && p2.getUsername() == null)
+                    return 0;
+
+                if (p2.getUsername() == null)
+                    return -1;
+
+                if (p1.getUsername() == null)
+                    return 1;
+
+                return p1.getUsername().compareTo(p2.getUsername());
+            }
+        };
     }
 
     private List<Changeset> transform(RepositoryCommitMapping[] commitMappings)

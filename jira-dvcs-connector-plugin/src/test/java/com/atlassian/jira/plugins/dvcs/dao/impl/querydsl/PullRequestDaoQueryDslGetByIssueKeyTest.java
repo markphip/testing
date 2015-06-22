@@ -2,6 +2,7 @@ package com.atlassian.jira.plugins.dvcs.dao.impl.querydsl;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.OrganizationMapping;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.RepositoryMapping;
+import com.atlassian.jira.plugins.dvcs.activity.PullRequestParticipantMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestMapping;
 import com.atlassian.jira.plugins.dvcs.model.Participant;
 import com.atlassian.jira.plugins.dvcs.model.PullRequest;
@@ -22,6 +23,7 @@ import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicato
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * This is a database integration test that uses the AO database test parent class to provide us with a working database
@@ -59,10 +61,11 @@ public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTes
 
         assertThat(pullRequest.getParticipants().size(), equalTo(1));
         Participant participant = pullRequest.getParticipants().get(0);
+        PullRequestParticipantMapping defaultParticipant = pullRequestMappingWithIssue.getParticipants()[0];
 
-        assertThat(participant.getUsername(), equalTo(participant.getUsername()));
-        assertThat(participant.isApproved(), equalTo(participant.isApproved()));
-        assertThat(participant.getRole(), equalTo(participant.getRole()));
+        assertThat(participant.getUsername(), equalTo(defaultParticipant.getUsername()));
+        assertThat(participant.isApproved(), equalTo(defaultParticipant.isApproved()));
+        assertThat(participant.getRole(), equalTo(defaultParticipant.getRole()));
     }
 
     @Test
@@ -167,5 +170,46 @@ public class PullRequestDaoQueryDslGetByIssueKeyTest extends QueryDSLDatabaseTes
     {
         List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(ImmutableList.<String>of(), BITBUCKET);
         assertThat(pullRequests.size(), equalTo(0));
+    }
+    
+    @Test
+    @NonTransactional
+    public void participantsShouldBeSortedInAscendingAlphaOrder()
+    {
+        // setup
+        final String username1 = "username 1";
+        final String username2 = "username 2";
+        final String username3 = "username 3";
+        final List<String> expectedUsernames = Lists.newArrayList(username1, username2, username3);
+        
+        final String secondIssueKey = "IK-2";
+        RepositoryPullRequestMapping secondPR = pullRequestAOPopulator.createPR("something else", secondIssueKey, enabledRepository);
+        pullRequestAOPopulator.createParticipant(username2, true, "reviewer", secondPR);
+        pullRequestAOPopulator.createParticipant(username3, true, "reviewer", secondPR);
+        pullRequestAOPopulator.createParticipant(username1, true, "reviewer", secondPR);
+
+        // execute
+        List<PullRequest> pullRequests = pullRequestDaoQueryDsl.getByIssueKeys(Arrays.asList(secondIssueKey), BITBUCKET);
+        
+        // check there are 3 participants
+        final PullRequest pullRequest = pullRequests.get(0);
+        final List<Participant> participants = pullRequest.getParticipants();
+        assertThat("There should be three participants", participants.size(), is(3));
+        
+        // check they are ordered correctly
+        final List<String> usernames = transformParticipantsToUsernames(pullRequest.getParticipants());
+        assertThat("The participants should be in ascending alpha order of username", usernames, is(expectedUsernames));
+    }
+    
+    private List<String> transformParticipantsToUsernames(@Nonnull final List<Participant> participants)
+    {
+        return Lists.transform(participants, new Function<Participant, String>()
+        {
+            @Override
+            public String apply(final Participant p)
+            {
+                return p.getUsername();
+            }
+        });
     }
 }
