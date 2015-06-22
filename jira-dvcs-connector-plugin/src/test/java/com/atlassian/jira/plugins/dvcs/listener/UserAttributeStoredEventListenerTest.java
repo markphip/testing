@@ -10,11 +10,17 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import java.util.Map;
+import java.util.Set;
+
 import static com.atlassian.jira.plugins.dvcs.listener.UserAttributeStoredEventListener.USER_ATTRIBUTE_KEY_LOGIN_COUNT;
+import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
+import static java.util.Map.Entry;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -71,7 +77,7 @@ public class UserAttributeStoredEventListenerTest
     @Test
     public void shouldDoNothingWhenLoginCountAttributeValuesIsEmpty()
     {
-        when(userAttributeStoredEvent.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT)).thenReturn(emptySet());
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, emptySet()));
 
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
@@ -81,7 +87,7 @@ public class UserAttributeStoredEventListenerTest
     @Test
     public void shouldDoNothingWhenLoginCountIsNotASingleValue()
     {
-        when(userAttributeStoredEvent.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT)).thenReturn(newHashSet("1", "2"));
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, newHashSet("1", "2")));
 
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
@@ -91,7 +97,7 @@ public class UserAttributeStoredEventListenerTest
     @Test
     public void shouldDoNothingWhenLoginCountIsNotANumber()
     {
-        when(userAttributeStoredEvent.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT)).thenReturn(newHashSet("one"));
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, newHashSet("one")));
 
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
@@ -101,7 +107,7 @@ public class UserAttributeStoredEventListenerTest
     @Test
     public void shouldDoNothingWhenLoginCountIsGreaterThanOne()
     {
-        when(userAttributeStoredEvent.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT)).thenReturn(newHashSet("2"));
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, newHashSet("2")));
 
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
@@ -111,7 +117,7 @@ public class UserAttributeStoredEventListenerTest
     @Test
     public void shouldInvokeFirstLoginHandlerWhenLoginCountIsOne()
     {
-        when(userAttributeStoredEvent.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT)).thenReturn(newHashSet("1"));
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, newHashSet("1")));
 
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
@@ -132,5 +138,14 @@ public class UserAttributeStoredEventListenerTest
         userAttributeStoredEventListener.destroy();
 
         verify(eventPublisher).unregister(userAttributeStoredEventListener);
+    }
+
+    private void givenUserAttributeStoredEventWithAttributes(Map<String, Set<String>> attributes)
+    {
+        when(userAttributeStoredEvent.getAttributeNames()).thenReturn(attributes.keySet());
+        for (Entry<String, Set<String>> entry : attributes.entrySet())
+        {
+            when(userAttributeStoredEvent.getAttributeValues(entry.getKey())).thenReturn(entry.getValue());
+        }
     }
 }

@@ -18,6 +18,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.lang.Integer.parseInt;
+import static java.util.Collections.emptySet;
 
 /**
  * Listens for {@link com.atlassian.crowd.event.user.UserAttributeStoredEvent} and checks
@@ -58,7 +59,7 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
 
     private Option<Integer> getLoginCount(UserAttributeStoredEvent event)
     {
-        Set<String> attributeValues = event.getAttributeValues(USER_ATTRIBUTE_KEY_LOGIN_COUNT);
+        Set<String> attributeValues = getAttributeValues(event, USER_ATTRIBUTE_KEY_LOGIN_COUNT);
         if (attributeValues == null || attributeValues.size() != 1)
         {
             return none();
@@ -73,6 +74,16 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
         {
             return none();
         }
+    }
+
+    private Set<String> getAttributeValues(UserAttributeStoredEvent event, String attributeKey)
+    {
+        Set<String> attributeKeys = event.getAttributeNames();
+
+        //Unfortunately this is required due to the way UserAttributeStoredEvent implements getAttributeValues.
+        //It does a map look up and wrap the result around Collections.unmodifiableSet without checking for null.
+        return attributeKeys.contains(attributeKey) ?
+                event.getAttributeValues(attributeKey) : emptySet();
     }
 
     @Override
