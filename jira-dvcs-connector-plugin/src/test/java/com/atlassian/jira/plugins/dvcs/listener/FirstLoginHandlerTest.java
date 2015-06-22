@@ -5,8 +5,8 @@ import com.atlassian.crowd.embedded.api.UserWithAttributes;
 import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.MockUserKeyService;
-import com.atlassian.jira.user.UserKeyService;
+import com.atlassian.jira.user.util.MockUserManager;
+import com.atlassian.jira.user.util.UserManager;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -50,7 +50,7 @@ public class FirstLoginHandlerTest
         when(userWithAttributes.getName()).thenReturn(USERNAME);
 
         new MockComponentWorker()
-                .addMock(UserKeyService.class, new MockUserKeyService())
+                .addMock(UserManager.class, new MockUserManager())
                 .init();
         when(userWithAttributes.getDirectoryId()).thenReturn(-1L);
     }
