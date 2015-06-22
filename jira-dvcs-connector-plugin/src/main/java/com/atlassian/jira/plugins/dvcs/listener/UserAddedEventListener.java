@@ -38,7 +38,7 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserAddedEventListener.class);
 
-    private static final String ORG_ID_GROUP_PAIR_SEPARATOR = ";";
+    static final String ORG_ID_GROUP_PAIR_SEPARATOR = ";";
 
     @VisibleForTesting
     static final String REQUEST_KEY_USERNAME = "username";
