@@ -7,7 +7,6 @@ import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.MockUserKeyService;
 import com.atlassian.jira.user.UserKeyService;
-import com.sun.deploy.association.utility.AppUtility;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
