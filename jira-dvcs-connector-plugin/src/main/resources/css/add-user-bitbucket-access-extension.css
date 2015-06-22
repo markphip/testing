@@ -1,0 +1,16 @@
+#add-user-bitbucket-access-extension-panel .bitbucket-access-field-group {
+    padding-top: 1px;
+}
+
+#add-user-bitbucket-access-extension-panel label[for='should-invite-user'] a.change-settings {
+    font-size: 12px;
+}
+
+#bitbucket-access-inline-dialog-content li+li {
+    margin-top: 10px;
+}
+
+#bitbucket-access-inline-dialog-content .aui-inline-dialog-contents {
+    max-height: 200px;
+    overflow-y: auto;
+}

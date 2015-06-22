@@ -55,6 +55,7 @@
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcomponents.for.selenium.version>4.3.2</apache.httpcomponents.for.selenium.version>
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
+        <atlassian.qunit.plugin.version>1.0.0</atlassian.qunit.plugin.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
@@ -299,6 +300,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>com.atlassian.qunit</groupId>
+                <artifactId>atlassian-qunit-plugin-util</artifactId>
+                <version>${atlassian.qunit.plugin.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -490,12 +496,12 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0.0-QR20150602133705</jira.compile.version>
+                <jira.compile.version>7.0.0-QR20150618010911</jira.compile.version>
                 <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
-                <jira.data.version>7.0.0-QR20150602133705</jira.data.version>
+                <jira.data.version>7.0.0-QR20150618010911</jira.data.version>
                 <jira.projects.version>3.0.8</jira.projects.version>
                 <jira.software.version>1.20</jira.software.version>
-                <jira.version>7.0.0-QR20150602133705</jira.version>
+                <jira.version>7.0.0-QR20150618010911</jira.version>
                 <testkit.version>7.0.32</testkit.version>
             </properties>
         </profile>
