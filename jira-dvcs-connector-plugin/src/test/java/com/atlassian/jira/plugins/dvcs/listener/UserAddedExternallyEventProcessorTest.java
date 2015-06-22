@@ -1,125 +1,172 @@
 package com.atlassian.jira.plugins.dvcs.listener;
 
-import com.atlassian.core.util.collection.EasyList;
+import com.atlassian.crowd.embedded.api.CrowdService;
+import com.atlassian.crowd.embedded.api.UserWithAttributes;
+import com.atlassian.crowd.model.user.User;
+import com.atlassian.jira.compatibility.bridge.application.ApplicationRoleManagerBridge;
+import com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketTeamService;
 import com.atlassian.jira.plugins.dvcs.model.Group;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
-import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.security.groups.GroupManager;
+import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.jira.software.api.roles.LicenseService;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.util.UserManager;
-import com.google.common.collect.Sets;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
+import static com.atlassian.jira.plugins.dvcs.listener.UserAddedExternallyEventProcessor.DVCS_TYPE_BITBUCKET;
+import static com.atlassian.jira.plugins.dvcs.listener.UserAddedExternallyEventProcessor.SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.fest.util.Sets.newLinkedHashSet;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings ("unchecked")
+@Listeners (MockitoTestNgListener.class)
 public class UserAddedExternallyEventProcessorTest
 {
-    @Mock
-    ApplicationUser userMock;
+    private static final String EMAIL = "jsmith@gmail.com";
+
+    private static final String USERNAME = "jsmith";
 
     @Mock
-    OrganizationService organizationServiceMock;
+    private ApplicationRoleManagerBridge applicationRoleManagerBridge;
 
     @Mock
-    DvcsCommunicatorProvider communicatorProviderMock;
+    private ApplicationUser applicationUser;
 
     @Mock
-    UserManager userManager;
+    private BitbucketTeamService bitbucketTeamService;
 
     @Mock
-    GroupManager groupManager;
+    private CrowdService crowdService;
 
     @Mock
-    DvcsCommunicator communicatorMock;
+    private DvcsCommunicator dvcsCommunicator;
 
-    @Captor
-    ArgumentCaptor<String> emailCaptor;
+    @Mock
+    private DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    @Captor
-    ArgumentCaptor<Collection<String>> slugsCaptor;
+    @Mock
+    private LicenseService licenseService;
 
-    // tested object
-    private UserAddedExternallyEventProcessor processor;
+    @Mock
+    private Organization organization1;
 
-    public UserAddedExternallyEventProcessorTest()
-    {
+    @Mock
+    private Organization organization2;
 
-    }
+    @Mock
+    private User user;
+
+    @InjectMocks
+    private UserAddedExternallyEventProcessor userAddedExternallyEventProcessor;
+
+    @Mock
+    private UserWithAttributes userWithAttributes;
 
     @BeforeMethod
-    public void setUp()
+    public void prepare()
     {
-        MockitoAnnotations.initMocks(this);
+        when(applicationUser.getDirectoryUser()).thenReturn(user);
+        when(user.getName()).thenReturn(USERNAME);
+        when(crowdService.getUserWithAttributes(USERNAME)).thenReturn(userWithAttributes);
 
-        when(userMock.getEmailAddress()).thenReturn(sampleEmail());
-        when(userManager.getUserByName(eq(sampleUsername()))).thenReturn(userMock);
+        when(dvcsCommunicatorProvider.getCommunicator(DVCS_TYPE_BITBUCKET)).thenReturn(dvcsCommunicator);
 
-        processor = new UserAddedExternallyEventProcessor(sampleUsername(), organizationServiceMock, communicatorProviderMock, userManager, groupManager);
+        when(applicationUser.getEmailAddress()).thenReturn(EMAIL);
 
-        when(communicatorProviderMock.getCommunicator(anyString())).thenReturn(communicatorMock);
+        when(organization1.getDefaultGroups()).thenReturn(newLinkedHashSet(new Group("developers"), new Group("administrators")));
+        when(organization1.getDvcsType()).thenReturn(DVCS_TYPE_BITBUCKET);
+
+        when(organization2.getDefaultGroups()).thenReturn(newLinkedHashSet(new Group("administrators")));
+        when(organization2.getDvcsType()).thenReturn(DVCS_TYPE_BITBUCKET);
+    }
+
+    @Test (expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenUserIsNull()
+    {
+        userAddedExternallyEventProcessor.process(null);
     }
 
     @Test
-    public void testRunShouldInvite()
+    public void shouldNotInviteUserWhenRunningInDarkAgesAndUserIsAServiceDeskCustomer()
     {
-        when(organizationServiceMock.getAll(false)).thenReturn(sampleOrganizations());
+        when(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY)).thenReturn(Boolean.TRUE.toString());
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1));
 
-        processor.run();
+        userAddedExternallyEventProcessor.process(applicationUser);
 
-        verify(communicatorMock).inviteUser(isA(Organization.class), slugsCaptor.capture(), emailCaptor.capture());
-
-        assertThat(slugsCaptor.getAllValues()).hasSize(1);
-        assertThat(slugsCaptor.getAllValues().get(0)).contains("A", "B");
-
-        assertThat(emailCaptor.getAllValues()).hasSize(1);
-        assertThat(emailCaptor.getAllValues().get(0)).isEqualTo(sampleEmail());
+        verifyZeroInteractions(dvcsCommunicator);
     }
-
 
     @Test
-    public void testRunNoDefaultGroupsShouldntInvite()
+    public void shouldInviteUserWhenRunningInDarkAgesAndUserIsNotAServiceDeskCustomer()
     {
-        when(organizationServiceMock.getAll(false)).thenReturn(Collections.EMPTY_LIST);
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1));
 
-        processor.run();
+        userAddedExternallyEventProcessor.process(applicationUser);
 
-        verifyNoMoreInteractions(communicatorMock);
+        verify(dvcsCommunicator).inviteUser(organization1, asList("developers", "administrators"), EMAIL);
     }
 
-
-    private List<Organization> sampleOrganizations()
+    @Test
+    public void shouldNotInviteUserWhenRunningInRenaissanceAndUserIsNotASoftwareUser()
     {
-        Organization org = new Organization();
-        org.setDefaultGroups(Sets.newHashSet(new Group("A"), new Group("B")));
-        return EasyList.build(org);
+        when(applicationRoleManagerBridge.isBridgeActive()).thenReturn(true);
+        when(applicationRoleManagerBridge.rolesEnabled()).thenReturn(true);
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1));
+
+        userAddedExternallyEventProcessor.process(applicationUser);
+
+        verifyZeroInteractions(dvcsCommunicator);
     }
 
-    private String sampleUsername()
+    @Test
+    public void shouldInviteUserWhenRunningInRenaissanceAndUserIsAServiceDeskCustomerAndASoftwareUser()
     {
-        return "principal";
+        when(applicationRoleManagerBridge.isBridgeActive()).thenReturn(true);
+        when(applicationRoleManagerBridge.rolesEnabled()).thenReturn(true);
+        when(licenseService.isSoftwareUser(applicationUser)).thenReturn(true);
+        when(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY)).thenReturn(Boolean.TRUE.toString());
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1));
+
+        userAddedExternallyEventProcessor.process(applicationUser);
+
+        verify(dvcsCommunicator).inviteUser(organization1, asList("developers", "administrators"), EMAIL);
     }
 
-    private String sampleEmail()
+    @Test
+    public void shouldNotInviteUserWhenThereAreNoBitbucketTeamsWithDefaultGroups()
     {
-        return "principal@example.com";
+        when(applicationRoleManagerBridge.isBridgeActive()).thenReturn(true);
+        when(applicationRoleManagerBridge.rolesEnabled()).thenReturn(true);
+        when(licenseService.isSoftwareUser(applicationUser)).thenReturn(true);
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
+
+        userAddedExternallyEventProcessor.process(applicationUser);
+
+        verifyZeroInteractions(dvcsCommunicator);
+    }
+
+    @Test
+    public void shouldInviteUserToMultipleBitbucketTeams()
+    {
+        when(applicationRoleManagerBridge.isBridgeActive()).thenReturn(true);
+        when(applicationRoleManagerBridge.rolesEnabled()).thenReturn(true);
+        when(licenseService.isSoftwareUser(applicationUser)).thenReturn(true);
+        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(asList(organization1, organization2));
+
+        userAddedExternallyEventProcessor.process(applicationUser);
+
+        verify(dvcsCommunicator).inviteUser(organization1, asList("developers", "administrators"), EMAIL);
+        verify(dvcsCommunicator).inviteUser(organization2, asList("administrators"), EMAIL);
     }
 }
 
