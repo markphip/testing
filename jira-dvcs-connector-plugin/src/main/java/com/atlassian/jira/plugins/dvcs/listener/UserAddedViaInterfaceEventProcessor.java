@@ -8,6 +8,7 @@ import com.atlassian.jira.user.ApplicationUser;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,6 +43,7 @@ public class UserAddedViaInterfaceEventProcessor
 
 	private final OrganizationService organizationService;
 
+    @Autowired
 	public UserAddedViaInterfaceEventProcessor(DvcsCommunicatorProvider dvcsCommunicatorProvider,
             OrganizationService organizationService)
 	{

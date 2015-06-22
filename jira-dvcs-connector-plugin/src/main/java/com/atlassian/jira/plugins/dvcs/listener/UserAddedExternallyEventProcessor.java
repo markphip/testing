@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -59,6 +60,7 @@ public class UserAddedExternallyEventProcessor
 
     private final LicenseService licenseService;
 
+    @Autowired
     public UserAddedExternallyEventProcessor(ApplicationRoleManagerBridge applicationRoleManagerBridge,
             BitbucketTeamService bitbucketTeamService, CrowdService crowdService,
             DvcsCommunicatorProvider dvcsCommunicatorProvider, @ComponentImport LicenseService licenseService)

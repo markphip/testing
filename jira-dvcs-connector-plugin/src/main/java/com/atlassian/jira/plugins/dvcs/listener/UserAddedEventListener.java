@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static com.atlassian.jira.user.ApplicationUsers.toDirectoryUser;
@@ -55,6 +56,7 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
 
     private final UserManager userManager;
 
+    @Autowired
     public UserAddedEventListener(@ComponentImport CrowdService crowdService,
             @ComponentImport EventPublisher eventPublisher, @ComponentImport UserManager userManager)
     {

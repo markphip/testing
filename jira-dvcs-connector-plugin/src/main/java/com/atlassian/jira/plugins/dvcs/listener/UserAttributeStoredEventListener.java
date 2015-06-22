@@ -7,6 +7,7 @@ import com.atlassian.fugue.Option;
 import com.google.common.annotations.VisibleForTesting;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -34,6 +35,7 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
 
     private final FirstLoginHandler firstLoginHandler;
 
+    @Autowired
     public UserAttributeStoredEventListener(EventPublisher eventPublisher, FirstLoginHandler firstLoginHandler)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
