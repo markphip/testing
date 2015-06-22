@@ -9,3 +9,8 @@
 #bitbucket-access-inline-dialog-content li+li {
     margin-top: 10px;
 }
+
+#bitbucket-access-inline-dialog-content .aui-inline-dialog-contents {
+    max-height: 200px;
+    overflow-y: auto;
+}
