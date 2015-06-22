@@ -104,9 +104,9 @@ public class UserAddedViaInterfaceEventProcessor
             }
 
             checkState(organization.getDvcsType().equals(DVCS_TYPE_BITBUCKET), "Expecting Bitbucket organizations only");
-            dvcsCommunicator.inviteUser(organization, groups, user.getEmailAddress());
-            LOGGER.debug("Invited user {} to groups {} in organization {}",
+            LOGGER.debug("Inviting user {} to groups {} in organization {}",
                     new String[] {user.getUsername(), groups.toString(), organization.getName()});
+            dvcsCommunicator.inviteUser(organization, groups, user.getEmailAddress());
         }
     }
 }
