@@ -4,6 +4,8 @@ import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.fugue.Option;
+import com.atlassian.jira.software.api.roles.LicenseService;
+import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.google.common.annotations.VisibleForTesting;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,11 +38,15 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
 
     private final FirstLoginHandler firstLoginHandler;
 
+    private final LicenseService licenseService;
+
     @Autowired
-    public UserAttributeStoredEventListener(EventPublisher eventPublisher, FirstLoginHandler firstLoginHandler)
+    public UserAttributeStoredEventListener(EventPublisher eventPublisher, FirstLoginHandler firstLoginHandler,
+            @ComponentImport LicenseService licenseService)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.firstLoginHandler = checkNotNull(firstLoginHandler);
+        this.licenseService = checkNotNull(licenseService);
         
     }
 
@@ -50,11 +56,17 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
         checkArgument(event != null, "Expecting event to be non-null");
         checkArgument(event.getUser() != null, "Expecting event to contain a non-null user");
 
-        Option<Integer> optionalLoginCount = getLoginCount(event);
-        if (optionalLoginCount.isDefined() && optionalLoginCount.get().equals(1))
+        if (isFirstLogin(event)
+            && licenseService.hasActiveSoftwareLicense())
         {
             firstLoginHandler.onFirstLogin(event.getUser().getName());
         }
+    }
+
+    private boolean isFirstLogin(UserAttributeStoredEvent event)
+    {
+        Option<Integer> optionalLoginCount = getLoginCount(event);
+        return optionalLoginCount.isDefined() && optionalLoginCount.get().equals(1);
     }
 
     private Option<Integer> getLoginCount(UserAttributeStoredEvent event)

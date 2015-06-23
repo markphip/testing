@@ -4,6 +4,7 @@ import com.atlassian.crowd.event.user.UserAttributeStoredEvent;
 import com.atlassian.crowd.model.user.User;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
+import com.atlassian.jira.software.api.roles.LicenseService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
@@ -37,6 +38,9 @@ public class UserAttributeStoredEventListenerTest
     private FirstLoginHandler firstLoginHandler;
 
     @Mock
+    private LicenseService licenseService;
+
+    @Mock
     private User user;
 
     @Mock
@@ -50,6 +54,7 @@ public class UserAttributeStoredEventListenerTest
     {
         when(user.getName()).thenReturn(USERNAME);
         when(userAttributeStoredEvent.getUser()).thenReturn(user);
+        when(licenseService.hasActiveSoftwareLicense()).thenReturn(true);
     }
 
     @Test (expectedExceptions = IllegalArgumentException.class)
@@ -122,6 +127,17 @@ public class UserAttributeStoredEventListenerTest
         userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
 
         verify(firstLoginHandler).onFirstLogin(argThat(equalTo(USERNAME)));
+    }
+
+    @Test
+    public void shouldDoNothingWhenLoginCountIsOneAndButHasNoActiveSoftwareLicense()
+    {
+        givenUserAttributeStoredEventWithAttributes(of(USER_ATTRIBUTE_KEY_LOGIN_COUNT, newHashSet("1")));
+        when(licenseService.hasActiveSoftwareLicense()).thenReturn(false);
+
+        userAttributeStoredEventListener.onUserAttributeStore(userAttributeStoredEvent);
+
+        verifyZeroInteractions(firstLoginHandler);
     }
 
     @Test
