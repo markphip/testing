@@ -81,7 +81,8 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
         }
         catch (OperationNotPermittedException ex)
         {
-            throw new RuntimeException("Failed to process event with payload: " + event.getRequestParameters(), ex);
+            throw new RuntimeException("Failed to add Bitbucket teams attribute for user " + user.getName() +
+                    ". Bitbucket teams attribute: '" + userInvitationAttribute + "'", ex);
         }
     }
 
