@@ -77,7 +77,6 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
         {
             crowdService.setUserAttribute(toDirectoryUser(user),
                     UI_USER_INVITATIONS_PARAM_NAME, singleton(userInvitationAttribute));
-
         }
         catch (OperationNotPermittedException ex)
         {
