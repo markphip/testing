@@ -5,7 +5,6 @@ import com.atlassian.crowd.exception.OperationNotPermittedException;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.event.web.action.admin.UserAddedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
@@ -114,7 +113,6 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
         if (organizationIdsAndGroupSlugs != null)
         {
             userInvitationAttribute = Joiner.on(ORG_ID_GROUP_PAIR_SEPARATOR).join(organizationIdsAndGroupSlugs);
-            eventPublisher.publish(new DvcsAddUserAnalyticsEvent());
         }
 
         return userInvitationAttribute;
