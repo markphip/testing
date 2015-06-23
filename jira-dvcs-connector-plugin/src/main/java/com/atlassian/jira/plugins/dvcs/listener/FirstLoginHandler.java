@@ -14,6 +14,12 @@ import static com.atlassian.jira.plugins.dvcs.listener.UserAddedEventListener.UI
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Listens for users' first login and determines the best way to get them invited to Bitbucket. If the user was provisioned
+ * via the create user screen, we can read their Crowd attributes to work out what teams they should be invited to.
+ *
+ * If the user was provisioned by other means, we can look up Bitbucket teams that are configured with default groups.
+ */
 @Component
 public class FirstLoginHandler
 {
