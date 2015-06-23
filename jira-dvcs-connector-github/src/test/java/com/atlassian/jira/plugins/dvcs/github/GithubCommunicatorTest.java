@@ -253,8 +253,6 @@ public class GithubCommunicatorTest
     public void initializeMocksAndGithubCommunicator()
     {
         MockitoAnnotations.initMocks(this);
-
-
         otherRepo.setFork(false);
         otherRepo.setOwner(owner);
         otherRepo.setName(REPO_NAME);
