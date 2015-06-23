@@ -1,0 +1,298 @@
+{
+  "jira.dvcsconnector.adduser.bitbucketinvitation": [],
+  "jira.dvcsconnector.commit.linkclick": [
+    {
+      "data": [
+        "user",
+        "commit",
+        "file",
+        "morefiles"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.commit.tabshowing": [
+    "authenticated",
+    {
+      "source": [
+        "issue",
+        "agile"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.commit.tabclick": [
+    "authenticated",
+    {
+      "source": [
+        "issue",
+        "agile"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.bitbucket.ended": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.github.ended": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.githubenterprise.ended": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.bitbucket.started": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.github.started": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.githubenterprise.started": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.bitbucket.ended.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.github.ended.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.githubenterprise.ended.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.bitbucket.ended.failed": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.github.ended.failed": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.githubenterprise.ended.failed": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.bitbucket.started.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.github.started.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.githubenterprise.started.succeeded": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    },
+    {
+      "reason": [
+        "",
+        "oauth.generic",
+        "oauth.sourcecontrol",
+        "oauth.response",
+        "oauth.token",
+        "oauth.unauth",
+        "validation"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.sync.start": [
+    "soft",
+    "commits",
+    "pullrequests",
+    "webhook"
+  ],
+  "jira.dvcsconnector.sync.end": [
+    "soft",
+    "commits",
+    "pullrequests",
+    "webhook",
+    "finishedOn",
+    "tookMillis"
+  ],
+  "jira.dvcsconnector.bitbucketinvitation.adduser": [],
+  "jira.dvcsconnector.bitbucketinvitation.sent": [],
+  "jira.dvcsconnector.bitbucketinvitation.group.updated": ["groupsEnabled"],
+  "jira.dvcsconnector.config.shown": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.started": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ],
+  "jira.dvcsconnector.config.add.cancelled": [
+    {
+      "source": [
+        "unknown",
+        "devtools"
+      ]
+    }
+  ]
+}
+
+
+
+
+
+
+

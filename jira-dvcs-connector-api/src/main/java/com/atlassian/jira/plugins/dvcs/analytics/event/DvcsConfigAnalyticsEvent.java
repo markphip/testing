@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.analytics;
+package com.atlassian.jira.plugins.dvcs.analytics.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -10,22 +10,22 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public abstract class DvcsConfigAnalyticsEvent
 {
+
     protected final String source;
     protected final String prefix;
 
-    protected DvcsConfigAnalyticsEvent(String source, String prefix)
+    protected DvcsConfigAnalyticsEvent(Source source, String prefix)
     {
-        this.source = source;
+        this.source = source.toString();
         this.prefix = prefix;
     }
 
     @EventName
     public String determineEventName()
     {
-        return "jira.dvcsconnector.config." + prefix + "." + source;
+        return "jira.dvcsconnector.config." + prefix;
     }
 
-    // using EqualsBuilder and HashCodeBuilder here as they are used in tests only
     @Override
     public boolean equals(Object o)
     {
@@ -43,4 +43,10 @@ public abstract class DvcsConfigAnalyticsEvent
     {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    public String getSource()
+    {
+        return source;
+    }
+
 }

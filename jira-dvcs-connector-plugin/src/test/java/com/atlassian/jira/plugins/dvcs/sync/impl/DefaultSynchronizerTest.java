@@ -8,6 +8,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
+import com.atlassian.jira.plugins.dvcs.analytics.AnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.dao.BranchDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
@@ -285,6 +286,9 @@ public class DefaultSynchronizerTest
 
     @Mock
     private ClusterLock clusterLock;
+
+    @Mock
+    private AnalyticsService analyticsService;
 
     @BeforeMethod
     public void setUp() throws Exception

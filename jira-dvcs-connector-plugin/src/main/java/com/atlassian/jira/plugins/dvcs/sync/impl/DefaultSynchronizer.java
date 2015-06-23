@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.DvcsErrorMessages;
 import com.atlassian.jira.plugins.dvcs.ProgressUtil;
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.SyncAuditLogMapping;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsSyncStartAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsSyncStartAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.RepositorySync;
