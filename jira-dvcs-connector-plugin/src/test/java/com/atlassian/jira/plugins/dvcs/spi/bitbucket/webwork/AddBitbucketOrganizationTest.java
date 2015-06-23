@@ -271,7 +271,7 @@ public class AddBitbucketOrganizationTest
         assertThat(response, equalTo(Action.NONE));
 
         verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET, Outcome.FAILED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
     }
 

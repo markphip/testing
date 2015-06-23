@@ -26,7 +26,6 @@ public abstract class DvcsConfigAnalyticsEvent
         return "jira.dvcsconnector.config." + prefix;
     }
 
-    // using EqualsBuilder and HashCodeBuilder here as they are used in tests only
     @Override
     public boolean equals(Object o)
     {
