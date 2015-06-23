@@ -20,7 +20,7 @@ import java.util.Set;
  * A {@link Runnable} processor that handles logic beside invitations for user added to JIRA i.e. via crowd so not via
  * user interface.
  */
-public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable
+public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProcessor implements Runnable, UserInviteChecker
 {
 
     private static final Logger log = LoggerFactory.getLogger(UserAddedExternallyEventProcessor.class);
@@ -50,7 +50,6 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
     @Override
     public void run()
     {
-
         log.debug("Running UserAddedExternallyEventProcessor ...");
 
         ApplicationUser user = userManager.getUserByName(username);
@@ -78,7 +77,6 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
                 communicator.inviteUser(organization, slugsStrings, user.getEmailAddress());
             }
         }
-
     }
 
     /**
@@ -101,5 +99,26 @@ public class UserAddedExternallyEventProcessor extends UserInviteCommonEventProc
             slugs.add(group.getSlug());
         }
         return slugs;
+    }
+
+    @Override
+    public boolean willReceiveGroupInvite()
+    {
+        List<Organization> defaultOrganizations = organizationService.getAll(false);
+
+        if (CollectionUtils.isEmpty(defaultOrganizations))
+        {
+            return false;
+        }
+
+        for (Organization organization : defaultOrganizations)
+        {
+            Set<Group> groupSlugs = organization.getDefaultGroups();
+            if (CollectionUtils.isNotEmpty(groupSlugs))
+            {
+             return true;
+            }
+        }
+        return false;
     }
 }

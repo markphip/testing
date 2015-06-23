@@ -4,7 +4,8 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.compatibility.bridge.project.UnlicensedProjectPageRendererBridge;
 import com.atlassian.jira.config.CoreFeatures;
 import com.atlassian.jira.config.FeatureManager;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigPageShownAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigPageShownAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.listener.PluginFeatureDetector;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -72,7 +73,8 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
     private final UnlicensedProjectPageRendererBridge unlicensedProjectPageRendererBridge;
 
     private String postCommitRepositoryType;
-    private String source;
+    private String source = DEFAULT_SOURCE;
+
 
     @Autowired
     public ConfigureDvcsOrganizations(@ComponentImport EventPublisher eventPublisher,
@@ -207,9 +209,16 @@ public class ConfigureDvcsOrganizations extends JiraWebActionSupport
         return source;
     }
 
-    public String getSourceOrDefault()
+    public Source getSourceOrDefault()
     {
-        return StringUtils.defaultIfEmpty(source, DEFAULT_SOURCE);
+        if (StringUtils.isNotBlank(source))
+        {
+            return Source.valueOf(source.toUpperCase());
+        }
+        else
+        {
+            return Source.UNKNOWN;
+        }
     }
 
     public void setSource(String source)

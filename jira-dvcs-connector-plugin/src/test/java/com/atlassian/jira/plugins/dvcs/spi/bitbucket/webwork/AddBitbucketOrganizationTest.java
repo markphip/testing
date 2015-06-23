@@ -3,8 +3,12 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.junit.rules.AvailableInContainer;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Outcome;
+import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -36,14 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_TOKEN;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_UNAUTH;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_FAILED;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
-import static com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork.AddBitbucketOrganization.EVENT_TYPE_BITBUCKET;
-import static com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction.DEFAULT_SOURCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -58,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 public class AddBitbucketOrganizationTest
 {
-    private static final String SAMPLE_SOURCE = "src";
+    private static final String SAMPLE_SOURCE = "devtools";
     private static final String SAMPLE_XSRF_TOKEN = "xsrfToken";
     private static final String SAMPLE_AUTH_URL = "http://authurl.com";
 
@@ -165,7 +161,7 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.setSource(SAMPLE_SOURCE);
         String ret = addBitbucketOrganization.doExecute();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
         verifyNoMoreInteractions(response);
@@ -177,7 +173,7 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.setSource(null);
         String ret = addBitbucketOrganization.doExecute();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(DEFAULT_SOURCE, EVENT_TYPE_BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
         verifyNoMoreInteractions(response);
@@ -191,8 +187,8 @@ public class AddBitbucketOrganizationTest
         when(oAuthService.getRequestToken()).thenThrow(OAuthException.class);
         String ret = addBitbucketOrganization.doExecute();
         assertThat(ret, equalTo(Action.INPUT));
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_OAUTH_TOKEN));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET, Outcome.FAILED, FailureReason.OAUTH_TOKEN));
         verifyNoMoreInteractions(eventPublisher);
         verifyNoMoreInteractions(response);
     }
@@ -203,7 +199,7 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.setSource(SAMPLE_SOURCE);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN + "&source=" + SAMPLE_SOURCE));
         verifyNoMoreInteractions(response);
@@ -215,7 +211,7 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.setSource(null);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(DEFAULT_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN)); // source parameter skipped
         verifyNoMoreInteractions(response);
@@ -228,7 +224,7 @@ public class AddBitbucketOrganizationTest
         when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.UnauthorisedException.class);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_OAUTH_UNAUTH));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET, Outcome.FAILED, FailureReason.OAUTH_UNAUTH));
         verifyNoMoreInteractions(eventPublisher);
         verifyNoMoreInteractions(response);
     }
@@ -241,7 +237,7 @@ public class AddBitbucketOrganizationTest
         when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.class);
         String ret = addBitbucketOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_OAUTH_SOURCECONTROL));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET, Outcome.FAILED, FailureReason.OAUTH_SOURCECONTROL));
         verifyNoMoreInteractions(eventPublisher);
         verifyNoMoreInteractions(response);
     }
@@ -252,7 +248,7 @@ public class AddBitbucketOrganizationTest
         addBitbucketOrganization.setSource(SAMPLE_SOURCE);
         addBitbucketOrganization.setOrganization(null); // cause validation error
         addBitbucketOrganization.doValidation();
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_VALIDATION));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.BITBUCKET, Outcome.FAILED, FailureReason.VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
 
@@ -264,7 +260,6 @@ public class AddBitbucketOrganizationTest
         final AccountInfo accountInfo = mock(AccountInfo.class);
         when(organizationService.getAccountInfo(anyString(), anyString(), Mockito.eq(BitbucketCommunicator.BITBUCKET))).thenReturn(accountInfo);
         addBitbucketOrganization.doValidation();
-//        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_BITBUCKET, OUTCOME_FAILED, FAILED_REASON_VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
 
@@ -275,8 +270,8 @@ public class AddBitbucketOrganizationTest
         String response = addBitbucketOrganization.doExecute();
         assertThat(response, equalTo(Action.NONE));
 
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent("unknown", EVENT_TYPE_BITBUCKET, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.BITBUCKET, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
     }
 

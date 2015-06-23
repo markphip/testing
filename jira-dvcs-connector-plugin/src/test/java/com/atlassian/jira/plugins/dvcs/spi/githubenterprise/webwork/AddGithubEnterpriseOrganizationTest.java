@@ -3,8 +3,12 @@ package com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.junit.rules.AvailableInContainer;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
+import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Outcome;
+import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -25,13 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_GENERIC;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_OAUTH_SOURCECONTROL;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.FAILED_REASON_VALIDATION;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_FAILED;
-import static com.atlassian.jira.plugins.dvcs.analytics.DvcsConfigAddEndedAnalyticsEvent.OUTCOME_SUCCEEDED;
-import static com.atlassian.jira.plugins.dvcs.spi.githubenterprise.webwork.AddGithubEnterpriseOrganization.EVENT_TYPE_GITHUB_ENTERPRISE;
-import static com.atlassian.jira.plugins.dvcs.webwork.CommonDvcsConfigurationAction.DEFAULT_SOURCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -45,7 +42,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class AddGithubEnterpriseOrganizationTest {
-    private static final String SAMPLE_SOURCE = "src";
+    private static final String SAMPLE_SOURCE = "devtools";
     private static final String SAMPLE_XSRF_TOKEN = "xsrfToken";
     private static final String SAMPLE_AUTH_URL = "http://authurl.com";
 
@@ -149,7 +146,7 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setSource(SAMPLE_SOURCE);
         String ret = addGithubEnterpriseOrganization.doExecute();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.DEVTOOLS, DvcsType.GITHUB_ENTERPRISE));
         verifyNoMoreInteractions(eventPublisher);
 //        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL + "&t=2)); ??
 //        verifyNoMoreInteractions(response);
@@ -160,7 +157,7 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setSource(null);
         String ret = addGithubEnterpriseOrganization.doExecute();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(DEFAULT_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE));
+        verify(eventPublisher).publish(new DvcsConfigAddStartedAnalyticsEvent(Source.UNKNOWN, DvcsType.GITHUB_ENTERPRISE));
         verifyNoMoreInteractions(eventPublisher);
 //        verify(response).sendRedirect(eq(SAMPLE_AUTH_URL));
 //        verifyNoMoreInteractions(response);
@@ -172,7 +169,7 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setSource(SAMPLE_SOURCE);
         String ret = addGithubEnterpriseOrganization.doFinish();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.GITHUB_ENTERPRISE, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN + "&source=" + SAMPLE_SOURCE));
         verifyNoMoreInteractions(response);
@@ -184,7 +181,7 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setSource(null);
         String ret = addGithubEnterpriseOrganization.doFinish();
         assertThat(ret, equalTo(Action.NONE));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(DEFAULT_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE, OUTCOME_SUCCEEDED, null));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.UNKNOWN, DvcsType.GITHUB_ENTERPRISE, Outcome.SUCCEEDED, null));
         verifyNoMoreInteractions(eventPublisher);
         verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN)); // source parameter skipped
         verifyNoMoreInteractions(response);
@@ -197,7 +194,7 @@ public class AddGithubEnterpriseOrganizationTest {
         when(organizationService.save(any(Organization.class))).thenThrow(Exception.class);
         String ret = addGithubEnterpriseOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE, OUTCOME_FAILED, FAILED_REASON_OAUTH_GENERIC));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.GITHUB_ENTERPRISE, Outcome.FAILED, FailureReason.OAUTH_GENERIC));
         verifyNoMoreInteractions(eventPublisher);
         verifyNoMoreInteractions(response);
     }
@@ -210,7 +207,7 @@ public class AddGithubEnterpriseOrganizationTest {
         when(organizationService.save(any(Organization.class))).thenThrow(SourceControlException.class);
         String ret = addGithubEnterpriseOrganization.doFinish();
         assertThat(ret, equalTo(Action.INPUT));
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE, OUTCOME_FAILED, FAILED_REASON_OAUTH_SOURCECONTROL));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.GITHUB_ENTERPRISE, Outcome.FAILED, FailureReason.OAUTH_SOURCECONTROL));
         verifyNoMoreInteractions(eventPublisher);
         verifyNoMoreInteractions(response);
     }
@@ -221,7 +218,7 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setSource(SAMPLE_SOURCE);
         addGithubEnterpriseOrganization.setOrganization(null); // cause validation error
         addGithubEnterpriseOrganization.doValidation();
-        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(SAMPLE_SOURCE, EVENT_TYPE_GITHUB_ENTERPRISE, OUTCOME_FAILED, FAILED_REASON_VALIDATION));
+        verify(eventPublisher).publish(new DvcsConfigAddEndedAnalyticsEvent(Source.DEVTOOLS, DvcsType.GITHUB_ENTERPRISE, Outcome.FAILED, FailureReason.VALIDATION));
         verifyNoMoreInteractions(eventPublisher);
     }
 

@@ -996,8 +996,7 @@ function getSourceDiv()
 
 function triggerAnalyticsEvent(eventType) {
     if (AJS.EventQueue) {
-        var source = getSourceDiv().data("sourceOrDefault");
-        AJS.EventQueue.push({name: "jira.dvcsconnector.config." + eventType + "." + source});
+        AJS.EventQueue.push({name: "jira.dvcsconnector.config." + eventType, properties:{source:getSourceDiv().data("sourceOrDefault")}});
     }
 }
 
