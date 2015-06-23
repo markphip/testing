@@ -158,9 +158,7 @@
         <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition" invert="true">
-                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
-            </condition>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" invert="true" />
         </conditions>
     </web-item>
 
@@ -174,9 +172,7 @@
         <link linkId="bitbucket_bulk_repo">/secure/admin/ConfigureDvcsOrganizations!default.jspa</link>
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugin.webfragment.conditions.IsFeatureEnabledCondition">
-                <param name="featureKey">com.atlassian.jira.config.CoreFeatures.LICENSE_ROLES_ENABLED</param>
-            </condition>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
         </conditions>
     </web-item>
 
@@ -278,6 +274,33 @@
 
     <!-- Web Panels -->
     <web-panel key="add-user-dvcs-extension" weight="2000" location="webpanels.admin.adduser"
-               class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel"/>
+               class="com.atlassian.jira.plugins.dvcs.adduser.AddUserDvcsExtensionWebPanel">
+        <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" invert="true" />
+    </web-panel>
 
+    <web-panel key="add-user-bitbucket-access-extension" location="webpanels.admin.adduser.applicationaccess">
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
+        </conditions>
+        <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider" />
+        <resource name="view" type="velocity" location="/templates/dvcs/add-user-bitbucket-access-extension.vm"/>
+    </web-panel>
+
+    <web-resource key="add-user-bitbucket-access-components">
+        <resource type="download" name="dvcs-bitbucket-access.js" location="javascripts/bitbucket-access.js" />
+        <resource type="download" name="dvcs-add-user-form.js" location="javascripts/add-user-form.js" />
+        <resource type="download" name="dvcs-bitbucket-access-controller.js" location="javascripts/bitbucket-access-controller.js" />
+    </web-resource>
+    <resource type="qunit" name="javascripts/bitbucket-access-test.js" location="javascripts/bitbucket-access-test.js" />
+    <resource type="qunit" name="javascripts/add-user-form-test.js" location="javascripts/add-user-form-test.js" />
+    <resource type="qunit" name="javascripts/bitbucket-access-controller-test.js" location="javascripts/bitbucket-access-controller-test.js" />
+
+    <web-resource key="add-user-bitbucket-access-extension-resources">
+        <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-components</dependency>
+
+        <resource type="download" name="add-user-bitbucket-access-extension.css" location="css/add-user-bitbucket-access-extension.css"/>
+        <resource type="download" name="add-user-bitbucket-access-extension.js" location="javascripts/add-user-bitbucket-access-extension.js"/>
+    </web-resource>
 </atlassian-plugin>

@@ -98,6 +98,8 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
     private static final String COMMIT_NODE = "aaa";
     private static final String COMMIT_NODE_2 = "bbb";
     private static final String COMMIT_NODE_ORIGINAL = "original";
+    
+    private static final Long SOURCE_ID = 123456L;
 
     @Mock
     private MessagingService messagingService;
@@ -843,6 +845,7 @@ public class BitbucketSynchronizeActivityMessageConsumerTest
 
         source.setClosedBy(createAccount(closedBy));
         source.setState(prStatus.name());
+        source.setId(SOURCE_ID);
 
         RepositoryPullRequestMapping prMapping = testedClass.toDaoModelPullRequest(source, repository, pullRequestMapping, 0);
 

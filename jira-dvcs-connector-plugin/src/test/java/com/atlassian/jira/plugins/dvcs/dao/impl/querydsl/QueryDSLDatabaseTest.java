@@ -113,6 +113,7 @@ public abstract class QueryDSLDatabaseTest extends ActiveObjectsIntegrationTest
 
         pullRequestMappingWithIssue = pullRequestAOPopulator.createPR("PR FOR" + ISSUE_KEY, ISSUE_KEY, enabledRepository);
         pullRequestParticipant = pullRequestAOPopulator.createParticipant("hoo", false, "reviewer", pullRequestMappingWithIssue);
+
         pullRequestMappingWithIssue = entityManager.get(RepositoryPullRequestMapping.class, pullRequestMappingWithIssue.getID());
 
         branchMappingWithIssue = branchAOPopulator.createBranch("something branch", ISSUE_KEY, enabledRepository);
