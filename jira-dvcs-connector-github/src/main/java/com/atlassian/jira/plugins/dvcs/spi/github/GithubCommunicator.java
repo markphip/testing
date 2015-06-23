@@ -237,7 +237,7 @@ public class GithubCommunicator implements DvcsCommunicator
                     }
                     else if (ghRepository.isFork() && /*is new repo*/ !storedReposMap.containsKey(repoName))
                     {
-                        tryFindAndSetForkOf(repositoryService, ghRepository, repository);
+                        tryToFindForkOfInfoAndSetIfFound(repositoryService, ghRepository, repository);
                     }
                     repositories.add(repository);
                 }
@@ -260,11 +260,19 @@ public class GithubCommunicator implements DvcsCommunicator
         }
     }
 
-    private void tryFindAndSetForkOf(RepositoryService repositoryService, org.eclipse.egit.github.core.Repository ghRepository,
-            Repository repository) throws IOException
+    private void tryToFindForkOfInfoAndSetIfFound(RepositoryService repositoryService, org.eclipse.egit.github.core.Repository ghRepository,
+            Repository repository)
     {
-        org.eclipse.egit.github.core.Repository repoDetail = repositoryService.getRepository(ghRepository.getOwner().getLogin(), ghRepository.getName());
-        setForkOfInfo(repoDetail.getParent(), repository);
+        try
+        {
+            org.eclipse.egit.github.core.Repository repoDetail = repositoryService.getRepository(ghRepository.getOwner().getLogin(), ghRepository.getName());
+            setForkOfInfo(repoDetail.getParent(), repository);
+        }
+        catch (IOException e)
+        {
+            log.info("Attempt to find fork of " + ghRepository.getName()+ " failed", e);
+            ghRepository.setFork(false);
+        }
     }
 
     private void setForkOfInfo(org.eclipse.egit.github.core.Repository parentRepository, Repository repositoryTo)
