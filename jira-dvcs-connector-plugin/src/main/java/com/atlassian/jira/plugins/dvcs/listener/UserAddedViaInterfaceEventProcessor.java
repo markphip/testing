@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.atlassian.jira.plugins.dvcs.listener.UserAddedEventListener.ORG_ID_GROUP_PAIR_SEPARATOR;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
@@ -24,7 +23,7 @@ import static java.lang.Integer.parseInt;
 import static java.util.Map.Entry;
 
 /**
- * Invites users that were created via the 'Create user' screen to Bitbucket teams. Selections made by the administrator
+ * Invites users who were created via the 'Create user' screen to Bitbucket teams. Selections made by the administrator
  * who provisioned this user are used to determine the list of teams and groups that users will get invited to.
  *
  * Current default teams have no impact on teams and groups that users will get invited to.
@@ -37,38 +36,38 @@ public class UserAddedViaInterfaceEventProcessor
     @VisibleForTesting
     static final String DVCS_TYPE_BITBUCKET = "bitbucket";
 
-	private static final String ORG_ID_GROUP_DELIMITER = ":";
+    private static final String ORG_ID_GROUP_DELIMITER = ":";
 
     private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-	private final OrganizationService organizationService;
+    private final OrganizationService organizationService;
 
     @Autowired
-	public UserAddedViaInterfaceEventProcessor(DvcsCommunicatorProvider dvcsCommunicatorProvider,
+    public UserAddedViaInterfaceEventProcessor(DvcsCommunicatorProvider dvcsCommunicatorProvider,
             OrganizationService organizationService)
-	{
+    {
         this.dvcsCommunicatorProvider = checkNotNull(dvcsCommunicatorProvider);
-		this.organizationService = checkNotNull(organizationService);
-	}
+        this.organizationService = checkNotNull(organizationService);
+    }
 
-	public void process(ApplicationUser user, String serializedUISelection)
-	{
-        checkArgument(user != null, "Expecting a non-null user");
-        checkArgument(user.getEmailAddress() != null, "Expecting a non-null email address for the user");
-        checkArgument(serializedUISelection != null, "Expecting a non-null serialized UI selection");
+    public void process(ApplicationUser user, String serializedUISelection)
+    {
+        checkNotNull(user != null, "Expecting a non-null user");
+        checkNotNull(user.getEmailAddress() != null, "Expecting a non-null email address for the user");
+        checkNotNull(serializedUISelection != null, "Expecting a non-null serialized UI selection");
 
-		if (serializedUISelection.trim().isEmpty())
-		{
-			return;
-		}
+        if (serializedUISelection.trim().isEmpty())
+        {
+            return;
+        }
 
-		Map<Integer,List<String>> groupsByOrganizationId = parseSerializedUISelection(serializedUISelection);
+        Map<Integer,List<String>> groupsByOrganizationId = parseSerializedUISelection(serializedUISelection);
         inviteUserToOrganizations(user, groupsByOrganizationId);
-	}
+    }
 
     private Map<Integer, List<String>> parseSerializedUISelection(String serializedUISelection)
     {
-        Map<Integer, List<String>> groupsByOrganizationId = newHashMap();
+        final Map<Integer, List<String>> groupsByOrganizationId = newHashMap();
 
         for (String orgIdGroupPairStr : serializedUISelection.split(ORG_ID_GROUP_PAIR_SEPARATOR))
         {
@@ -101,13 +100,13 @@ public class UserAddedViaInterfaceEventProcessor
             if (organization == null)
             {
                 LOGGER.warn("Skipped inviting user {} to groups {} in organization with id {} because such organization does not exist",
-                        new String[] {user.getUsername(), groups.toString(), orgId.toString()});
+                        new Object[] {user.getUsername(), groups, orgId});
                 continue;
             }
 
-            checkState(organization.getDvcsType().equals(DVCS_TYPE_BITBUCKET), "Expecting Bitbucket organizations only");
+            checkState(DVCS_TYPE_BITBUCKET.equals(organization.getDvcsType()), "Expecting Bitbucket organizations only");
             LOGGER.debug("Inviting user {} to groups {} in organization {}",
-                    new String[] {user.getUsername(), groups.toString(), organization.getName()});
+                    new Object[] {user.getUsername(), groups, organization.getName()});
             dvcsCommunicator.inviteUser(organization, groups, user.getEmailAddress());
         }
     }

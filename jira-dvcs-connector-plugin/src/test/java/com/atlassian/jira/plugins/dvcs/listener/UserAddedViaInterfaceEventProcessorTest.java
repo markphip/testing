@@ -63,24 +63,16 @@ public class UserAddedViaInterfaceEventProcessorTest
         when(organization2.getDvcsType()).thenReturn(DVCS_TYPE_BITBUCKET);
     }
 
-    @Test (expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionWhenSerialisedSelectionFromUIIsNull()
+    @Test (expectedExceptions = NullPointerException.class)
+    public void shouldThrowNullPointerExceptionWhenSerialisedSelectionFromUIIsNull()
     {
         userAddedViaInterfaceEventProcessor.process(applicationUser, null);
     }
 
-    @Test (expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionWhenUserIsNull()
+    @Test (expectedExceptions = NullPointerException.class)
+    public void shouldThrowNullPointerExceptionWhenUserIsNull()
     {
         userAddedViaInterfaceEventProcessor.process(null, SINGLE_TEAM_UI_SELECTION);
-    }
-
-    @Test (expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionWhenUserEmailIsNull()
-    {
-        when(applicationUser.getEmailAddress()).thenReturn(null);
-
-        userAddedViaInterfaceEventProcessor.process(applicationUser, SINGLE_TEAM_UI_SELECTION);
     }
 
     @Test
