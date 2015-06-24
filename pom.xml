@@ -73,7 +73,7 @@
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <org.eclipse.jgit.version>2.2.0.201212191850-r</org.eclipse.jgit.version>
         <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
-        <pocketknife.version>0.67</pocketknife.version>
+        <pocketknife.version>0.77</pocketknife.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <querydsl.version>3.5.0</querydsl.version>
         <streams.version>5.3.14</streams.version>
