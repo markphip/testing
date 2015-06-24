@@ -41,13 +41,12 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
     private final LicenseService licenseService;
 
     @Autowired
-    public UserAttributeStoredEventListener(EventPublisher eventPublisher, FirstLoginHandler firstLoginHandler,
+    public UserAttributeStoredEventListener(@ComponentImport EventPublisher eventPublisher, FirstLoginHandler firstLoginHandler,
             @ComponentImport LicenseService licenseService)
     {
         this.eventPublisher = checkNotNull(eventPublisher);
         this.firstLoginHandler = checkNotNull(firstLoginHandler);
         this.licenseService = checkNotNull(licenseService);
-        
     }
 
     @EventListener
@@ -63,21 +62,21 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
         }
     }
 
-    private boolean isFirstLogin(UserAttributeStoredEvent event)
+    private boolean isFirstLogin(final UserAttributeStoredEvent event)
     {
-        Option<Integer> optionalLoginCount = getLoginCount(event);
+        final Option<Integer> optionalLoginCount = getLoginCount(event);
         return optionalLoginCount.isDefined() && optionalLoginCount.get().equals(1);
     }
 
-    private Option<Integer> getLoginCount(UserAttributeStoredEvent event)
+    private Option<Integer> getLoginCount(final UserAttributeStoredEvent event)
     {
-        Set<String> attributeValues = getAttributeValues(event, USER_ATTRIBUTE_KEY_LOGIN_COUNT);
+        final Set<String> attributeValues = getAttributeValues(event, USER_ATTRIBUTE_KEY_LOGIN_COUNT);
         if (attributeValues == null || attributeValues.size() != 1)
         {
             return none();
         }
 
-        String attributeValue = getOnlyElement(attributeValues);
+        final String attributeValue = getOnlyElement(attributeValues);
         try
         {
             return some(parseInt(attributeValue));
@@ -88,9 +87,9 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
         }
     }
 
-    private Set<String> getAttributeValues(UserAttributeStoredEvent event, String attributeKey)
+    private Set<String> getAttributeValues(final UserAttributeStoredEvent event, String attributeKey)
     {
-        Set<String> attributeKeys = event.getAttributeNames();
+        final Set<String> attributeKeys = event.getAttributeNames();
 
         //Unfortunately this is required due to the way UserAttributeStoredEvent implements getAttributeValues.
         //It does a map look up and wrap the result around Collections.unmodifiableSet without checking for null.
