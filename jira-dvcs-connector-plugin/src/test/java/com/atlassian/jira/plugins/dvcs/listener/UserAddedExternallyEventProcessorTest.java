@@ -20,7 +20,6 @@ import org.testng.annotations.Test;
 
 import static com.atlassian.jira.plugins.dvcs.listener.UserAddedExternallyEventProcessor.DVCS_TYPE_BITBUCKET;
 import static com.atlassian.jira.plugins.dvcs.listener.UserAddedExternallyEventProcessor.SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.fest.util.Sets.newLinkedHashSet;

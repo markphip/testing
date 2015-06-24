@@ -62,7 +62,7 @@ public class UserAddedExternallyEventProcessor
 
     @Autowired
     public UserAddedExternallyEventProcessor(ApplicationRoleManagerBridge applicationRoleManagerBridge,
-            BitbucketTeamService bitbucketTeamService, CrowdService crowdService,
+            BitbucketTeamService bitbucketTeamService, @ComponentImport CrowdService crowdService,
             DvcsCommunicatorProvider dvcsCommunicatorProvider, @ComponentImport LicenseService licenseService)
     {
         this.applicationRoleManagerBridge = checkNotNull(applicationRoleManagerBridge);
@@ -84,8 +84,8 @@ public class UserAddedExternallyEventProcessor
 
     private boolean shouldInvite(ApplicationUser user)
     {
-        return isRenaissance() && licenseService.isSoftwareUser(user)
-               || !isRenaissance() && !isServiceDeskCustomer(user);
+        return (isRenaissance() && licenseService.isSoftwareUser(user))
+               || (!isRenaissance() && !isServiceDeskCustomer(user));
     }
 
     private boolean isRenaissance()
@@ -107,7 +107,7 @@ public class UserAddedExternallyEventProcessor
         {
             Collection<String> groups = groupNames(bitbucketTeam.getDefaultGroups());
             LOGGER.debug("Inviting user {} to groups {} in organization {}",
-                    new String[] {user.getUsername(), groups.toString(), bitbucketTeam.getName()});
+                    new Object[] {user.getUsername(), groups, bitbucketTeam.getName()});
 
             dvcsCommunicator.inviteUser(bitbucketTeam, groups, user.getEmailAddress());
         }
