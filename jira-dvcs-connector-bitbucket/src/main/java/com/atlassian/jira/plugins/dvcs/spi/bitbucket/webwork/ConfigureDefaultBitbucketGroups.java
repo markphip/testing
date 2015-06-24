@@ -46,7 +46,9 @@ public class ConfigureDefaultBitbucketGroups extends JiraWebActionSupport
     @RequiresXsrfCheck
     protected String doExecute() throws Exception
     {
-        analyticsService.publishInviteGroupChange(organizationDefaultGroups.length);
+
+        int newDefaultGroups = organizationDefaultGroups == null ? 0 : organizationDefaultGroups.length;
+        analyticsService.publishInviteGroupChange(newDefaultGroups);
 
         List<String> slugs = new ArrayList<String>();
         if (organizationDefaultGroups != null && organizationDefaultGroups.length > 0)
