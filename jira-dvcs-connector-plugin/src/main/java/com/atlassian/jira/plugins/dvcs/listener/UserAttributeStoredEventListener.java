@@ -12,6 +12,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Set;
 
 import static com.atlassian.fugue.Option.none;
@@ -70,7 +71,7 @@ public class UserAttributeStoredEventListener implements InitializingBean, Dispo
 
     private Option<Integer> getLoginCount(final UserAttributeStoredEvent event)
     {
-        final Set<String> attributeValues = getAttributeValues(event, USER_ATTRIBUTE_KEY_LOGIN_COUNT);
+        final Collection<String> attributeValues = getAttributeValues(event, USER_ATTRIBUTE_KEY_LOGIN_COUNT);
         if (attributeValues == null || attributeValues.size() != 1)
         {
             return none();
