@@ -113,7 +113,7 @@ public class UserAddedEventListenerTest
     {
         Map<String,String[]> requestParameters = Maps.newHashMap();
         requestParameters.put(REQUEST_KEY_USERNAME, new String[] { USERNAME });
-        if(orgIdAndGroupPairs.length != 0)
+        if (orgIdAndGroupPairs.length != 0)
         {
             requestParameters.put(REQUEST_KEY_DVCS_ORG_SELECTOR, orgIdAndGroupPairs);
         }
