@@ -72,7 +72,7 @@ public class UserAddedExternallyEventProcessor
         this.licenseService = checkNotNull(licenseService);
     }
 
-    public void process(ApplicationUser user)
+    public void process(final ApplicationUser user)
     {
         checkArgument(user != null, "Expecting user to be non-null");
 
@@ -82,7 +82,7 @@ public class UserAddedExternallyEventProcessor
         }
     }
 
-    private boolean shouldInvite(ApplicationUser user)
+    private boolean shouldInvite(final ApplicationUser user)
     {
         return (isRenaissance() && licenseService.isSoftwareUser(user))
                || (!isRenaissance() && !isServiceDeskCustomer(user));
@@ -93,14 +93,14 @@ public class UserAddedExternallyEventProcessor
         return applicationRoleManagerBridge.isBridgeActive() && applicationRoleManagerBridge.rolesEnabled();
     }
 
-    private boolean isServiceDeskCustomer(ApplicationUser user)
+    private boolean isServiceDeskCustomer(final ApplicationUser user)
     {
         User directoryUser = ApplicationUsers.toDirectoryUser(user);
         UserWithAttributes userWithAttributes = crowdService.getUserWithAttributes(directoryUser.getName());
         return Boolean.valueOf(userWithAttributes.getValue(SERVICE_DESK_CUSTOMERS_ATTRIBUTE_KEY));
     }
 
-    private void invite(ApplicationUser user)
+    private void invite(final ApplicationUser user)
     {
         DvcsCommunicator dvcsCommunicator = dvcsCommunicatorProvider.getCommunicator(DVCS_TYPE_BITBUCKET);
         for (Organization bitbucketTeam : bitbucketTeamService.getTeamsWithDefaultGroups())
@@ -113,7 +113,7 @@ public class UserAddedExternallyEventProcessor
         }
     }
 
-    private Collection<String> groupNames(Set<Group> groups)
+    private Collection<String> groupNames(final Set<Group> groups)
     {
         List<String> groupNames = Lists.newArrayList();
         for (Group group : groups)
