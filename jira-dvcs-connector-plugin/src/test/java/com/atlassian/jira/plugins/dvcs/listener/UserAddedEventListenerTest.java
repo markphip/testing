@@ -55,8 +55,8 @@ public class UserAddedEventListenerTest
         when(applicationUser.getDirectoryUser()).thenReturn(user);
     }
 
-    @Test (expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionWhenWeGetANullEvent()
+    @Test (expectedExceptions = NullPointerException.class)
+    public void shouldThrowNullPointerExceptionWhenWeGetANullEvent()
     {
         userAddedEventListener.onUserAddedViaCreateUserScreen(null);
     }

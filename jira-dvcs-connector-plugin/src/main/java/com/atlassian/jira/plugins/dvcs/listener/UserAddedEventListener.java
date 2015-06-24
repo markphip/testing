@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import static com.atlassian.jira.user.ApplicationUsers.toDirectoryUser;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.singleton;
 
@@ -67,10 +66,10 @@ public class UserAddedEventListener implements InitializingBean, DisposableBean
     @EventListener
     public void onUserAddedViaCreateUserScreen(final UserAddedEvent event)
     {
-        checkArgument(event != null, "Expecting UserAddedEvent to be non-null");
-        LOGGER.debug("onUserAddViaInterface - processing event with payload: " + event.getRequestParameters());
+        checkNotNull(event != null, "Expecting UserAddedEvent to be non-null");
+        LOGGER.debug("onUserAddViaInterface - processing event with payload {}", event.getRequestParameters());
 
-        ApplicationUser user = getApplicationUser(event);
+        final ApplicationUser user = getApplicationUser(event);
         String userInvitationAttribute = getUserInvitationAttribute(event);
         try
         {
