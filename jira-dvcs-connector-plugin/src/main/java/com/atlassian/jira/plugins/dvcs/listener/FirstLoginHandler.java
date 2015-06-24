@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import static com.atlassian.jira.plugins.dvcs.listener.UserAddedEventListener.UI_USER_INVITATIONS_PARAM_NAME;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * Listens for users' first login and determines the best way to get them invited to Bitbucket. If the user was provisioned
@@ -43,12 +44,11 @@ public class FirstLoginHandler
 
     void onFirstLogin(final String username)
     {
-        checkArgument(username != null && !username.trim().isEmpty(),
-                "Expecting username to be non-null and non-blank but received '" + username +"'");
+        checkArgument(isNotBlank(username), "Expecting username to be non-null and non-blank but received '" + username + "'");
 
         UserWithAttributes userWithAttributes = crowdService.getUserWithAttributes(username);
         String uiSelection = userWithAttributes.getValue(UI_USER_INVITATIONS_PARAM_NAME);
-        LOGGER.debug("User {} logged in for the first time and has Bitbucket teams UI selection value of " + uiSelection);
+        LOGGER.debug("User {} logged in for the first time and has Bitbucket teams UI selection value of '{}'", username, uiSelection);
 
         ApplicationUser applicationUser = ApplicationUsers.from(userWithAttributes);
         if (uiSelection == null)
