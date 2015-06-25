@@ -36,7 +36,7 @@ public class BitbucketTeamService
      * @return A list of Bitbucket teams with default groups. If no such team
      *         exists, an empty list is returned.
      */
-    List<Organization> getTeamsWithDefaultGroups()
+    public List<Organization> getTeamsWithDefaultGroups()
     {
         return newArrayList(filter(organizationService.getAll(false, BITBUCKET_DVCS_TYPE), new Predicate<Organization>()
         {
