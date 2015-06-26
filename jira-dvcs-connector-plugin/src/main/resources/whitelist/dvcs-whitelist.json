@@ -288,18 +288,21 @@
       ]
     }
   ],
-  "jira.dvcsconnector.smartcommit.success":["transition","worklog","comment"],
+  "jira.dvcsconnector.smartcommit.success":["transition","time","comment"],
   "jira.dvcsconnector.smartcommit.transition.failed":[  {
     "failureReason": [
       "ambiguousMatch",
       "noMatch",
       "issueHasNotTransitions",
+      "noCommandProvided"
     ]
   }],
   "jira.dvcsconnector.smartcommit.worklog.failed":[],
   "jira.dvcsconnector.smartcommit.comment.failed":[],
-  "jira.dvcsconnector.smartcommit.failed":[],
-  "jira.dvcsconnector.smartcommit.received":["transition","worklog","comment"],
+  "jira.dvcsconnector.smartcommit.failed":[
+    {"failureReason": ["noEmail","cantMapEmailToJiraUser","foundMultipleUserWithEmail"]}
+  ],
+  "jira.dvcsconnector.smartcommit.received":["transition","time","comment"],
   "jira.dvcsconnector.smartcommit.transition.to.undefined":[],
   "jira.dvcsconnector.smartcommit.transition.to.new":[],
   "jira.dvcsconnector.smartcommit.transition.to.indeterminate":[],

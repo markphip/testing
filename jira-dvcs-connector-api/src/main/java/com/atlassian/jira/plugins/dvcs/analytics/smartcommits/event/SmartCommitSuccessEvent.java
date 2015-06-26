@@ -9,13 +9,13 @@ import java.util.Set;
 public class SmartCommitSuccessEvent
 {
     private boolean transition;
-    private boolean worklog;
+    private boolean time;
     private boolean comment;
 
     public SmartCommitSuccessEvent(Set<SmartCommitCommandType> smartCommitType)
     {
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
-        this.worklog = smartCommitType.contains(SmartCommitCommandType.WORKLOG);
+        this.time = smartCommitType.contains(SmartCommitCommandType.TIME);
         this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
@@ -28,7 +28,7 @@ public class SmartCommitSuccessEvent
         final SmartCommitSuccessEvent that = (SmartCommitSuccessEvent) o;
 
         if (transition != that.transition) { return false; }
-        if (worklog != that.worklog) { return false; }
+        if (time != that.time) { return false; }
         return comment == that.comment;
 
     }
@@ -37,7 +37,7 @@ public class SmartCommitSuccessEvent
     public int hashCode()
     {
         int result = (transition ? 1 : 0);
-        result = 31 * result + (worklog ? 1 : 0);
+        result = 31 * result + (time ? 1 : 0);
         result = 31 * result + (comment ? 1 : 0);
         return result;
     }
@@ -47,9 +47,9 @@ public class SmartCommitSuccessEvent
         return transition;
     }
 
-    public boolean isWorklog()
+    public boolean isTime()
     {
-        return worklog;
+        return time;
     }
 
     public boolean isComment()

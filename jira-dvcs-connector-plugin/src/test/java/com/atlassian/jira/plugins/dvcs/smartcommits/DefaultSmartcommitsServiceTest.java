@@ -11,6 +11,7 @@ import com.atlassian.jira.mock.component.MockComponentWorker;
 import com.atlassian.jira.mock.issue.MockIssue;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailure;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
@@ -80,7 +81,7 @@ public class DefaultSmartcommitsServiceTest
     private List<CommitCommands.CommitCommand> commandList = new ArrayList<>();
 
     private final Set<SmartCommitCommandType> smartCommitCommandTypesPresent =
-            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.WORKLOG, SmartCommitCommandType.TRANSITION);
+            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.TIME, SmartCommitCommandType.TRANSITION);
 
 
 
@@ -144,7 +145,7 @@ public class DefaultSmartcommitsServiceTest
         classUnderTest.doCommands(commands);
 
         verify(analyticsService).fireSmartCommitReceived(smartCommitCommandTypesPresent);
-        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.WORKLOG);
+        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.TIME);
         verify(analyticsService).fireSmartCommitFailed();
         verifyNoMoreInteractions(analyticsService);
     }
@@ -159,6 +160,33 @@ public class DefaultSmartcommitsServiceTest
         verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.COMMENT);
         verify(analyticsService).fireSmartCommitFailed();
         verifyNoMoreInteractions(analyticsService);
+    }
+
+    @Test
+    public void changesetWithNoEmailProvidedFailure(){
+        when(commands.getAuthorEmail()).thenReturn("");
+
+        classUnderTest.doCommands(commands);
+
+        verify(analyticsService).fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
+    }
+
+    @Test
+    public void emailWithNoUserMatchFailure(){
+        when(crowdService.search(Matchers.<Query<User>>any())).thenReturn(new ArrayList<>());
+
+        classUnderTest.doCommands(commands);
+
+        verify(analyticsService).fireSmartCommitFailed(SmartCommitFailure.UNABLE_TO_MAP_TO_JIRA_USER);
+    }
+
+    @Test
+    public void emailWithMultipleUserMatchesFailure(){
+        setupMatchingUsers("FirstUser","SecondUser");
+
+        classUnderTest.doCommands(commands);
+
+        verify(analyticsService).fireSmartCommitFailed(SmartCommitFailure.MULTIPLE_JIRA_USERS_FOR_EMAIL);
     }
 
     private void setupTransitionHandler(Boolean successful){

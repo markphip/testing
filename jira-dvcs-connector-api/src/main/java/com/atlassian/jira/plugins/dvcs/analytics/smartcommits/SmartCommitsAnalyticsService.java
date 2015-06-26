@@ -20,6 +20,8 @@ public interface SmartCommitsAnalyticsService
 
     void fireSmartCommitFailed();
 
+    void fireSmartCommitFailed(SmartCommitFailure failureReason);
+
     void fireSmartCommitReceived(Set<SmartCommitCommandType> smartCommitCommandTypesPresent);
 
     void fireSmartCommitTransitionReceived(Issue issue);

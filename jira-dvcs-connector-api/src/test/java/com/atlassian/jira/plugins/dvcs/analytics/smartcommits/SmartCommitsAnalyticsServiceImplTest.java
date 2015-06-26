@@ -67,7 +67,7 @@ public class SmartCommitsAnalyticsServiceImplTest
         SmartCommitCommandType operationType = SmartCommitCommandType.TRANSITION;
         SmartCommitFailure failure = SmartCommitFailure.AMBIGIOUS_TRANSITION;
 
-        classUnderTest.fireSmartCommitOperationFailed(operationType,failure);
+        classUnderTest.fireSmartCommitOperationFailed(operationType, failure);
 
         verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, failure.toString()));
 
@@ -78,7 +78,15 @@ public class SmartCommitsAnalyticsServiceImplTest
     {
         classUnderTest.fireSmartCommitFailed();
 
-        verify(eventPublisher).publish(new SmartCommitFailureEvent());
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(""));
+    }
+
+    @Test
+    public void testFireSmartCommitFailedWithReason() throws Exception
+    {
+        classUnderTest.fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
+
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_EMAIL.toString()));
     }
 
 
@@ -89,8 +97,6 @@ public class SmartCommitsAnalyticsServiceImplTest
         classUnderTest.fireSmartCommitReceived(smartCommitTypes);
 
         verify(eventPublisher).publish(new SmartCommitRecieved(smartCommitTypes));
-
-
     }
 
     @Test
@@ -130,5 +136,7 @@ public class SmartCommitsAnalyticsServiceImplTest
         classUnderTest.fireMergeSmartCommitIfAppropriate(parents);
         verify(eventPublisher).publish(new SmartCommitOnMergeEvent());
     }
+
+
 
 }

@@ -9,13 +9,13 @@ import java.util.Set;
 public class SmartCommitRecieved
 {
     private boolean transition;
-    private boolean worklog;
+    private boolean time;
     private boolean comment;
 
     public SmartCommitRecieved(Set<SmartCommitCommandType> smartCommitType)
     {
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
-        worklog = smartCommitType.contains(SmartCommitCommandType.WORKLOG);
+        time = smartCommitType.contains(SmartCommitCommandType.TIME);
         comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
@@ -25,15 +25,14 @@ public class SmartCommitRecieved
         return EqualsBuilder.reflectionEquals(this, o);
     }
 
-
     public boolean isComment()
     {
         return comment;
     }
 
-    public boolean isWorklog()
+    public boolean isTime()
     {
-        return worklog;
+        return time;
     }
 
     public boolean isTransition()

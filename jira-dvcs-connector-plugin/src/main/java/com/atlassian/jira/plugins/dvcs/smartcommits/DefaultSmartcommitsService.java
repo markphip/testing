@@ -14,6 +14,7 @@ import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.issue.worklog.Worklog;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailure;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
@@ -103,7 +104,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         if (StringUtils.isBlank(authorEmail))
         {
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
-            analyticsService.fireSmartCommitFailed();
+            analyticsService.fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
             return results;
         }
 
@@ -114,13 +115,13 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         if (users.isEmpty())
         {
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
-            analyticsService.fireSmartCommitFailed();
+            analyticsService.fireSmartCommitFailed(SmartCommitFailure.UNABLE_TO_MAP_TO_JIRA_USER);
             return results;
         }
         else if (users.size() > 1)
         {
             results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
-            analyticsService.fireSmartCommitFailed();
+            analyticsService.fireSmartCommitFailed(SmartCommitFailure.MULTIPLE_JIRA_USERS_FOR_EMAIL);
             return results;
         }
 
@@ -184,7 +185,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
                     if (logResult.hasError())
                     {
-                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.WORKLOG);
+                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TIME);
                         commandResult.addError(logResult.getError() + "");
                     }
                     break;

@@ -7,6 +7,18 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 public class SmartCommitFailureEvent
 {
 
+    private String failureReason;
+
+    public SmartCommitFailureEvent(String failureReason)
+    {
+        this.failureReason = failureReason.toString();
+    }
+
+    public String getFailureReason()
+    {
+        return failureReason;
+    }
+
     @Override
     public boolean equals(Object o)
     {

@@ -4,7 +4,7 @@ public enum SmartCommitCommandType
 {
 
     TRANSITION("transition"),
-    WORKLOG("worklog"),
+    TIME("time"),
     COMMENT("comment");
 
     private String smartCommitCommandType;

@@ -46,7 +46,13 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
     @Override
     public void fireSmartCommitFailed()
     {
-        eventPublisher.publish(new SmartCommitFailureEvent());
+        eventPublisher.publish(new SmartCommitFailureEvent(""));
+    }
+
+    @Override
+    public void fireSmartCommitFailed(final SmartCommitFailure failureReason)
+    {
+        eventPublisher.publish(new SmartCommitFailureEvent(failureReason.toString()));
     }
 
     @Override
