@@ -12,6 +12,8 @@ import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.comments.Comment;
 import com.atlassian.jira.issue.worklog.Worklog;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.CommentHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.TransitionHandler;
 import com.atlassian.jira.plugins.dvcs.smartcommits.handlers.WorkLogHandler;
@@ -34,8 +36,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -58,14 +62,17 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
     private final CrowdService crowdService;
 
+    private final SmartCommitsAnalyticsService analyticsService;
+
     @Autowired
     public DefaultSmartcommitsService(@ComponentImport IssueManager issueManager,
             @Qualifier ("smartcommitsTransitionsHandler") TransitionHandler transitionHandler,
             @Qualifier ("smartcommitsCommentHandler") CommentHandler commentHandler,
             @Qualifier ("smartcommitsWorklogHandler") WorkLogHandler workLogHandler,
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
-            @ComponentImport CrowdService crowdService)
+            @ComponentImport CrowdService crowdService, final SmartCommitsAnalyticsService analyticsService)
     {
+        this.analyticsService = checkNotNull(analyticsService);
         this.crowdService = checkNotNull(crowdService);
 
         NO_CACHE = new CacheControl();
@@ -84,6 +91,8 @@ public class DefaultSmartcommitsService implements SmartcommitsService
     @Override
     public CommandsResults doCommands(CommitCommands commands)
     {
+        Set<SmartCommitCommandType> commandTypesPresent = commandTypesInCommands(commands);
+        analyticsService.fireSmartCommitReceived(commandTypesPresent);
         CommandsResults results = new CommandsResults();
 
         //
@@ -94,6 +103,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         if (StringUtils.isBlank(authorEmail))
         {
             results.addGlobalError("Changeset doesn't contain author email. Unable to map this to JIRA user.");
+            analyticsService.fireSmartCommitFailed();
             return results;
         }
 
@@ -104,11 +114,13 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         if (users.isEmpty())
         {
             results.addGlobalError("Can't find JIRA user with given author email: " + authorEmail);
+            analyticsService.fireSmartCommitFailed();
             return results;
         }
         else if (users.size() > 1)
         {
             results.addGlobalError("Found more than one JIRA user with email: " + authorEmail);
+            analyticsService.fireSmartCommitFailed();
             return results;
         }
 
@@ -133,6 +145,12 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         processCommands(commands, results, user);
 
         log.debug("Processing commands results : " + results);
+
+        if(results.hasErrors()){
+            analyticsService.fireSmartCommitFailed();
+        }else{
+            analyticsService.fireSmartCommitSucceeded(commandTypesPresent);
+        }
 
         return results;
     }
@@ -166,6 +184,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
                     if (logResult.hasError())
                     {
+                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.WORKLOG);
                         commandResult.addError(logResult.getError() + "");
                     }
                     break;
@@ -178,6 +197,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
                     if (commentResult.hasError())
                     {
+                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.COMMENT);
                         commandResult.addError(commentResult.getError() + "");
                     }
                     break;
@@ -244,4 +264,19 @@ public class DefaultSmartcommitsService implements SmartcommitsService
             return Collections.EMPTY_LIST;
         }
     }
+
+    private Set<SmartCommitCommandType> commandTypesInCommands(CommitCommands commitCommands)
+    {
+        List<CommitCommands.CommitCommand> commands = commitCommands.getCommands();
+
+        Set<SmartCommitCommandType> commandTypesPresent = new HashSet<>();
+        for (CommitCommands.CommitCommand command : commands)
+        {
+            String commandName = CommandType.getCommandType(command.getCommandName()).getName();
+            SmartCommitCommandType smartCommitCommandType = SmartCommitCommandType.valueOf(commandName.toUpperCase());
+            commandTypesPresent.add(smartCommitCommandType);
+        }
+        return commandTypesPresent;
+    }
+
 }

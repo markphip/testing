@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.model.Progress;
 import com.atlassian.jira.plugins.dvcs.model.Repository;
@@ -38,18 +39,21 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
     private final SmartcommitsService smartcommitService;
     private final CommitMessageParser commitParser;
     private final ChangesetDao changesetDao;
+    private final SmartCommitsAnalyticsService smartCommitsAnalyticsService;
 
     @Autowired
     public DefaultSmartcommitsChangesetsProcessor(
             @Nonnull final ChangesetDao changesetDao,
             @Nonnull final SmartcommitsDarkFeature smartcommitsFeature,
             @Nonnull final SmartcommitsService smartcommitService,
-            @Nonnull final CommitMessageParser commitParser)
+            @Nonnull final CommitMessageParser commitParser,
+            @Nonnull final SmartCommitsAnalyticsService smartCommitsAnalyticsService)
     {
         this.changesetDao = checkNotNull(changesetDao);
         this.smartcommitService = checkNotNull(smartcommitService);
         this.smartcommitsFeature = checkNotNull(smartcommitsFeature);
         this.commitParser = checkNotNull(commitParser);
+        this.smartCommitsAnalyticsService = checkNotNull(smartCommitsAnalyticsService);
 
         // a listening decorator returns ListenableFuture, which we then wrap in a Promise. using JDK futures directly
         // leads to an extra thread being created for the lifetime of the Promise (see Guava JdkFutureAdapters)
@@ -83,7 +87,7 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
         }
 
         return Promises.forListenableFuture(executor.submit(
-                new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService)
+                new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService,smartCommitsAnalyticsService)
         ));
     }
 

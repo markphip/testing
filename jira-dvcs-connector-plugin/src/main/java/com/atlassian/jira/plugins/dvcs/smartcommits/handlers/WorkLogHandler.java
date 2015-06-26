@@ -71,7 +71,6 @@ public class WorkLogHandler implements CommandHandler<Worklog>
         }
         else
         {
-
             return Either.error(CommitHookHandlerError.fromErrorCollection(CMD_TYPE.getName(), issue.getKey(),
                     jiraServiceContext.getErrorCollection()));
 
