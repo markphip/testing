@@ -34,6 +34,7 @@ public class IssueKeyExtractorTest {
             {"message/ABC-123/text",   "ABC-123"}, // separated by slashes
             {"message\\ABC-123\\text", "ABC-123"}, // separated by back slashes
             {"message~ABC-123~text",   "ABC-123"}, // separated by tildas
+            {"message_ABC-123_text",   "ABC-123"}, // separated by underscore
         };
     }
 
@@ -59,6 +60,35 @@ public class IssueKeyExtractorTest {
                 {"message/AB1C-123/text",   "AB1C-123"}, // separated by slashes
                 {"message\\A1BC-123\\text", "A1BC-123"}, // separated by back slashes
                 {"message~A1BC-123~text",   "A1BC-123"}, // separated by tildas
+                {"message_A1BC-123_text",   "A1BC-123"}, // separated by underscore
+            };
+    }
+
+    @DataProvider
+    private Object[][] singleIssueKeyWithinMessageDataProviderWithUnderscore()
+    {
+        return new Object[][]
+            {
+                {"A_BC-123",                "A_BC-123"}, // exactly the key
+                {"AB_C-123",                "AB_C-123"}, // exactly the key
+                {"ABC_-123",                "ABC_-123"}, // exactly the key
+                {"A_BC-123 text",           "A_BC-123"}, // starting line with key
+                {"message A_BC-123",        "A_BC-123"}, // ending line with key
+                {"message A_BC-123 text",   "A_BC-123"}, // separated by whitespaces
+                {"message\nA_BC-123\ntext", "A_BC-123"}, // separated by newlines
+                {"message\rA_BC-123\rtext", "A_BC-123"}, // separated by carriage returns
+                {"message.A_BC-123.text",   "A_BC-123"}, // separated by dots
+                {"message:A_BC-123:text",   "A_BC-123"}, // separated by colons
+                {"message,A_BC-123,text",   "A_BC-123"}, // separated by commas
+                {"message;A_BC-123;text",   "A_BC-123"}, // separated by semicolons
+                {"message&A_BC-123&text",   "A_BC-123"}, // separated by ampersands
+                {"message=A_BC-123=text",   "A_BC-123"}, // separated by equal signs
+                {"message?A_BC-123?text",   "A_BC-123"}, // separated by question marks
+                {"message!A_BC-123!text",   "A_BC-123"}, // separated by exclamation marks
+                {"message/A_BC-123/text",   "A_BC-123"}, // separated by slashes
+                {"message\\A_BC-123\\text", "A_BC-123"}, // separated by back slashes
+                {"message~A_BC-123~text",   "A_BC-123"}, // separated by tildas
+                {"message_A_BC-123_text",   "A_BC-123"}, // separated by underscore
             };
     }
 
@@ -82,6 +112,7 @@ public class IssueKeyExtractorTest {
             {"message/ABC-123/DEF-456/text",    new String[] {"ABC-123", "DEF-456"}}, // separated by slashes
             {"message\\ABC-123\\DEF-456\\text", new String[] {"ABC-123", "DEF-456"}}, // separated by back slashes
             {"message~ABC-123~DEF-456~text",    new String[] {"ABC-123", "DEF-456"}}, // separated by tildas
+            {"message_ABC-123_DEF-456_text",    new String[] {"ABC-123", "DEF-456"}}, // separated by underscore
         };
     }
 
@@ -115,6 +146,15 @@ public class IssueKeyExtractorTest {
 
     @Test(dataProvider="singleIssueKeyWithinMessageDataProviderWithNumbers")
     public void extractorShouldExtractSingleIssueKeyWithNumbersCorrectly(String messageToExtract, String expectedExtractedKey)
+    {
+        Set<String> extractIssueKeys = IssueKeyExtractor.extractIssueKeys(messageToExtract);
+
+        assertThat(extractIssueKeys).hasSize(1);
+        assertThat(extractIssueKeys).containsOnly(expectedExtractedKey);
+    }
+
+    @Test(dataProvider="singleIssueKeyWithinMessageDataProviderWithUnderscore")
+    public void extractorShouldExtractSingleIssueKeyWithUnderscoreCorrectly(String messageToExtract, String expectedExtractedKey)
     {
         Set<String> extractIssueKeys = IssueKeyExtractor.extractIssueKeys(messageToExtract);
 
