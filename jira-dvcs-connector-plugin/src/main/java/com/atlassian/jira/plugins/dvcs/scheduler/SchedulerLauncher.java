@@ -75,7 +75,7 @@ public class SchedulerLauncher implements LifecycleAware
 
     /**
      * Empty implementation of onStop so that we can compile against SAL 3, no action required on stop as it is handled
-     * in the @link{destroy} method
+     * in the {@link #destroy} method
      */
     public void onStop()
     {
@@ -84,6 +84,7 @@ public class SchedulerLauncher implements LifecycleAware
     @PreDestroy
     public void destroy() throws Exception
     {
+        onStop();
         eventPublisher.unregister(this);
         log.debug("SchedulerLauncher destroyed");
     }
