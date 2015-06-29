@@ -7,12 +7,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class SmartCommitEnabledByDefaultConfigEvent
 {
-    private int id;
+    private int organizationID;
     private boolean smartCommitEnabledByDefault;
 
-    public SmartCommitEnabledByDefaultConfigEvent(int id, boolean smartCommitEnabledByDefault)
+    public SmartCommitEnabledByDefaultConfigEvent(int organizationID, boolean smartCommitEnabledByDefault)
     {
-        this.id = id;
+        this.organizationID = organizationID;
         this.smartCommitEnabledByDefault = smartCommitEnabledByDefault;
     }
 
@@ -29,6 +29,10 @@ public class SmartCommitEnabledByDefaultConfigEvent
         {
             return baseEventName + "disabled";
         }
+    }
+
+    public int getOrganizationID(){
+        return this.organizationID;
     }
 
     @Override

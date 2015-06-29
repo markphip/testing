@@ -7,12 +7,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class SmartCommitRepoConfigChangedEvent
 {
-    private int id;
+    private int repoID;
     private boolean smartCommitEnabledByDefault;
 
-    public SmartCommitRepoConfigChangedEvent(int id, boolean smartCommitEnabledByDefault)
+    public SmartCommitRepoConfigChangedEvent(int repoID, boolean smartCommitEnabledByDefault)
     {
-        this.id = id;
+        this.repoID = repoID;
         this.smartCommitEnabledByDefault = smartCommitEnabledByDefault;
     }
 
@@ -29,6 +29,10 @@ public class SmartCommitRepoConfigChangedEvent
         {
             return baseEventName + "disabled";
         }
+    }
+
+    public int getrepoId(){
+        return this.repoID;
     }
 
     @Override

@@ -307,7 +307,14 @@
   "jira.dvcsconnector.smartcommit.transition.to.new":[],
   "jira.dvcsconnector.smartcommit.transition.to.indeterminate":[],
   "jira.dvcsconnector.smartcommit.transition.to.done":[],
-  "jira.dvcsconnector.smartcommit.merge":[]
+  "jira.dvcsconnector.smartcommit.merge":[],
+  "jira.dvcsconnector.smartcommit.config.default.enabled":["repoId"],
+  "jira.dvcsconnector.smartcommit.config.default.disabled":["repoId"],
+  "jira.dvcsconnector.smartcommit.repo.enabled":["organizationID"],
+  "jira.dvcsconnector.smartcommit.repo.disabled":["organizationID"],
+  "jira.dvcsconnector.bitbucket.smartcommit.default.enabled":[],
+  "jira.dvcsconnector.github.smartcommit.default.enabled":[],
+  "jira.dvcsconnector.githubenterprise.smartcommit.default.enabled":[]
 }
 
 
