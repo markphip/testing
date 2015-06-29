@@ -1,6 +1,9 @@
 package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.Set;
 
@@ -19,29 +22,6 @@ public class SmartCommitSuccessEvent
         this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
-    @Override
-    public boolean equals(final Object o)
-    {
-        if (this == o) { return true; }
-        if (!(o instanceof SmartCommitSuccessEvent)) { return false; }
-
-        final SmartCommitSuccessEvent that = (SmartCommitSuccessEvent) o;
-
-        if (transition != that.transition) { return false; }
-        if (time != that.time) { return false; }
-        return comment == that.comment;
-
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int result = (transition ? 1 : 0);
-        result = 31 * result + (time ? 1 : 0);
-        result = 31 * result + (comment ? 1 : 0);
-        return result;
-    }
-
     public boolean isTransition()
     {
         return transition;
@@ -55,5 +35,23 @@ public class SmartCommitSuccessEvent
     public boolean isComment()
     {
         return comment;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

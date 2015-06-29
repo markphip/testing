@@ -79,10 +79,12 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
         //so if it contains a < or a , we know the commit has more than one parent.
         //This is supposed to be short lived as this is moving to the jira-development-status-plugin
         //Sorry
-        Boolean hasMoreThanOneParent = commitParentsData.contains("<") || commitParentsData.contains(",");
-        if (hasMoreThanOneParent)
-        {
-            eventPublisher.publish(new SmartCommitOnMergeEvent());
+        if(commitParentsData != null){
+            Boolean hasMoreThanOneParent = commitParentsData.contains("<") || commitParentsData.contains(",");
+            if (hasMoreThanOneParent)
+            {
+                eventPublisher.publish(new SmartCommitOnMergeEvent());
+            }
         }
 
     }
