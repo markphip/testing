@@ -480,7 +480,7 @@
                 <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
                 <jira.data.version>7.0.0-QR20150625102754</jira.data.version>
                 <jira.projects.version>3.0.8</jira.projects.version>
-                <jira.software.version>1.26-SNAPSHOT</jira.software.version>
+                <jira.software.version>1.25</jira.software.version>
                 <jira.version>7.0.0-QR20150625102754</jira.version>
                 <testkit.version>7.0.32</testkit.version>
             </properties>
