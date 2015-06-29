@@ -72,8 +72,7 @@ public class SchedulerLauncher implements LifecycleAware
     {
         onLifecycleEvent(LIFECYCLE_AWARE_ON_START);
     }
-
-
+    
     public void onStop()
     {
 
