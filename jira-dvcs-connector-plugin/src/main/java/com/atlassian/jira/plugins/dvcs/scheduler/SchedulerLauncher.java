@@ -77,7 +77,7 @@ public class SchedulerLauncher implements LifecycleAware
      * Empty implementation of onStop so that we can compile against SAL 3, no action required on stop as it is handled
      * in the @link{destroy} method
      */
-    void onStop()
+    public void onStop()
     {
     }
 
