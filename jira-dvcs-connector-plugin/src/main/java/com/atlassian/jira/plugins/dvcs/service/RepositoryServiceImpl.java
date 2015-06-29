@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.beehive.compat.ClusterLockServiceFactory;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
@@ -95,6 +96,9 @@ public class RepositoryServiceImpl implements RepositoryService
 
     @Resource
     private CarefulEventService eventService;
+
+    @Resource
+    private SmartCommitsAnalyticsService smartCommitsAnalyticsService;
 
     private ClusterLockService clusterLockService;
 
@@ -567,13 +571,8 @@ public class RepositoryServiceImpl implements RepositoryService
         Repository repository = repositoryDao.get(repoId);
         if (repository != null)
         {
-            if (!enabled)
-            {
-                // TODO - does syncer need to know that ? - synchronizer.disableSmartcommits();
-            }
-
             repository.setSmartcommitsEnabled(enabled);
-
+            smartCommitsAnalyticsService.fireSmartCommitPerRepoConfigChange(repoId, enabled);
             log.debug("Enable repository smartcommits [{}]", repository);
             repositoryDao.save(repository);
         }

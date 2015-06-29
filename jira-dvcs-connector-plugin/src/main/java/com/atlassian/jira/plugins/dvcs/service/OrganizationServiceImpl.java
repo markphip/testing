@@ -1,5 +1,6 @@
 package com.atlassian.jira.plugins.dvcs.service;
 
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.OrganizationDao;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
 import com.atlassian.jira.plugins.dvcs.model.Credential;
@@ -32,6 +33,9 @@ public class OrganizationServiceImpl implements OrganizationService
 
     @Autowired
     private RepositoryService repositoryService;
+
+    @Autowired
+    private SmartCommitsAnalyticsService smartCommitsAnalyticsService;
 
     @Override
     public AccountInfo getAccountInfo(String hostUrl, String accountName)
@@ -172,6 +176,7 @@ public class OrganizationServiceImpl implements OrganizationService
         {
             organization.setSmartcommitsOnNewRepos(enabled);
             organizationDao.save(organization);
+            smartCommitsAnalyticsService.fireSmartCommitAutoEnabledConfigChange(id, enabled);
         }
 
     }

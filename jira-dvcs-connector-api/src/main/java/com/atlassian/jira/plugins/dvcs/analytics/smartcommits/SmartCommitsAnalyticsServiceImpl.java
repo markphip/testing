@@ -4,14 +4,18 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.status.Status;
 import com.atlassian.jira.issue.status.category.StatusCategory;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitEnabledByDefaultConfigEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailure;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailureEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOnMergeEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOperationFailedEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRecieved;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRepoConfigChangedEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitSuccessEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitTransitionStatusCategoryEvent;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -79,11 +83,34 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
         //so if it contains a < or a , we know the commit has more than one parent.
         //This is supposed to be short lived as this is moving to the jira-development-status-plugin
         //Sorry
-        Boolean hasMoreThanOneParent = commitParentsData.contains("<") || commitParentsData.contains(",");
-        if (hasMoreThanOneParent)
-        {
-            eventPublisher.publish(new SmartCommitOnMergeEvent());
+        if(StringUtils.isNotEmpty(commitParentsData)){
+            Boolean hasMoreThanOneParent = commitParentsData.contains("<") || commitParentsData.contains(",");
+            if (hasMoreThanOneParent)
+            {
+                eventPublisher.publish(new SmartCommitOnMergeEvent());
+            }
         }
-
     }
+
+    @Override
+    public void fireNewOrganizationAddedWithSmartCommits(final DvcsType dvcsType, final boolean smartCommitsEnabled)
+    {
+        if(smartCommitsEnabled){
+            eventPublisher.publish(new AccountAddedWithSmartCommitsEvent(dvcsType));
+        }
+    }
+
+    @Override
+    public void fireSmartCommitAutoEnabledConfigChange(final int orgId, final boolean smartCommitsEnabled)
+    {
+        eventPublisher.publish(new SmartCommitEnabledByDefaultConfigEvent(orgId, smartCommitsEnabled));
+    }
+
+    @Override
+    public void fireSmartCommitPerRepoConfigChange(final int repoId, final boolean smartCommitsEnabled)
+    {
+        eventPublisher.publish(new SmartCommitRepoConfigChangedEvent(repoId, smartCommitsEnabled));
+    }
+
+
 }

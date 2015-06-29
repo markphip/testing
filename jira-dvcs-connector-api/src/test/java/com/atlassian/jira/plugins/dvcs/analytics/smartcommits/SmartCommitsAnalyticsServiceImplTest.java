@@ -4,12 +4,15 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.status.Status;
 import com.atlassian.jira.issue.status.category.StatusCategory;
+import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitEnabledByDefaultConfigEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailure;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailureEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOnMergeEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOperationFailedEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRecieved;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRepoConfigChangedEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitSuccessEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitTransitionStatusCategoryEvent;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
@@ -137,6 +140,28 @@ public class SmartCommitsAnalyticsServiceImplTest
         verify(eventPublisher).publish(new SmartCommitOnMergeEvent());
     }
 
+    @Test
+    public void testFireNewOrganizationAddedWithSmartCommitsEnabled(){
+        classUnderTest.fireNewOrganizationAddedWithSmartCommits(DvcsType.BITBUCKET, true);
+        verify(eventPublisher).publish(new AccountAddedWithSmartCommitsEvent(DvcsType.BITBUCKET));
+    }
 
+    @Test
+    public void testFireNewOrganizationAddedWithSmartCommitsDisabled(){
+        classUnderTest.fireNewOrganizationAddedWithSmartCommits(DvcsType.BITBUCKET, false);
+        verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void testFireSmartCommitAutoEnabledConfigChange(){
+        classUnderTest.fireSmartCommitAutoEnabledConfigChange(1, false);
+        verify(eventPublisher).publish(new SmartCommitEnabledByDefaultConfigEvent(1, false));
+    }
+
+    @Test
+    public void testFireSmartCommitPerRepoConfigChange(){
+        classUnderTest.fireSmartCommitPerRepoConfigChange(1, false);
+        verify(eventPublisher).publish(new SmartCommitRepoConfigChangedEvent(1, false));
+    }
 
 }

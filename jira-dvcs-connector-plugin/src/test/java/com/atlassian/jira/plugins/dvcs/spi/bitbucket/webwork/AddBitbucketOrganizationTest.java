@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
 import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.AccountInfo;
@@ -24,6 +25,7 @@ import com.atlassian.jira.security.xsrf.XsrfTokenGenerator;
 import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.web.action.RedirectSanitiser;
 import com.atlassian.sal.api.ApplicationProperties;
+import org.hamcrest.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -100,6 +102,9 @@ public class AddBitbucketOrganizationTest
     @Mock
     private AccountInfo accountInfo;
 
+    @Mock
+    private SmartCommitsAnalyticsService smartCommitsAnalyticsService;
+
     private AddBitbucketOrganization addBitbucketOrganization;
     private static final String testingURL = "localhost:8890";
     
@@ -135,7 +140,7 @@ public class AddBitbucketOrganizationTest
         when(oAuthService.getRequestToken()).thenReturn(requestToken);
         when(oAuthService.getAuthorizationUrl(eq(requestToken))).thenReturn(SAMPLE_AUTH_URL);
 
-        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider,smartCommitsAnalyticsService)
         {
             @Override
             OAuthService createOAuthScribeService()
@@ -264,6 +269,18 @@ public class AddBitbucketOrganizationTest
     }
 
     @Test
+    public void testAddAccountWithSmartCommitsEnabledFiresEvent() throws Exception
+    {
+        addBitbucketOrganization.setAutoSmartCommits("true");
+        addBitbucketOrganization.setSource(SAMPLE_SOURCE);
+        String ret = addBitbucketOrganization.doFinish();
+        assertThat(ret, equalTo(Action.NONE));
+        verify(smartCommitsAnalyticsService).fireNewOrganizationAddedWithSmartCommits(DvcsType.BITBUCKET, true);
+        verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN + "&source=" + SAMPLE_SOURCE));
+        verifyNoMoreInteractions(response);
+    }
+
+    @Test
     public void testExpectedAnalyticsWhenCtkState() throws Exception
     {
         setupForCtkStateTest();
@@ -286,7 +303,7 @@ public class AddBitbucketOrganizationTest
     private void setupForCtkStateTest()
     {
         String url = System.setProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION, testingURL);
-        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider)
+        addBitbucketOrganization = new AddBitbucketOrganization(ap, eventPublisher, oAuthStore, organizationService, httpClientProvider, smartCommitsAnalyticsService)
         {
             @Override
             OAuthService createOAuthScribeService()

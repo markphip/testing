@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.spi.bitbucket.webwork;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
 import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -55,18 +56,21 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
     private final com.atlassian.sal.api.ApplicationProperties ap;
     private final OAuthStore oAuthStore;
     private final AddBitbucketAction actionDelegate;
+    private final SmartCommitsAnalyticsService smartCommitsAnalyticsService;
 
     public AddBitbucketOrganization(@ComponentImport ApplicationProperties ap,
             @ComponentImport EventPublisher eventPublisher,
             OAuthStore oAuthStore,
             OrganizationService organizationService,
-            HttpClientProvider httpClientProvider)
+            HttpClientProvider httpClientProvider,
+            SmartCommitsAnalyticsService smartCommitsAnalyticsService)
     {
         super(eventPublisher);
         this.ap = ap;
         this.organizationService = organizationService;
         this.oAuthStore = oAuthStore;
         this.httpClientProvider = httpClientProvider;
+        this.smartCommitsAnalyticsService = smartCommitsAnalyticsService;
 
         if (StringUtils.isBlank(System.getProperty(BitbucketRemoteClient.BITBUCKET_TEST_URL_CONFIGURATION)))
         {
@@ -204,6 +208,7 @@ public class AddBitbucketOrganization extends CommonDvcsConfigurationAction
         }
 
         triggerAddSucceededEvent(DvcsType.BITBUCKET);
+        smartCommitsAnalyticsService.fireNewOrganizationAddedWithSmartCommits(DvcsType.BITBUCKET, hadAutoSmartCommitsChecked());
 
         // go back to main DVCS configuration page
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken())

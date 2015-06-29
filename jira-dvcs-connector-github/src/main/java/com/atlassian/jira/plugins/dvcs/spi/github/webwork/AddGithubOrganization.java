@@ -4,6 +4,7 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.config.FeatureManager;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsType;
 import com.atlassian.jira.plugins.dvcs.analytics.event.FailureReason;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore.Host;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
@@ -49,6 +50,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
     private final ApplicationProperties applicationProperties;
     private final FeatureManager featureManager;
     private final GithubCommunicator githubCommunicator;
+    private final SmartCommitsAnalyticsService smartCommitsAnalyticsService;
     private AccountInfo accountInfo;
 
     @Autowired
@@ -57,7 +59,8 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             @ComponentImport FeatureManager featureManager,
             OAuthStore oAuthStore,
             OrganizationService organizationService,
-            @Qualifier ("githubCommunicator") GithubCommunicator githubCommunicator)
+            @Qualifier ("githubCommunicator") GithubCommunicator githubCommunicator,
+            SmartCommitsAnalyticsService smartCommitsAnalyticsService)
     {
         super(eventPublisher);
         this.organizationService = organizationService;
@@ -65,6 +68,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
         this.applicationProperties = applicationProperties;
         this.featureManager = featureManager;
         this.githubCommunicator = githubCommunicator;
+        this.smartCommitsAnalyticsService = smartCommitsAnalyticsService;
     }
 
     @Override
@@ -156,7 +160,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             newOrganization.setAutolinkNewRepos(hadAutolinkingChecked());
             newOrganization.setCredential(new Credential(oAuthStore.getClientId(Host.GITHUB.id),
                     oAuthStore.getSecret(Host.GITHUB.id), accessToken));
-            newOrganization.setSmartcommitsOnNewRepos(hadAutolinkingChecked());
+            newOrganization.setSmartcommitsOnNewRepos(hadAutoSmartCommitsChecked());
 
             organizationService.save(newOrganization);
 
@@ -169,6 +173,7 @@ public class AddGithubOrganization extends CommonDvcsConfigurationAction
             return INPUT;
         }
 
+        smartCommitsAnalyticsService.fireNewOrganizationAddedWithSmartCommits(DvcsType.GITHUB, hadAutoSmartCommitsChecked());
         triggerAddSucceededEvent(DvcsType.GITHUB);
         return getRedirect("ConfigureDvcsOrganizations.jspa?atl_token=" + CustomStringUtils.encode(getXsrfToken()) +
                 getSourceAsUrlParam());

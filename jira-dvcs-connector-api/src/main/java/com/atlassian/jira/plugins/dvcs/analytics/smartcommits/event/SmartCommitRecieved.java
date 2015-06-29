@@ -15,8 +15,8 @@ public class SmartCommitRecieved
     public SmartCommitRecieved(Set<SmartCommitCommandType> smartCommitType)
     {
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
-        time = smartCommitType.contains(SmartCommitCommandType.TIME);
-        comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
+        this.time = smartCommitType.contains(SmartCommitCommandType.TIME);
+        this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
     @Override

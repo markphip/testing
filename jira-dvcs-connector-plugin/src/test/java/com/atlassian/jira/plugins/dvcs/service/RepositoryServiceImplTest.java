@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.service;
 import com.atlassian.beehive.ClusterLock;
 import com.atlassian.beehive.ClusterLockService;
 import com.atlassian.jira.plugins.dvcs.activity.RepositoryPullRequestDao;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.RepositoryDao;
 import com.atlassian.jira.plugins.dvcs.dao.SyncAuditLogDao;
 import com.atlassian.jira.plugins.dvcs.event.CarefulEventService;
@@ -91,6 +92,9 @@ public class RepositoryServiceImplTest
 
     @Mock
     private Repository repository;
+
+    @Mock
+    private SmartCommitsAnalyticsService smartCommitsAnalyticsService;
 
     // tested object
     @InjectMocks
@@ -359,6 +363,16 @@ public class RepositoryServiceImplTest
     {
         repositoryService.remove(repository);
         verify(eventService).discardEvents(repository);
+    }
+
+    @Test
+    public void enableRepositorySmartcommitsFiresAnalytics(){
+        int ID = 1;
+        boolean isEnabled = true;
+        when(repositoryDao.get(ID)).thenReturn(repository);
+        repositoryService.enableRepositorySmartcommits(ID, isEnabled);
+        verify(smartCommitsAnalyticsService).fireSmartCommitPerRepoConfigChange(ID, isEnabled);
+
     }
 
     private Repository createSampleRepository()

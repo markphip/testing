@@ -9,6 +9,7 @@ import com.atlassian.jira.plugins.dvcs.analytics.event.Outcome;
 import com.atlassian.jira.plugins.dvcs.analytics.event.Source;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddEndedAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsConfigAddStartedAnalyticsEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.auth.OAuthStore;
 import com.atlassian.jira.plugins.dvcs.exception.SourceControlException;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
@@ -86,6 +87,9 @@ public class AddGithubEnterpriseOrganizationTest {
     @Mock
     private GithubOAuthUtils githubOAuthUtils;
 
+    @Mock
+    private SmartCommitsAnalyticsService smartCommitsAnalyticsService;
+
     private AddGithubEnterpriseOrganization addGithubEnterpriseOrganization;
 
     @BeforeMethod(alwaysRun=true)
@@ -122,7 +126,7 @@ public class AddGithubEnterpriseOrganizationTest {
         when(githubOAuthUtils.createGithubRedirectUrl(anyString(), anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(SAMPLE_AUTH_URL);
 
-        addGithubEnterpriseOrganization = new AddGithubEnterpriseOrganization(ap, eventPublisher, oAuthStore, organizationService)
+        addGithubEnterpriseOrganization = new AddGithubEnterpriseOrganization(ap, eventPublisher, oAuthStore, organizationService,smartCommitsAnalyticsService)
         {
             @Override
             GithubOAuthUtils getGithubOAuthUtils() {
@@ -229,5 +233,20 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.setOrganization("org");
         addGithubEnterpriseOrganization.doValidation();
         verifyNoMoreInteractions(eventPublisher);
+    }
+
+    @Test
+    public void addOrganizationWithSmartCommitsEnabledFiresAnalytics() throws Exception
+    {
+        addGithubEnterpriseOrganization.setAutoSmartCommits("true");
+        addGithubEnterpriseOrganization.setSource(SAMPLE_SOURCE);
+        String ret = addGithubEnterpriseOrganization.doFinish();
+
+        assertThat(ret, equalTo(Action.NONE));
+
+        verify(smartCommitsAnalyticsService).fireNewOrganizationAddedWithSmartCommits(DvcsType.GITHUB_ENTERPRISE, true);
+        verifyNoMoreInteractions(smartCommitsAnalyticsService);
+        verify(response).sendRedirect(eq("ConfigureDvcsOrganizations.jspa?atl_token=" + SAMPLE_XSRF_TOKEN + "&source=" + SAMPLE_SOURCE));
+        verifyNoMoreInteractions(response);
     }
 }
