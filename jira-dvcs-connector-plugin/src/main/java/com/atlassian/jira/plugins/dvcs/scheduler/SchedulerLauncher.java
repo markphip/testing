@@ -84,7 +84,6 @@ public class SchedulerLauncher implements LifecycleAware
     @PreDestroy
     public void destroy() throws Exception
     {
-        onStop();
         eventPublisher.unregister(this);
         log.debug("SchedulerLauncher destroyed");
     }
