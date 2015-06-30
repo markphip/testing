@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.atlassian.pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>3.0.90</version>
+        <version>3.0.91</version>
     </parent>
 
     <groupId>com.atlassian.jira.plugins</groupId>
@@ -50,14 +50,14 @@
     </ciManagement>
 
     <properties>
-        <amps.version>5.0.14</amps.version>
+        <amps.version>5.1.6</amps.version>
         <ao.version>0.29.3</ao.version>
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcomponents.for.selenium.version>4.3.2</apache.httpcomponents.for.selenium.version>
         <apache.httpcore.version>4.2.5</apache.httpcore.version>
         <atlassian.qunit.plugin.version>1.0.0</atlassian.qunit.plugin.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
-        <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
+        <atlassian.spring.scanner.version>1.2.9</atlassian.spring.scanner.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-10</greenhopper.version>
@@ -73,9 +73,9 @@
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
         <org.eclipse.jgit.version>2.2.0.201212191850-r</org.eclipse.jgit.version>
         <org.eclipse.mylyn.github.version>2.1.2</org.eclipse.mylyn.github.version>
-        <pocketknife.version>0.67</pocketknife.version>
+        <pocketknife.querydsl.version>0.78</pocketknife.querydsl.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <querydsl.version>3.5.0</querydsl.version>
+        <spring.version>2.5.6</spring.version>
         <streams.version>5.3.14</streams.version>
         <testkit.version>6.4.9</testkit.version>
     </properties>
@@ -239,45 +239,25 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
-                <version>2.5.6.SEC01</version>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.pocketknife</groupId>
                 <artifactId>atlassian-pocketknife-querydsl</artifactId>
-                <version>${pocketknife.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.mysema.querydsl</groupId>
-                <artifactId>querydsl-sql</artifactId>
-                <version>${querydsl.version}</version>
+                <version>${pocketknife.querydsl.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <!--This tool is only required at compile time - http://bridge-method-injector.infradna.com/-->
-                        <groupId>com.infradna.tool</groupId>
-                        <artifactId>bridge-method-annotation</artifactId>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.mysema.querydsl</groupId>
-                <artifactId>querydsl-spatial</artifactId>
-                <version>${querydsl.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>2.5.6.SEC01</version>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.plugin</groupId>
@@ -496,13 +476,13 @@
         <profile>
             <id>jira7</id>
             <properties>
-                <jira.compile.version>7.0.0-QR20150629162649</jira.compile.version>
+                <jira.compile.version>7.0.0-QR20150630101705</jira.compile.version>
                 <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
-                <jira.data.version>7.0.0-QR20150629162649</jira.data.version>
+                <jira.data.version>7.0.0-QR20150630101705</jira.data.version>
                 <jira.projects.version>3.0.8</jira.projects.version>
-                <jira.software.version>1.20</jira.software.version>
-                <jira.version>7.0.0-QR20150629162649</jira.version>
-                <testkit.version>7.0.32</testkit.version>
+                <jira.software.version>1.25</jira.software.version>
+                <jira.version>7.0.0-QR20150630101705</jira.version>
+                <testkit.version>7.0.58</testkit.version>
             </properties>
         </profile>
         <profile>
