@@ -50,7 +50,7 @@
     </ciManagement>
 
     <properties>
-        <amps.version>5.1.6</amps.version>
+        <amps.version>5.1.7-LEGO2</amps.version>
         <ao.version>0.29.3</ao.version>
         <apache.httpclient.version>4.2.6</apache.httpclient.version>
         <apache.httpcomponents.for.selenium.version>4.3.2</apache.httpcomponents.for.selenium.version>
@@ -62,12 +62,13 @@
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-10</greenhopper.version>
         <guava.version>18.0</guava.version>
-        <jira.compile.version>6.5-OD-07-005</jira.compile.version>
-        <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
-        <jira.data.version>6.5-OD-07-005</jira.data.version>
-        <jira.projects.version>2.5-D20150526T011810</jira.projects.version>
-        <jira.software.version>0.32-D20150602T104750</jira.software.version>
-        <jira.version>6.5-OD-07-005</jira.version>
+        <jira.version>7.0.0-QR20150702142548</jira.version>
+        <jira.compile.version>${jira.version}</jira.compile.version>
+        <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
+        <jira.data.version>${jira.version}</jira.data.version>
+        <jira.projects.version>3.0.8</jira.projects.version>
+        <jira.software.version>1.26</jira.software.version>
+        <jira.software.application.version>7.0.0-int-0004</jira.software.application.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <org.codehaus.jackson.version>1.9.1</org.codehaus.jackson.version>
@@ -77,7 +78,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>2.5.6</spring.version>
         <streams.version>5.3.14</streams.version>
-        <testkit.version>6.4.9</testkit.version>
+        <testkit.version>7.0.58</testkit.version>
     </properties>
 
     <dependencyManagement>
@@ -470,18 +471,6 @@
                 <jira.data.version>6.2.1</jira.data.version>
                 <jira.version>6.2.1</jira.version>
                 <testkit.version>6.0.41</testkit.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>jira7</id>
-            <properties>
-                <jira.compile.version>7.0.0-QR20150703082747</jira.compile.version>
-                <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
-                <jira.data.version>7.0.0-QR20150703082747</jira.data.version>
-                <jira.projects.version>3.0.8</jira.projects.version>
-                <jira.software.version>1.25</jira.software.version>
-                <jira.version>7.0.0-QR20150703082747</jira.version>
-                <testkit.version>7.0.58</testkit.version>
             </properties>
         </profile>
         <profile>
