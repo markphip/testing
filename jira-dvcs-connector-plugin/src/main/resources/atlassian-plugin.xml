@@ -317,6 +317,7 @@
         <resource type="download" name="application-access-bitbucket-access-extension.css" location="css/application-access-bitbucket-access-extension.css"/>
         <resource type="download" name="application-access-bitbucket-access-extension.js" location="javascripts/application-access-bitbucket-access-extension.js"/>
         <resource type="download" name="application-access-bitbucket-access-extension-panel.js" location="javascripts/application-access-bitbucket-access-extension-panel.js" />
+        <resource type="download" name="application-access-bitbucket-access-extension-panel-model.js" location="javascripts/application-access-bitbucket-access-extension-panel-model.js" />
     </web-resource>
 
 </atlassian-plugin>

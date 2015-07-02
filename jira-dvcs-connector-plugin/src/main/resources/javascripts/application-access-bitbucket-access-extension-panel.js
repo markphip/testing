@@ -1,41 +1,32 @@
 define('application-access-bitbucket-access-extension-panel', [
     'jquery',
-    'backbone'
-], function ($,
-        Backbone
+    'backbone',
+    'aui/inline-dialog2'
+], function (
+        $,
+        Backbone,
+        InlineDialog2
 )
 {
     return Backbone.View.extend({
+
+        el : 'div#application-access-bitbucket-access-extension-panel',
+
         initialize: function (options)
         {
-            this.panelSelector = options.panelSelector;
-            this.jiraSoftwareCheckboxSelector = options.jiraSoftwareCheckboxSelector;
-            this.listenTo(options.defaultsApi, options.defaultsApi.EVENT_ON_SHOW, this.init);
+            this.el = 'div#application-access-bitbucket-access-extension-panel';
+            this.model = options.model;
+            this.model.on('change',this.changeVisibility.bind(this));
         },
 
-        changeVisibility: function (jiraSoftwareCheckboxChecked)
+        element: function()
         {
-            this.$el = $(this.panelSelector);
-            jiraSoftwareCheckboxChecked ? this.$el.show() : this.$el.hide();
+            return $(this.el);
         },
 
-        init: function (dialogView)
+        changeVisibility: function (model)
         {
-            var self = this;
-            $(dialogView.el).on('click', this.jiraSoftwareCheckboxSelector, function ()
-            {
-                self.changeVisibility($(this).attr("checked"));
-            });
-            var models = dialogView.collection.models;
-            for (var index in models)
-            {
-                var model = models[index];
-                var application = model.toJSON();
-                if (application.key === "jira-software")
-                {
-                    this.changeVisibility(application.selectedByDefault);
-                }
-            }
+            model.get("checked") ? this.element().show() : this.element().hide();
         }
     })
 });
