@@ -303,4 +303,20 @@
         <resource type="download" name="add-user-bitbucket-access-extension.css" location="css/add-user-bitbucket-access-extension.css"/>
         <resource type="download" name="add-user-bitbucket-access-extension.js" location="javascripts/add-user-bitbucket-access-extension.js"/>
     </web-resource>
+
+    <web-panel key="application-access-bitbucket-access-extension" weight="2000" location="webpanels.admin.defaultapp.selector">
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
+        </conditions>
+        <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationAccessBitbucketAccessExtensionContextProvider" />
+        <resource name="view" type="velocity" location="/templates/dvcs/application-access-bitbucket-access-extension-panel.vm"/>
+    </web-panel>
+
+    <web-resource key="application-access-bitbucket-access-extension-resources">
+        <resource type="download" name="application-access-bitbucket-access-extension.css" location="css/application-access-bitbucket-access-extension.css"/>
+        <resource type="download" name="application-access-bitbucket-access-extension.js" location="javascripts/application-access-bitbucket-access-extension.js"/>
+        <resource type="download" name="application-access-bitbucket-access-extension-panel.js" location="javascripts/application-access-bitbucket-access-extension-panel.js" />
+    </web-resource>
+
 </atlassian-plugin>
