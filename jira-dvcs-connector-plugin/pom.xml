@@ -418,6 +418,13 @@
                 <artifactId>maven-jira-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                    <applications>
+                        <application>
+                            <applicationKey>jira-software</applicationKey>
+                            <version>${jira.software.application.version}</version>
+                        </application>
+                    </applications>
+                    <containerId>tomcat8x</containerId>
                     <jvmArgs>-Xmx1024m</jvmArgs>
                     <systemPropertyVariables>
                         <jira.websudo.is.disabled>true</jira.websudo.is.disabled>
@@ -435,19 +442,9 @@
                     <log4jProperties>target/test-classes/log4j.properties</log4jProperties>
                     <pluginArtifacts>
                         <pluginArtifact>
-                            <groupId>com.atlassian.jira.plugins</groupId>
-                            <artifactId>jira-greenhopper-plugin</artifactId>
-                            <version>${greenhopper.version}</version>
-                        </pluginArtifact>
-                        <pluginArtifact>
                             <groupId>com.atlassian.jira</groupId>
                             <artifactId>jira-projects-plugin</artifactId>
                             <version>${jira.projects.version}</version>
-                        </pluginArtifact>
-                        <pluginArtifact>
-                            <groupId>com.atlassian.jira.plugins</groupId>
-                            <artifactId>jira-software-plugin</artifactId>
-                            <version>${jira.software.version}</version>
                         </pluginArtifact>
                         <pluginArtifact>
                             <groupId>com.atlassian.jira.tests</groupId>
