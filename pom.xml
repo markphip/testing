@@ -62,13 +62,13 @@
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-10</greenhopper.version>
         <guava.version>18.0</guava.version>
-        <jira.compile.version>7.0.0-QR20150630101705</jira.compile.version>
+        <jira.version>7.0.0-QR20150702142548</jira.version>
+        <jira.compile.version>${jira.version}</jira.compile.version>
+        <jira.data.version>${jira.version}</jira.data.version>
         <jira.data.path>${basedir}/target/test-classes/jira7.0-compatible-home.zip</jira.data.path>
-        <jira.data.version>7.0.0-QR20150630101705</jira.data.version>
         <jira.projects.version>3.0.8</jira.projects.version>
-        <jira.software.version>1.25</jira.software.version>
-        <jira.version>7.0.0-QR20150630101705</jira.version>
-        <jira.software.application.version>7.0-m002</jira.software.application.version>
+        <jira.software.version>1.26</jira.software.version>
+        <jira.software.application.version>7.0.0-int-0004</jira.software.application.version>
         <testkit.version>7.0.58</testkit.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
