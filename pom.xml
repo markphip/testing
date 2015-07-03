@@ -103,12 +103,10 @@
                 <artifactId>atlassian-scheduler-compat</artifactId>
                 <version>${atlassian.scheduler.version}</version>
             </dependency>
-            <!-- provided dependencies -->
             <dependency>
                 <groupId>com.atlassian.jira</groupId>
                 <artifactId>jira-api</artifactId>
                 <version>${jira.compile.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.atlassian.jira</groupId>
@@ -291,6 +289,7 @@
         <dependency>
             <groupId>com.atlassian.jira</groupId>
             <artifactId>jira-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
