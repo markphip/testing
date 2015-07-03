@@ -31,7 +31,9 @@ define('application-access-bitbucket-access-extension-panel-model', [
                 var application = model.toJSON();
                 if (application.key === "jira-software")
                 {
-                    this.set({checked: application.selectedByDefault});
+                    this.set({checked: application.selectedByDefault}, {silent: true});
+                    this.trigger('change');
+                    return;
                 }
             }
         }

@@ -1,12 +1,10 @@
 AJS.$(function ()
 {
     require([
-        'jquery',
         'jira/admin/application/defaults/api',
         'application-access-bitbucket-access-extension-panel-model',
         'application-access-bitbucket-access-extension-panel'
     ], function (
-            $,
             defaultsApi,
             PanelModel,
             Panel
@@ -17,7 +15,8 @@ AJS.$(function ()
         });
 
         var panel = new Panel({
-            model: panelModel
+            model: panelModel,
+            el: 'div#application-access-bitbucket-access-extension-panel'
         });
 
     });
