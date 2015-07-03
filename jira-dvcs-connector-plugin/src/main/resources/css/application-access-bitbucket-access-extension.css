@@ -14,3 +14,7 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
+#application-access-bitbucket-access-extension-panel span.aui-icon {
+    color: #707070;
+}
