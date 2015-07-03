@@ -313,11 +313,18 @@
         <resource name="view" type="velocity" location="/templates/dvcs/application-access-bitbucket-access-extension-panel.vm"/>
     </web-panel>
 
-    <web-resource key="application-access-bitbucket-access-extension-resources">
-        <resource type="download" name="application-access-bitbucket-access-extension.css" location="css/application-access-bitbucket-access-extension.css"/>
-        <resource type="download" name="application-access-bitbucket-access-extension.js" location="javascripts/application-access-bitbucket-access-extension.js"/>
+    <web-resource key="application-access-bitbucket-access-component">
         <resource type="download" name="application-access-bitbucket-access-extension-panel.js" location="javascripts/application-access-bitbucket-access-extension-panel.js" />
         <resource type="download" name="application-access-bitbucket-access-extension-panel-model.js" location="javascripts/application-access-bitbucket-access-extension-panel-model.js" />
+    </web-resource>
+    <resource type="qunit" name="javascripts/application-access-bitbucket-access-extension-panel-test.js" location="javascripts/application-access-bitbucket-access-extension-panel-test.js" />
+    <resource type="qunit" name="javascripts/application-access-bitbucket-access-extension-panel-model-test.js" location="javascripts/application-access-bitbucket-access-extension-panel-model-test.js" />
+
+    <web-resource key="application-access-bitbucket-access-extension-resources">
+        <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:application-access-bitbucket-access-component</dependency>
+
+        <resource type="download" name="application-access-bitbucket-access-extension.css" location="css/application-access-bitbucket-access-extension.css"/>
+        <resource type="download" name="application-access-bitbucket-access-extension.js" location="javascripts/application-access-bitbucket-access-extension.js"/>
     </web-resource>
 
 </atlassian-plugin>
