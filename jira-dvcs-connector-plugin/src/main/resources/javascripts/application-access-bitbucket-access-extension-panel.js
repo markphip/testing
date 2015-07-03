@@ -8,6 +8,8 @@ define('application-access-bitbucket-access-extension-panel', [
         InlineDialog2
 )
 {
+    // View bounded to the existing bitbucket access extension panel
+    // (i.e. the view does not render the panel just bounded to it)
     return Backbone.View.extend({
 
         initialize: function (options)
@@ -17,6 +19,7 @@ define('application-access-bitbucket-access-extension-panel', [
             this.model.on('change',this.changeVisibility.bind(this));
         },
 
+        // function to always get a fresh instance of jQuery object
         element: function()
         {
             return $(this.el);
