@@ -4,6 +4,7 @@ import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.web.ContextProvider;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.List;
@@ -11,9 +12,9 @@ import java.util.Map;
 
 import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.transform;
 import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 public abstract class BitbucketAccessExtensionContextProvider implements ContextProvider
 {
@@ -63,7 +64,14 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
     public Map<String, Object> getContextMap(Map<String, Object> context)
     {
         List<Organization> bitbucketTeamsWithDefaultGroups = bitbucketTeamService.getTeamsWithDefaultGroups();
-        List<String> bitbucketTeamNames = bitbucketTeamsWithDefaultGroups.stream().map(Organization::getName).collect(toList());
+        List<String> bitbucketTeamNames = transform(bitbucketTeamsWithDefaultGroups, new Function<Organization, String>()
+        {
+            @Override
+            public String apply(Organization organization)
+            {
+                return organization.getName();
+            }
+        });
         requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
         return ImmutableMap.of(
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
