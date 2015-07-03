@@ -230,4 +230,5 @@ public class AddGithubEnterpriseOrganizationTest {
         addGithubEnterpriseOrganization.doValidation();
         verifyNoMoreInteractions(eventPublisher);
     }
+
 }

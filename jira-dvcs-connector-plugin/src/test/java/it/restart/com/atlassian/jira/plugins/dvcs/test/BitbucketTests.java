@@ -128,20 +128,6 @@ public class BitbucketTests extends DvcsWebDriverTestCase implements BasicTests,
     }
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://privatebitbucket.org\\] is incorrect or the server is not responding.*")
-    public void addOrganizationInvalidUrl()
-    {
-        addOrganization(AccountType.BITBUCKET, "https://privatebitbucket.org/someaccount", getOAuthCredentials(), false, true);
-    }
-
-
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nInvalid user/team account.*")
-    public void addOrganizationInvalidAccount()
-    {
-        addOrganization(AccountType.BITBUCKET, "I_AM_SURE_THIS_ACCOUNT_IS_INVALID", getOAuthCredentials(), false, true);
-    }
-
-    @Override
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe authentication with Bitbucket has failed. Please check your OAuth settings.*")
     public void addOrganizationInvalidOAuth()
     {

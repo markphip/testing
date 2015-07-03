@@ -6,8 +6,6 @@ public interface BasicTests
 
     void addOrganizationWaitForSync();
 
-    void addOrganizationInvalidUrl();
-
     void addOrganizationInvalidOAuth();
 
     void testCommitStatistics();

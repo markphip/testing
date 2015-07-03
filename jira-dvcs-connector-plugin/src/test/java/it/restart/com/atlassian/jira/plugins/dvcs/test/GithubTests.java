@@ -117,14 +117,6 @@ public class GithubTests extends DvcsWebDriverTestCase implements BasicTests
     }
 
     @Override
-    @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
-    public void addOrganizationInvalidUrl()
-    {
-        RepositoriesPageController rpc = new RepositoriesPageController(JIRA);
-        rpc.addOrganization(AccountType.GITHUB, "https://nonexisting.org/someaccount", getOAuthCredentials(), false, true);
-    }
-
-    @Override
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = "Invalid OAuth")
     public void addOrganizationInvalidOAuth()
     {

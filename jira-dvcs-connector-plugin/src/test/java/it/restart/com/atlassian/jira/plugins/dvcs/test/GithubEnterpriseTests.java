@@ -131,7 +131,6 @@ public class GithubEnterpriseTests extends DvcsWebDriverTestCase implements Basi
                 getOAuthCredentials(), false, true);
     }
 
-    @Override
     @Test (expectedExceptions = AssertionError.class, expectedExceptionsMessageRegExp = ".*Error!\\nThe url \\[https://nonexisting.org\\] is incorrect or the server is not responding.*")
     public void addOrganizationInvalidUrl()
     {

@@ -17,6 +17,7 @@ import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.BitbucketCommunicator;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.client.BitbucketRemoteClient;
 import com.atlassian.jira.plugins.dvcs.spi.bitbucket.clientlibrary.request.HttpClientProvider;
+import com.atlassian.jira.plugins.dvcs.util.SystemUtils;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockComponentContainer;
 import com.atlassian.jira.plugins.dvcs.util.TestNGMockHttp;
 import com.atlassian.jira.security.JiraAuthenticationContext;
@@ -39,9 +40,12 @@ import webwork.action.Action;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.ws.http.HTTPException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -281,6 +285,30 @@ public class AddBitbucketOrganizationTest
         setupForCtkStateTest();
         addBitbucketOrganization.doValidation();
         assertThat(addBitbucketOrganization.getUrl(), equalTo(testingURL));
+    }
+
+    @Test
+    public void addInvalidAccount(){
+        String BAD_ACCOUNT_NAME = "BAD ACCOUNT NAME";
+        addBitbucketOrganization.setOrganization(BAD_ACCOUNT_NAME);
+
+        when(organizationService.getAccountInfo(testingURL, BAD_ACCOUNT_NAME, BitbucketCommunicator.BITBUCKET)).thenReturn(null);
+
+        addBitbucketOrganization.doValidation();
+
+        assertThat(addBitbucketOrganization.getErrorMessages(), hasSize(1));
+        assertThat(addBitbucketOrganization.getErrorMessages().iterator().next(), is("Invalid user/team account."));
+    }
+
+    @Test
+    public void addAccountWithInvalidOauthToken() throws Exception
+    {
+        when(SystemUtils.getRedirect(addBitbucketOrganization, SAMPLE_AUTH_URL, true )).thenThrow(new HTTPException(401));
+
+        addBitbucketOrganization.doExecute();
+
+        assertThat(addBitbucketOrganization.getErrorMessages(), hasSize(1));
+        assertThat(addBitbucketOrganization.getErrorMessages().iterator().next(), is("The authentication with Bitbucket has failed. Please check your OAuth settings."));
     }
 
     private void setupForCtkStateTest()
