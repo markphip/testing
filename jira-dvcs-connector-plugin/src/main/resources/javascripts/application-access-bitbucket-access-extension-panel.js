@@ -8,6 +8,7 @@ define('application-access-bitbucket-access-extension-panel', [
         InlineDialog2
 )
 {
+    "use strict";
     // View bounded to the existing bitbucket access extension panel
     // (i.e. the view does not render the panel just bounded to it)
     return Backbone.View.extend({

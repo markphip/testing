@@ -8,6 +8,7 @@ define('application-access-bitbucket-access-extension-panel-model', [
         defaultsApi
 )
 {
+    "use strict";
     // Model represent the state of the jira-software-checkbox
     return Backbone.Model.extend({
 

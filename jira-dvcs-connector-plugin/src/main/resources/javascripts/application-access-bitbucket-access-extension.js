@@ -10,6 +10,7 @@ AJS.$(function ()
             Panel
     )
     {
+        "use strict";
         var panelModel = new PanelModel({
             jiraSoftwareCheckboxSelector: '.application-picker-applications .checkbox input.application-jira-software'
         });
