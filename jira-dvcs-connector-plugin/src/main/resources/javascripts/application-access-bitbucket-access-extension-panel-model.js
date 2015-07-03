@@ -18,6 +18,7 @@ define('application-access-bitbucket-access-extension-panel-model', [
 
         onDialogShow: function(dialogView)
         {
+            if (dialogView.$el.attr("id") !== 'app-role-defaults-dialog') return;
             var self = this;
             dialogView.$el.on('click', this.jiraSoftwareCheckboxSelector, function ()
             {
