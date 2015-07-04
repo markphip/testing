@@ -19,13 +19,13 @@ define('bitbucket-invite-message-panel-view', [
             this.el = options.el;
             this.jiraSoftwareCheckboxSelector = options.jiraSoftwareCheckboxSelector;
             this.$jiraSoftwareCheckbox = $(this.jiraSoftwareCheckboxSelector);
-            this.$jiraSoftwareCheckbox.on("click", this.changeVisibility.bind(this));
+            this.$jiraSoftwareCheckbox.on("change", this.changeVisibility.bind(this));
             this.changeVisibility();
         },
 
         changeVisibility: function ()
         {
-            this.$jiraSoftwareCheckbox.attr("checked") ? this.$el.show() : this.$el.hide();
+            this.$jiraSoftwareCheckbox.is(':checked') ? this.$el.show() : this.$el.hide();
         }
     })
 });

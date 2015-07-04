@@ -6,44 +6,62 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bit
         'bitbucket-invite-message-panel-view'
     ], function(
             $,
-            Panel
+            PanelView
     ) {
         module('Application Role Defaults BB Panel', {
             setup: function() {
                 this.sandbox = sinon.sandbox.create();
 
-                this.panelId = "mock_div_id"
-                this.selector = "div#" + this.panelId;
+                var PANEL_ID = "panelId";
+                var JIRA_SOFTWARE_CHECKBOX_ID = 'checkboxId';
 
-                this.model = {
-                    get: this.sandbox.stub(),
-                    on: this.sandbox.stub()
-                };
+                $('#qunit-fixture').append($("<div id='" + PANEL_ID + "' />"));
+                $('#qunit-fixture').append($("<input id='" + JIRA_SOFTWARE_CHECKBOX_ID + "' type='checkbox' />"));
 
-                $('#qunit-fixture').append($("<div id='" + this.panelId + "' />"));
+                this.jiraSoftwareCheckboxSelector = "#" + JIRA_SOFTWARE_CHECKBOX_ID;
+                this.$jiraSoftwareCheckbox = $(this.jiraSoftwareCheckboxSelector);
+
+                this.panelSelector = "div#" + PANEL_ID;
+                this.$panel = $(this.panelSelector);
             },
-
 
             teardown: function() {
                 this.sandbox.restore();
             }
         });
 
-        test("Panel should be visible when checked is true", function() {
-            this.model.get.withArgs("checked").returns(true);
-            this.model.on.callsArg(1);
-            this.panel = new Panel({model: this.model, el: this.selector});
+        test("Panel shouldn't be visible when software checkbox isn't checked", function() {
+            this.$jiraSoftwareCheckbox.prop("checked", false);
+            new PanelView({
+                jiraSoftwareCheckboxSelector: this.jiraSoftwareCheckboxSelector,
+                el: this.panelSelector
+            });
 
-            equal($(this.selector).is(":visible"), true);
+            equal(this.$panel.is(":visible"), false);
         });
 
-        test("Panel should be hidden when checked is false", function() {
-            this.model.get.withArgs("checked").returns(false);
-            this.model.on.callsArg(1);
-            this.panel = new Panel({model: this.model, el: this.selector});
+        test("Panel should be visible when software checkbox is checked", function() {
+            this.$jiraSoftwareCheckbox.prop("checked", true);
+            new PanelView({
+                jiraSoftwareCheckboxSelector: this.jiraSoftwareCheckboxSelector,
+                el: this.panelSelector
+            });
 
-            equal($(this.selector).is(":visible"), false);
+            equal(this.$panel.is(":visible"), true);
         });
 
+        test("Panel should respond to software checkbox changes", function() {
+            this.$jiraSoftwareCheckbox.prop("checked", false);
+            new PanelView({
+                jiraSoftwareCheckboxSelector: this.jiraSoftwareCheckboxSelector,
+                el: this.panelSelector
+            });
+
+            equal(this.$panel.is(":visible"), false);
+
+            this.$jiraSoftwareCheckbox.click();
+
+            equal(this.$panel.is(":visible"), true);
+        });
     })
 });
