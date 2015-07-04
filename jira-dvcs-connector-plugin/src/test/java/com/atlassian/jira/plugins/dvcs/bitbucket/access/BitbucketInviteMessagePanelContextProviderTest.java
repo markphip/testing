@@ -10,7 +10,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationAccessBitbucketAccessExtensionContextProvider.REQUIRED_WEB_RESOURCE_COMPLETE_KEY;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketInviteMessagePanelContextProvider.REQUIRED_WEB_RESOURCE_COMPLETE_KEY;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.mockito.Mockito.verify;
@@ -18,10 +18,10 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
-public class ApplicationAccessBitbucketAccessExtensionContextProviderTest extends BitbucketAccessExtensionContextProviderTest
+public class BitbucketInviteMessagePanelContextProviderTest extends BitbucketAccessExtensionContextProviderTest
 {
     @InjectMocks
-    private ApplicationAccessBitbucketAccessExtensionContextProvider applicationAccessBitbucketAccessExtensionContextProvider;
+    private BitbucketInviteMessagePanelContextProvider bitbucketInviteMessagePanelContextProvider;
 
     @Mock
     private PageBuilderService pageBuilderService;
@@ -44,13 +44,13 @@ public class ApplicationAccessBitbucketAccessExtensionContextProviderTest extend
     @Override
     protected BitbucketAccessExtensionContextProvider getInstanceUnderTest()
     {
-        return applicationAccessBitbucketAccessExtensionContextProvider;
+        return bitbucketInviteMessagePanelContextProvider;
     }
 
     @Test
     public void shouldRequireResourcesAndData()
     {
-        applicationAccessBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+        bitbucketInviteMessagePanelContextProvider.getContextMap(emptyMap());
 
         verify(requiredResources).requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
     }
@@ -60,7 +60,7 @@ public class ApplicationAccessBitbucketAccessExtensionContextProviderTest extend
     {
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
 
-        applicationAccessBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+        bitbucketInviteMessagePanelContextProvider.getContextMap(emptyMap());
 
         verifyZeroInteractions(requiredResources);
     }

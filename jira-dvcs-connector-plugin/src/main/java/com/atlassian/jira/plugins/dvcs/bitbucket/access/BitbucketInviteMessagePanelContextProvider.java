@@ -24,14 +24,14 @@ import static java.util.Collections.emptyList;
 /**
  * Context provider for the Bitbucket access extension on the application access
  */
-public class ApplicationAccessBitbucketAccessExtensionContextProvider extends BitbucketAccessExtensionContextProvider
+public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessExtensionContextProvider
 {
     @VisibleForTesting
-    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:application-access-bitbucket-access-extension-resources";
+    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-resources";
 
     private final PageBuilderService pageBuilderService;
 
-    public ApplicationAccessBitbucketAccessExtensionContextProvider(@ComponentImport ApplicationProperties applicationProperties,
+    public BitbucketInviteMessagePanelContextProvider(@ComponentImport ApplicationProperties applicationProperties,
             BitbucketTeamService bitbucketTeamService, @ComponentImport PageBuilderService pageBuilderService)
     {
         super(applicationProperties, bitbucketTeamService);

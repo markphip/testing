@@ -3,7 +3,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app
 
     require([
         'jquery',
-        'application-access-bitbucket-access-extension-panel'
+        'bitbucket-invite-message-panel'
     ], function(
             $,
             Panel
@@ -12,15 +12,15 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:app
             setup: function() {
                 this.sandbox = sinon.sandbox.create();
 
-                this.mockDivId = "mock_div_id"
-                this.selector = "div#" + this.mockDivId;
+                this.panelId = "mock_div_id"
+                this.selector = "div#" + this.panelId;
 
                 this.model = {
                     get: this.sandbox.stub(),
                     on: this.sandbox.stub()
                 };
 
-                $('body').append($("<div id='" + this.mockDivId + "' />"));
+                $('#qunit-fixture').append($("<div id='" + this.panelId + "' />"));
             },
 
 

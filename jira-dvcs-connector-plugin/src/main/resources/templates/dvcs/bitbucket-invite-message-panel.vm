@@ -1,7 +1,7 @@
 #disable_html_escaping()
 
 #if(!$teamsWithDefaultGroups.isEmpty())
-<div id="application-access-bitbucket-access-extension-panel">
+<div id="bitbucket-invite-message-panel">
     <div class="field-group bitbucket-access-field-group">
         <div class="aui-message-info">
            <span class="aui-icon aui-icon-small aui-iconfont-info"></span>

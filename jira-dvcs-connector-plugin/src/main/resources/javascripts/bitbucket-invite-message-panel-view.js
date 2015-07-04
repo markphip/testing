@@ -1,4 +1,4 @@
-define('application-access-bitbucket-access-extension-panel', [
+define('bitbucket-invite-message-panel-view', [
     'jquery',
     'backbone',
     'aui/inline-dialog2'

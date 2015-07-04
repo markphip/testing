@@ -1,8 +1,8 @@
-#application-access-bitbucket-access-extension-panel .bitbucket-access-field-group {
+#bitbucket-invite-message-panel .bitbucket-access-field-group {
     padding-top: 1px;
 }
 
-#application-access-bitbucket-access-extension-panel label[for='should-invite-user'] a.change-settings {
+#bitbucket-invite-message-panel label[for='should-invite-user'] a.change-settings {
     font-size: 12px;
 }
 
@@ -15,6 +15,6 @@
     overflow-y: auto;
 }
 
-#application-access-bitbucket-access-extension-panel span.aui-icon {
+#bitbucket-invite-message-panel span.aui-icon {
     color: #707070;
 }
