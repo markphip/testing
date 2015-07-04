@@ -4,177 +4,110 @@ import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.service.OrganizationService;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicator;
 import com.atlassian.jira.plugins.dvcs.service.remote.DvcsCommunicatorProvider;
-import com.atlassian.jira.security.groups.GroupManager;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.user.util.UserManager;
-import com.google.common.base.Splitter;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import com.google.common.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.atlassian.jira.plugins.dvcs.listener.UserAddedEventListener.ORG_ID_GROUP_PAIR_SEPARATOR;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static java.lang.Integer.parseInt;
+import static java.util.Map.Entry;
+
 /**
- * {@link Runnable} processor that handles logic beside invitations for user added to JIRA via
- * user interface.
+ * Invites users who were created via the 'Create user' screen to Bitbucket teams. Selections made by the administrator
+ * who provisioned this user are used to determine the list of teams and groups that users will get invited to.
+ *
+ * Current default teams have no impact on teams and groups that users will get invited to.
  */
-public class UserAddedViaInterfaceEventProcessor extends UserInviteCommonEventProcessor implements Runnable, UserInviteChecker
+@Component
+public class UserAddedViaInterfaceEventProcessor
 {
-	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM = "dvcs_org_selector";
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserAddedViaInterfaceEventProcessor.class);
 
-	public static String ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER = ";";
-		
-	public static String EMAIL_PARAM = "email";
+    @VisibleForTesting
+    static final String DVCS_TYPE_BITBUCKET = "bitbucket";
 
-	/** The Constant SPLITTER. */
-	private static final String SPLITTER = ":";
+    private static final String ORG_ID_GROUP_DELIMITER = ":";
 
-	/** The organization service. */
-	private final OrganizationService organizationService;
-	
-	/** The communicator provider. */
-	private final DvcsCommunicatorProvider communicatorProvider;
+    private final DvcsCommunicatorProvider dvcsCommunicatorProvider;
 
-    private final String serializedGroupsUiChoice;
+    private final OrganizationService organizationService;
 
-    private final ApplicationUser user;
+    @Autowired
+    public UserAddedViaInterfaceEventProcessor(DvcsCommunicatorProvider dvcsCommunicatorProvider,
+            OrganizationService organizationService)
+    {
+        this.dvcsCommunicatorProvider = checkNotNull(dvcsCommunicatorProvider);
+        this.organizationService = checkNotNull(organizationService);
+    }
 
-	public UserAddedViaInterfaceEventProcessor(String serializedGroupsUiChoice, ApplicationUser user ,OrganizationService organizationService,
-			DvcsCommunicatorProvider communicatorProvider, UserManager userManager, GroupManager groupManager)
-	{
-	    super(userManager, groupManager);
-      
-	    this.serializedGroupsUiChoice = serializedGroupsUiChoice;
-        this.user = user;
-	    
-		this.organizationService = organizationService;
-		this.communicatorProvider = communicatorProvider;
-	}
+    public void process(ApplicationUser user, String serializedUISelection)
+    {
+        checkNotNull(user != null, "Expecting a non-null user");
+        checkNotNull(user.getEmailAddress() != null, "Expecting a non-null email address for the user");
+        checkNotNull(serializedUISelection != null, "Expecting a non-null serialized UI selection");
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void run()
-	{
-		// continue ? ------------------------------------------------
-		if (StringUtils.isBlank(serializedGroupsUiChoice))
-		{
-			return;
-		}
-		// ------------------------------------------------------------
+        if (serializedUISelection.trim().isEmpty())
+        {
+            return;
+        }
 
-		Collection<Invitations> invitationsFor = convertInvitations();
-		String email = user.getEmailAddress();
+        Map<Integer,List<String>> groupsByOrganizationId = parseSerializedUISelection(serializedUISelection);
+        inviteUserToOrganizations(user, groupsByOrganizationId);
+    }
 
-		// log invite
-		logInvite(user, invitationsFor);
-		
-		// invite
-		invite(email, invitationsFor);
+    private Map<Integer, List<String>> parseSerializedUISelection(String serializedUISelection)
+    {
+        final Map<Integer, List<String>> groupsByOrganizationId = newHashMap();
 
-	}
+        for (String orgIdGroupPairStr : serializedUISelection.split(ORG_ID_GROUP_PAIR_SEPARATOR))
+        {
+            String[] orgIdGroupPair = orgIdGroupPairStr.split(ORG_ID_GROUP_DELIMITER);
+            int orgId = parseInt(orgIdGroupPair[0]);
+            String group = orgIdGroupPair[1];
 
-	private Collection<Invitations> convertInvitations()
-	{
+            List<String> groupsForOrgId = groupsByOrganizationId.get(orgId);
+            if (groupsForOrgId == null)
+            {
+                groupsForOrgId = newArrayList();
+                groupsByOrganizationId.put(orgId, groupsForOrgId);
+            }
 
-		Map<Integer, Invitations> orgIdsToInvitations = new HashMap<Integer, Invitations>();
+            groupsForOrgId.add(group);
+        }
 
-		Iterable<String> organizationIdsAndGroupSlugs = Splitter.on(ORGANIZATION_SELECTOR_REQUEST_PARAM_JOINER).split(serializedGroupsUiChoice);
-		
-        for (String requestParamToken : organizationIdsAndGroupSlugs)
-		{
+        return groupsByOrganizationId;
+    }
 
-			String[] tokens = requestParamToken.split(SPLITTER);
-			Integer orgId = Integer.parseInt(tokens[0]);
-			String slug = tokens[1];
-			Invitations existingInvitations = orgIdsToInvitations.get(orgId);
+    private void inviteUserToOrganizations(ApplicationUser user, Map<Integer, List<String>> groupsByOrganizationId)
+    {
+        DvcsCommunicator dvcsCommunicator = dvcsCommunicatorProvider.getCommunicator(DVCS_TYPE_BITBUCKET);
+        for (Entry<Integer, List<String>> entry : groupsByOrganizationId.entrySet())
+        {
+            Integer orgId = entry.getKey();
+            List<String> groups = entry.getValue();
 
-			//
-			// first time organization ?
-			if (existingInvitations == null)
-			{
-				Invitations newInvitations = new Invitations();
-				newInvitations.organizaton = organizationService.get(orgId, false);
-				
-				if (newInvitations.organizaton == null) 
-				{
-				    continue;
-				}
-				
-				orgIdsToInvitations.put(orgId, newInvitations);
-				existingInvitations = newInvitations;
-			}
-			//
-			existingInvitations.groupSlugs.add(slug);
-		}
+            Organization organization = organizationService.get(orgId, false);
+            if (organization == null)
+            {
+                LOGGER.warn("Skipped inviting user {} to groups {} in organization with id {} because such organization does not exist",
+                        new Object[] {user.getUsername(), groups, orgId});
+                continue;
+            }
 
-		return orgIdsToInvitations.values();
-	}
-
-	/**
-	 * Invite.
-	 *
-	 * @param email the email
-	 * @param invitations the invitations
-	 */
-	private void invite( String email, Collection<Invitations> invitations)
-	{
-		if (CollectionUtils.isNotEmpty(invitations))
-		{
-			for (Invitations invitation : invitations)
-			{
-				Collection<String> groupSlugs = invitation.groupSlugs;
-				Organization organizaton = invitation.organizaton;
-				invite(email, organizaton, groupSlugs);
-			}
-		}
-	}
-
-	/**
-	 * Invite.
-	 *
-	 * @param email the email
-	 * @param organization the organization
-	 * @param groupSlugs the group slugs
-	 */
-	private void invite(String email, Organization organization, Collection<String> groupSlugs)
-	{
-		if (CollectionUtils.isNotEmpty(groupSlugs))
-		{
-			DvcsCommunicator communicator = communicatorProvider.getCommunicator(organization.getDvcsType());
-			communicator.inviteUser(organization, groupSlugs, email);
-		}
-	}
-
-	@Override
-	public boolean willReceiveGroupInvite()
-	{
-		if (StringUtils.isBlank(serializedGroupsUiChoice))
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
-
-	/**
-	 * The Class Invitations.
-	 */
-	static class Invitations
-	{
-		/** The organizaton. */
-		Organization organizaton;
-		/** The group slugs. */
-		Collection<String> groupSlugs = new ArrayList<String>();
-		@Override
-		public String toString()
-		{
-		    return organizaton.getName() + " : " + groupSlugs + "\n";
-		}
-	}
+            checkState(DVCS_TYPE_BITBUCKET.equals(organization.getDvcsType()), "Expecting Bitbucket organizations only");
+            LOGGER.debug("Inviting user {} to groups {} in organization {}",
+                    new Object[] {user.getUsername(), groups, organization.getName()});
+            dvcsCommunicator.inviteUser(organization, groups, user.getEmailAddress());
+        }
+    }
 }
