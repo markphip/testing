@@ -1,9 +1,9 @@
-AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:application-access-bitbucket-access-component", function () {
+AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-component", function () {
     "use strict";
 
     require([
         'jquery',
-        'bitbucket-invite-message-panel'
+        'bitbucket-invite-message-panel-view'
     ], function(
             $,
             Panel
