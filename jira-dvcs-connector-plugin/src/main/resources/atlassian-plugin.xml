@@ -315,10 +315,8 @@
 
     <web-resource key="bitbucket-invite-message-panel-component">
         <resource type="download" name="bitbucket-invite-message-panel-view.js" location="javascripts/bitbucket-invite-message-panel-view.js" />
-        <resource type="download" name="bitbucket-invite-message-panel-model.js" location="javascripts/bitbucket-invite-message-panel-model.js" />
     </web-resource>
     <resource type="qunit" name="javascripts/bitbucket-invite-message-panel-view-test.js" location="javascripts/bitbucket-invite-message-panel-view-test.js" />
-    <resource type="qunit" name="javascripts/bitbucket-invite-message-panel-model-test.js" location="javascripts/bitbucket-invite-message-model-test.js" />
 
     <web-resource key="bitbucket-invite-message-panel-resources">
         <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-component</dependency>
