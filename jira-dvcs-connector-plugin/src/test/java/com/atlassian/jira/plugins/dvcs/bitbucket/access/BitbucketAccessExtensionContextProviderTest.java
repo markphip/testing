@@ -52,34 +52,25 @@ public class BitbucketAccessExtensionContextProviderTest
     @Test
     public void shouldContainJiraBaseUrl()
     {
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_JIRA_BASE_URL, JIRA_BASE_URL));
+        assertThatContextMapHasEntry(CONTEXT_KEY_JIRA_BASE_URL, JIRA_BASE_URL);
     }
 
     @Test
     public void shouldContainMoreCount()
     {
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_MORE_COUNT, 2));
+        assertThatContextMapHasEntry(CONTEXT_KEY_MORE_COUNT, 2);
     }
 
     @Test
     public void shouldContainMoreTeams()
     {
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_MORE_TEAMS, asList("Fusion Renaissance", "Yet another team")));
+        assertThatContextMapHasEntry(CONTEXT_KEY_MORE_TEAMS, asList("Fusion Renaissance", "Yet another team"));
     }
 
     @Test
     public void shouldContainACollectionOfOrganizationsWithDefaultGroups()
     {
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS,
-                getOrganizationNames()));
+        assertThatContextMapHasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, getOrganizationNames());
     }
 
     @Test
@@ -87,9 +78,7 @@ public class BitbucketAccessExtensionContextProviderTest
     {
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
 
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        assertThat(context, hasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, emptyList()));
+        assertThatContextMapHasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, emptyList());
     }
 
     protected BitbucketAccessExtensionContextProvider getInstanceUnderTest()
@@ -102,5 +91,12 @@ public class BitbucketAccessExtensionContextProviderTest
 
             }
         };
+    }
+
+    private void assertThatContextMapHasEntry(final String key, final Object value)
+    {
+        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+
+        assertThat(context, hasEntry(key, value));
     }
 }
