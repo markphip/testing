@@ -350,6 +350,11 @@
             <artifactId>atlassian-qunit-plugin-util</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-dvcs-connector-testkit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -481,6 +486,21 @@
                                 <exclude>it/restart/com/**/GithubEnterpriseTests.java</exclude>
                             </excludes>
                         </testGroup>
+
+                        <testGroup>
+                            <id>FuncTest</id>
+                            <includes>
+                                <include>**/it/com/atlassian/jira/plugin/dvcs/functest/**/Test*.java</include>
+                                <include>**/it/com/atlassian/jira/plugin/dvcs/functest/**/*Test.java</include>
+                                <!--Test for checking whether all contracts have been used-->
+                                <include>**/it/com/atlassian/jira/plugin/devstatus/contract/*</include>
+                            </includes>
+                            <productIds>
+                                <productId>jira</productId>
+                            </productIds>
+                        </testGroup>
+
+
                     </testGroups>
                     <extractDependencies>true</extractDependencies>
                     <instructions>

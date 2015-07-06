@@ -1,0 +1,23 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+    </plugin-info>
+
+    <!-- add our web resources -->
+    <web-resource key="devstatus-testkit-web-resources" name="Testkit Plugin Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+
+        <context>jira-development-integration-testkit</context>
+    </web-resource>
+
+    <!-- REST configuration -->
+    <rest key="devstatus-testkit-rest-resources" path="/dev-status-testkit" version="1.0">
+        <package>com.atlassian.jira.plugin.dvcs.testkit.bitbucket.BitbucketDvcsClient</package>
+        <package>com.atlassian.jira.plugin.dvcs.testkit.healthcheck</package>
+        <description>REST resources for the dev-status testkit plugin.</description>
+    </rest>
+
+</atlassian-plugin>

@@ -31,6 +31,7 @@
         <module>jira-dvcs-connector-github</module>
         <module>jira-dvcs-connector-github-enterprise</module>
         <module>jira-dvcs-connector-bitbucket</module>
+        <module>jira-dvcs-connector-testkit</module>
         <module>jira-dvcs-connector-plugin</module>
     </modules>
 
@@ -58,6 +59,8 @@
         <atlassian.qunit.plugin.version>1.0.0</atlassian.qunit.plugin.version>
         <atlassian.scheduler.version>1.0</atlassian.scheduler.version>
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
+        <ctk.version>0.23</ctk.version>
+        <ctk-test-resources.version>1.0.2</ctk-test-resources.version>
         <com.sun.jersey.version>1.8-atlassian-6</com.sun.jersey.version>
         <com.sun.xml.version>2.1.13</com.sun.xml.version>
         <greenhopper.version>6.7-breakit-10</greenhopper.version>
@@ -103,6 +106,24 @@
                 <artifactId>atlassian-scheduler-compat</artifactId>
                 <version>${atlassian.scheduler.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.atlassian.annotations</groupId>
+                <artifactId>atlassian-annotations</artifactId>
+                <version>0.15</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.plugins</groupId>
+                <artifactId>jira-dvcs-connector-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- Testkit -->
+            <dependency>
+                <groupId>com.atlassian.jira.plugins</groupId>
+                <artifactId>jira-dvcs-connector-testkit</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- provided dependencies -->
             <dependency>
                 <groupId>com.atlassian.jira</groupId>
@@ -202,6 +223,24 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.1</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.1</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
@@ -290,6 +329,12 @@
                 <version>${atlassian.spring.scanner.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-processor</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.github.rholder</groupId>
                 <artifactId>guava-retrying</artifactId>
                 <version>1.0.7</version>
@@ -304,6 +349,24 @@
                 <groupId>com.atlassian.qunit</groupId>
                 <artifactId>atlassian-qunit-plugin-util</artifactId>
                 <version>${atlassian.qunit.plugin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.plugins.rest</groupId>
+                <artifactId>atlassian-rest-common</artifactId>
+                <version>2.9.6</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.jira.tests</groupId>
+                <artifactId>jira-testkit-client</artifactId>
+                <version>${testkit.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit-dep</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
