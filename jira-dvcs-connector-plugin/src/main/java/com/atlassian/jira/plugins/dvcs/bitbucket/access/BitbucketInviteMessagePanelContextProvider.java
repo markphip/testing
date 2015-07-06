@@ -22,7 +22,7 @@ import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
 
 /**
- * Context provider for the Bitbucket invite message panel
+ * Context provider for the Bitbucket invite message panels in application access defaults and JIM pages
  */
 public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessExtensionContextProvider
 {

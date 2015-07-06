@@ -3,9 +3,9 @@ define('bitbucket-invite-message-panel-view', [
     'backbone',
     'aui/inline-dialog2'
 ], function (
-        $,
-        Backbone,
-        InlineDialog2
+    $,
+    Backbone,
+    InlineDialog2
 )
 {
     "use strict";
@@ -16,9 +16,8 @@ define('bitbucket-invite-message-panel-view', [
 
         initialize: function (options){
             this.el = options.el;
-            this.jiraSoftwareCheckboxSelector = options.jiraSoftwareCheckboxSelector;
 
-            this.$jiraSoftwareCheckbox = $(this.jiraSoftwareCheckboxSelector);
+            this.$jiraSoftwareCheckbox = $(options.jiraSoftwareCheckboxSelector);
             this.$jiraSoftwareCheckbox.on("change", this.changeVisibility.bind(this));
 
             this.changeVisibility();
