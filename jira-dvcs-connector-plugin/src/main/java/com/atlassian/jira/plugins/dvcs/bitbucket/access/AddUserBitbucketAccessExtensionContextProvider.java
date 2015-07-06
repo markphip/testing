@@ -24,7 +24,7 @@ import static java.util.Collections.emptyList;
 /**
  * Context provider for the Bitbucket access extension on the add user page.
  */
-public class AddUserBitbucketAccessExtensionContextProvider extends BitbucketAccessExtensionContextProvider implements ContextProvider
+public class AddUserBitbucketAccessExtensionContextProvider extends BitbucketAccessExtensionContextProvider
 {
     private static final String ORGANIZATION_GROUP_PAIR_SEPARATOR = ";";
 

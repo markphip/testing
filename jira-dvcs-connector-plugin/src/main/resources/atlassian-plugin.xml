@@ -282,7 +282,7 @@
         <conditions type="AND">
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.ApplicationRoleEnabledCondition" />
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionCondition" />
         </conditions>
         <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionContextProvider" />
         <resource name="view" type="velocity" location="/templates/dvcs/add-user-bitbucket-access-extension.vm"/>
@@ -307,7 +307,7 @@
     <web-panel key="app-role-defaults-bitbucket-invite-message-panel" weight="2000" location="webpanels.admin.defaultapp.selector">
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
-            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.AddUserBitbucketAccessExtensionCondition" />
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionCondition" />
         </conditions>
         <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketInviteMessagePanelContextProvider" />
         <resource name="view" type="velocity" location="/templates/dvcs/bitbucket-invite-message-panel.vm"/>
