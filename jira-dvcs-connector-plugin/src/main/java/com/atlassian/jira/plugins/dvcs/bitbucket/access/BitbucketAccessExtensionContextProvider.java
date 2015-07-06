@@ -16,6 +16,9 @@ import static com.google.common.collect.Lists.transform;
 import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
 
+/**
+ * Base class for bitbucket access extension context providers
+ */
 public abstract class BitbucketAccessExtensionContextProvider implements ContextProvider
 {
     /**

@@ -40,8 +40,6 @@ public class AddUserBitbucketAccessExtensionContextProviderTest extends Bitbucke
     @BeforeMethod
     public void prepare()
     {
-        super.prepare();
-        
         when(pageBuilderService.assembler()).thenReturn(webResourceAssembler);
         when(webResourceAssembler.resources()).thenReturn(requiredResources);
         when(webResourceAssembler.data()).thenReturn(requiredData);

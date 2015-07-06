@@ -22,7 +22,7 @@ import static java.lang.Math.max;
 import static java.util.Collections.emptyList;
 
 /**
- * Context provider for the Bitbucket access extension on the application access
+ * Context provider for the Bitbucket invite message panel
  */
 public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessExtensionContextProvider
 {
@@ -43,11 +43,9 @@ public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessE
 
     protected void requireResourcesAndData(List<Organization> bitbucketTeamsWithDefaultGroups)
     {
-        if (bitbucketTeamsWithDefaultGroups.isEmpty())
+        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
         {
-           return;
+            pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
         }
-
-        pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
     }
 }

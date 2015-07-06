@@ -6,6 +6,10 @@
     font-size: 12px;
 }
 
+#bitbucket-invite-message-panel .aui-message-info{
+    padding: 0 0 0 20px;
+}
+
 #bitbucket-access-inline-dialog-content li+li {
     margin-top: 10px;
 }

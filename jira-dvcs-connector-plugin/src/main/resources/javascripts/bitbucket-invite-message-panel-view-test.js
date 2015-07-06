@@ -8,7 +8,7 @@ AJS.test.require("com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bit
             $,
             PanelView
     ) {
-        module('Application Role Defaults BB Panel', {
+        module('Bitbucket invite message panel view test', {
             setup: function() {
                 this.sandbox = sinon.sandbox.create();
 

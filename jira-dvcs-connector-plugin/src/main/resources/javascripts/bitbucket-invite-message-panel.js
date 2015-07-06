@@ -10,9 +10,8 @@ AJS.$(function ()
     {
         "use strict";
         // listen to dialog show event
-        defaultsApi.on(defaultsApi.EVENT_ON_SHOW, function(dialogView){
-            if (dialogView.$el.attr("id") !== 'app-role-defaults-dialog')
-            {
+        defaultsApi.on(defaultsApi.EVENT_ON_SHOW, function(dialogView) {
+            if (dialogView.$el.attr("id") !== 'app-role-defaults-dialog'){
                 return;
             }
             new Panel({
