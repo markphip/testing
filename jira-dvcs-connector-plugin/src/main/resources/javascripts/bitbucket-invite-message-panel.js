@@ -16,9 +16,13 @@ AJS.$(function () {
                 return;
             }
 
-            new Panel({
+            var panel = new Panel({
                 jiraSoftwareCheckboxSelector: '.application-picker-applications .checkbox input.application-jira-software',
                 el: 'div#bitbucket-invite-message-panel'
+            });
+
+            dialogView.on("close", function() {
+                panel.close();
             });
         });
     });

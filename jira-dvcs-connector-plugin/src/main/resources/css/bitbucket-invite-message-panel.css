@@ -10,11 +10,19 @@
     padding: 0 0 0 20px;
 }
 
-#bitbucket-access-inline-dialog-content li+li {
+#bitbucket-invite-message-panel .aui-inline-dialog{
+    display: none;
+}
+
+#bitbucket-invite-message-panel .aui-inline-dialog[aria-hidden="true"]{
+    display: none;
+}
+
+#bitbucket-invite-message-panel .aui-inline-dialog li+li {
     margin-top: 10px;
 }
 
-#bitbucket-access-inline-dialog-content .aui-inline-dialog-contents {
+#bitbucket-invite-message-panel .aui-inline-dialog .aui-inline-dialog-contents {
     max-height: 200px;
     overflow-y: auto;
 }
