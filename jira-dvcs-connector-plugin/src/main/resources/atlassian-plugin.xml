@@ -325,4 +325,24 @@
         <resource type="download" name="bitbucket-invite-message-panel.js" location="javascripts/bitbucket-invite-message-panel.js"/>
     </web-resource>
 
+    <web-panel key="jim-user-access-bitbucket-invite-message-panel" weight="2000" location="jim.webpanels.after.user.access.picker">
+        <conditions type="AND">
+            <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionCondition" />
+        </conditions>
+        <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.JIMBitbucketInviteMessagePanelContextProvider" />
+        <resource name="view" type="velocity" location="/templates/dvcs/bitbucket-invite-message-panel.vm"/>
+    </web-panel>
+
+    <web-resource key="jim-bitbucket-invite-message-panel-resources">
+        <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-component</dependency>
+
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
+        <resource type="download" name="bitbucket-invite-message-panel.css" location="css/bitbucket-invite-message-panel.less"/>
+        <resource type="download" name="bitbucket-invite-message-panel.js" location="javascripts/jim-bitbucket-invite-message-panel.js"/>
+    </web-resource>
+
 </atlassian-plugin>
