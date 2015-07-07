@@ -62,6 +62,8 @@ public class BitbucketAccessExtensionContextProviderTest
 
         List<Organization> bitbucketTeams = prepareBitbucketTeams();
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(bitbucketTeams);
+        when(pageBuilderService.assembler()).thenReturn(webResourceAssembler);
+        when(webResourceAssembler.resources()).thenReturn(requiredResources);
 
         bitbucketAccessExtensionContextProvider = getInstanceUnderTest();
     }
