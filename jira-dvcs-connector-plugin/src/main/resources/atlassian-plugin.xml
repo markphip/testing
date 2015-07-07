@@ -321,7 +321,11 @@
     <web-resource key="bitbucket-invite-message-panel-resources">
         <dependency>com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-component</dependency>
 
-        <resource type="download" name="bitbucket-invite-message-panel.css" location="css/bitbucket-invite-message-panel.css"/>
+        <transformation extension="less">
+            <transformer key="lessTransformer"/>
+        </transformation>
+
+        <resource type="download" name="bitbucket-invite-message-panel.css" location="css/bitbucket-invite-message-panel.less"/>
         <resource type="download" name="bitbucket-invite-message-panel.js" location="javascripts/bitbucket-invite-message-panel.js"/>
     </web-resource>
 
