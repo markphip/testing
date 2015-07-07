@@ -10,8 +10,12 @@ import javax.inject.Inject;
 @Component ("analyticsService")
 public class AnalyticsServiceImpl implements AnalyticsService
 {
-    @Inject
     private EventPublisher eventPublisher;
+
+    @Inject
+    public AnalyticsServiceImpl(EventPublisher eventPublisher){
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void publishInviteGroupChange(final int inviteGroupsEnabled)

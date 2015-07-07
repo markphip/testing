@@ -21,8 +21,12 @@ import javax.inject.Inject;
 @Component
 public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsService
 {
+    private final EventPublisher eventPublisher;
+
     @Inject
-    private EventPublisher eventPublisher;
+    public SmartCommitsAnalyticsServiceImpl(EventPublisher eventPublisher){
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void fireSmartCommitSucceeded(final Set<SmartCommitCommandType> smartCommitCommandTypesPresent)
@@ -33,7 +37,7 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
     @Override
     public void fireSmartCommitOperationFailed(final SmartCommitCommandType smartCommitCommandType)
     {
-        eventPublisher.publish(new SmartCommitOperationFailedEvent(smartCommitCommandType, ""));
+        fireSmartCommitOperationFailed(smartCommitCommandType,SmartCommitFailure.NO_REASON);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
     @Override
     public void fireSmartCommitFailed()
     {
-        eventPublisher.publish(new SmartCommitFailureEvent(""));
+        fireSmartCommitFailed(SmartCommitFailure.NO_REASON);
     }
 
     @Override

@@ -8,7 +8,8 @@ public enum SmartCommitFailure
     NO_VALID_TRANSITION_COMMAND("noCommandProvided"),
     NO_EMAIL("noEmail"),
     UNABLE_TO_MAP_TO_JIRA_USER("cantMapEmailToJiraUser"),
-    MULTIPLE_JIRA_USERS_FOR_EMAIL("foundMultipleUserWithEmail");
+    MULTIPLE_JIRA_USERS_FOR_EMAIL("foundMultipleUserWithEmail"),
+    NO_REASON("");
 
     private String smartCommitFailure;
 
