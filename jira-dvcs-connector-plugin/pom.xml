@@ -777,5 +777,42 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>jira7</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.atlassian.maven.plugins</groupId>
+                        <artifactId>maven-jira-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <applications>
+                                <application>
+                                    <applicationKey>jira-software</applicationKey>
+                                    <version>${jira.software.application.version}</version>
+                                </application>
+                            </applications>
+                            <pluginArtifacts>
+                                <pluginArtifact>
+                                    <groupId>com.atlassian.jira</groupId>
+                                    <artifactId>jira-projects-plugin</artifactId>
+                                    <version>${jira.projects.version}</version>
+                                </pluginArtifact>
+                                <pluginArtifact>
+                                    <groupId>com.atlassian.jira.tests</groupId>
+                                    <artifactId>jira-testkit-plugin</artifactId>
+                                    <version>${testkit.version}</version>
+                                </pluginArtifact>
+                                <pluginArtifact>
+                                    <groupId>com.atlassian.qunit</groupId>
+                                    <artifactId>atlassian-qunit-plugin</artifactId>
+                                    <version>${atlassian.qunit.plugin.version}</version>
+                                </pluginArtifact>
+                            </pluginArtifacts>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
