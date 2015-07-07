@@ -326,6 +326,7 @@
         </transformation>
 
         <resource type="download" name="bitbucket-invite-message-panel.css" location="css/bitbucket-invite-message-panel.less"/>
+        <resource type="download" name="bitbucket-invite-message-panel-app-role-defaults.css" location="css/bitbucket-invite-message-panel-app-role-defaults.less"/>
         <resource type="download" name="bitbucket-invite-message-panel.js" location="javascripts/bitbucket-invite-message-panel.js"/>
     </web-resource>
 
@@ -346,6 +347,7 @@
         </transformation>
 
         <resource type="download" name="bitbucket-invite-message-panel.css" location="css/bitbucket-invite-message-panel.less"/>
+        <resource type="download" name="bitbucket-invite-message-panel-jim-user-access.css" location="css/bitbucket-invite-message-panel-jim-user-access.less"/>
         <resource type="download" name="bitbucket-invite-message-panel.js" location="javascripts/jim-bitbucket-invite-message-panel.js"/>
     </web-resource>
 
