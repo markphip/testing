@@ -81,7 +81,7 @@ public class DefaultSmartcommitsServiceTest
     private List<CommitCommands.CommitCommand> commandList = new ArrayList<>();
 
     private final Set<SmartCommitCommandType> smartCommitCommandTypesPresent =
-            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.TIME, SmartCommitCommandType.TRANSITION);
+            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.LOG_WORK, SmartCommitCommandType.TRANSITION);
 
 
 
@@ -145,7 +145,7 @@ public class DefaultSmartcommitsServiceTest
         classUnderTest.doCommands(commands);
 
         verify(analyticsService).fireSmartCommitReceived(smartCommitCommandTypesPresent);
-        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.TIME);
+        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.LOG_WORK);
         verify(analyticsService).fireSmartCommitFailed();
         verifyNoMoreInteractions(analyticsService);
     }

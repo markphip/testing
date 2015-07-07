@@ -18,7 +18,7 @@ public class SmartCommitSuccessEvent
     public SmartCommitSuccessEvent(Set<SmartCommitCommandType> smartCommitType)
     {
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
-        this.time = smartCommitType.contains(SmartCommitCommandType.TIME);
+        this.time = smartCommitType.contains(SmartCommitCommandType.LOG_WORK);
         this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 

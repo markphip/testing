@@ -87,7 +87,7 @@ public class DefaultSmartcommitsChangesetsProcessor implements SmartcommitsChang
         }
 
         return Promises.forListenableFuture(executor.submit(
-                new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService,smartCommitsAnalyticsService)
+                new SmartcommitOperation(changesetDao, commitParser, smartcommitService, forProgress, repository, changesetService, smartCommitsAnalyticsService)
         ));
     }
 

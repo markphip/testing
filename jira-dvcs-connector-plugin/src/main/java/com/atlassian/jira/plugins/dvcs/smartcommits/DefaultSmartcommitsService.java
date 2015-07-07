@@ -71,7 +71,8 @@ public class DefaultSmartcommitsService implements SmartcommitsService
             @Qualifier ("smartcommitsCommentHandler") CommentHandler commentHandler,
             @Qualifier ("smartcommitsWorklogHandler") WorkLogHandler workLogHandler,
             @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
-            @ComponentImport CrowdService crowdService, final SmartCommitsAnalyticsService analyticsService)
+            @ComponentImport CrowdService crowdService,
+            final SmartCommitsAnalyticsService analyticsService)
     {
         this.analyticsService = checkNotNull(analyticsService);
         this.crowdService = checkNotNull(crowdService);
@@ -147,9 +148,12 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
         log.debug("Processing commands results : " + results);
 
-        if(results.hasErrors()){
+        if (results.hasErrors())
+        {
             analyticsService.fireSmartCommitFailed();
-        }else{
+        }
+        else
+        {
             analyticsService.fireSmartCommitSucceeded(commandTypesPresent);
         }
 
@@ -185,7 +189,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
 
                     if (logResult.hasError())
                     {
-                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TIME);
+                        analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.LOG_WORK);
                         commandResult.addError(logResult.getError() + "");
                     }
                     break;
