@@ -79,7 +79,12 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
                 return organization.getName();
             }
         });
-        requireResources(bitbucketTeamsWithDefaultGroups);
+
+        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
+        {
+            requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
+        }
+
         return ImmutableMap.of(
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
                 CONTEXT_KEY_MORE_COUNT, max(0, bitbucketTeamsWithDefaultGroups.size() - TEAMS_DISPLAY_THRESHOLD),
@@ -98,14 +103,5 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
         }
 
         return emptyList();
-    }
-
-    private final void requireResources(final List<Organization> bitbucketTeamsWithDefaultGroups)
-    {
-        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
-        {
-            requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
-        }
-
     }
 }
