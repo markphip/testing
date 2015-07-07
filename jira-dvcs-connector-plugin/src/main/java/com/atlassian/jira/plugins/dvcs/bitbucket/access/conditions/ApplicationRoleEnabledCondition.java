@@ -1,4 +1,4 @@
-package com.atlassian.jira.plugins.dvcs.bitbucket.access;
+package com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions;
 
 import com.atlassian.jira.compatibility.bridge.application.ApplicationRoleManagerBridge;
 import com.atlassian.plugin.web.Condition;
