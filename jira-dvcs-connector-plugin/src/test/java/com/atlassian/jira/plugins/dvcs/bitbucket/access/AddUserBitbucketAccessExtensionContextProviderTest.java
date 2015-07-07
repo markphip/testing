@@ -25,18 +25,6 @@ public class AddUserBitbucketAccessExtensionContextProviderTest extends Bitbucke
     @InjectMocks
     private AddUserBitbucketAccessExtensionContextProvider addUserBitbucketAccessExtensionContextProvider;
 
-    @Mock
-    private PageBuilderService pageBuilderService;
-
-    @Mock
-    private RequiredData requiredData;
-
-    @Mock
-    private RequiredResources requiredResources;
-
-    @Mock
-    private WebResourceAssembler webResourceAssembler;
-
     @BeforeMethod
     public void prepare()
     {
@@ -61,15 +49,5 @@ public class AddUserBitbucketAccessExtensionContextProviderTest extends Bitbucke
         verify(requiredResources).requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
         verify(requiredData).requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY,
                 "1:developers;2:administrators;2:developers;3:administrators;4:developers;5:administrators;5:developers");
-    }
-
-    @Test
-    public void shouldNotRequireResourcesAndDataWhenThereAreNoBitbucketTeamsWithDefaultGroups()
-    {
-        when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
-
-        addUserBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
-
-        verifyZeroInteractions(requiredResources, requiredData);
     }
 }

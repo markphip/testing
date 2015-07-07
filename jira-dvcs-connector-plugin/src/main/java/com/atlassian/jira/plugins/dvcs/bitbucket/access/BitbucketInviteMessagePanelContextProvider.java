@@ -29,23 +29,14 @@ public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessE
     @VisibleForTesting
     static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-resources";
 
-    private final PageBuilderService pageBuilderService;
-
     public BitbucketInviteMessagePanelContextProvider(@ComponentImport ApplicationProperties applicationProperties,
             BitbucketTeamService bitbucketTeamService, @ComponentImport PageBuilderService pageBuilderService)
     {
-        super(applicationProperties, bitbucketTeamService);
-        this.pageBuilderService = checkNotNull(pageBuilderService);
+        super(applicationProperties, bitbucketTeamService, pageBuilderService);
     }
-
-    @Override
-    public void init(Map<String, String> params) {}
 
     protected void requireResourcesAndData(List<Organization> bitbucketTeamsWithDefaultGroups)
     {
-        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
-        {
-            pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
-        }
+        pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
     }
 }

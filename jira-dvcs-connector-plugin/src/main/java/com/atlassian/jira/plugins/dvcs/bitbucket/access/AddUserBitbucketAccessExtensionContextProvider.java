@@ -36,13 +36,11 @@ public class AddUserBitbucketAccessExtensionContextProvider extends BitbucketAcc
     @VisibleForTesting
     static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:add-user-bitbucket-access-extension-resources";
 
-    private final PageBuilderService pageBuilderService;
 
     public AddUserBitbucketAccessExtensionContextProvider(@ComponentImport ApplicationProperties applicationProperties,
             BitbucketTeamService bitbucketTeamService, @ComponentImport PageBuilderService pageBuilderService)
     {
-        super(applicationProperties, bitbucketTeamService);
-        this.pageBuilderService = checkNotNull(pageBuilderService);
+        super(applicationProperties, bitbucketTeamService, pageBuilderService);
     }
 
     @Override
@@ -50,11 +48,6 @@ public class AddUserBitbucketAccessExtensionContextProvider extends BitbucketAcc
 
     protected void requireResourcesAndData(final List<Organization> bitbucketTeamsWithDefaultGroups)
     {
-        if (bitbucketTeamsWithDefaultGroups.isEmpty())
-        {
-           return;
-        }
-
         String inviteToGroups = inviteToGroups(bitbucketTeamsWithDefaultGroups);
         pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
         pageBuilderService.assembler().data().requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY, inviteToGroups);

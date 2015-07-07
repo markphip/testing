@@ -3,6 +3,7 @@ package com.atlassian.jira.plugins.dvcs.bitbucket.access;
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.plugin.web.ContextProvider;
+import com.atlassian.webresource.api.assembler.PageBuilderService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -53,11 +54,14 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
 
     private final BitbucketTeamService bitbucketTeamService;
 
+    protected final PageBuilderService pageBuilderService;
+
     public BitbucketAccessExtensionContextProvider(final ApplicationProperties applicationProperties,
-            final BitbucketTeamService bitbucketTeamService)
+            final BitbucketTeamService bitbucketTeamService, final PageBuilderService pageBuilderService)
     {
         this.applicationProperties = checkNotNull(applicationProperties);
         this.bitbucketTeamService = checkNotNull(bitbucketTeamService);
+        this.pageBuilderService = checkNotNull(pageBuilderService);
     }
 
     @Override
@@ -75,7 +79,7 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
                 return organization.getName();
             }
         });
-        requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
+        requireResources(bitbucketTeamsWithDefaultGroups);
         return ImmutableMap.of(
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),
                 CONTEXT_KEY_MORE_COUNT, max(0, bitbucketTeamsWithDefaultGroups.size() - TEAMS_DISPLAY_THRESHOLD),
@@ -96,4 +100,12 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
         return emptyList();
     }
 
+    private final void requireResources(final List<Organization> bitbucketTeamsWithDefaultGroups)
+    {
+        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
+        {
+            requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
+        }
+
+    }
 }
