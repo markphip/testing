@@ -2,7 +2,7 @@ AJS.$(function () {
     require([
         'bitbucket-invite-message-panel-view'
     ], function (
-            Panel
+        Panel
     )
     {
         "use strict";
