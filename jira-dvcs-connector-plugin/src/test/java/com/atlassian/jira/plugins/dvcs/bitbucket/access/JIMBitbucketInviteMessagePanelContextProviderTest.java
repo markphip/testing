@@ -10,7 +10,7 @@ import static java.util.Collections.emptyMap;
 import static org.mockito.Mockito.verify;
 
 @Listeners (MockitoTestNgListener.class)
-public class JIMBitbucketInviteMessagePanelContextProviderTest extends BitbucketAccessExtensionContextProviderTest
+public class JIMBitbucketInviteMessagePanelContextProviderTest extends BaseBitbucketAccessExtensionContextProviderTest
 {
     @InjectMocks
     private JIMBitbucketInviteMessagePanelContextProvider jimBitbucketInviteMessagePanelContextProvider;

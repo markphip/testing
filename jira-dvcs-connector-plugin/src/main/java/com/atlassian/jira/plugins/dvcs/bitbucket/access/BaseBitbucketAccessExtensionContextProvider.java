@@ -20,7 +20,7 @@ import static java.util.Collections.emptyList;
 /**
  * Base class for bitbucket access extension context providers
  */
-public abstract class BitbucketAccessExtensionContextProvider implements ContextProvider
+public abstract class BaseBitbucketAccessExtensionContextProvider implements ContextProvider
 {
     /**
      * This context key points to JIRA's base url. We use this so we can specify a link to the 'DVCS accounts' page.
@@ -56,7 +56,7 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
 
     protected final PageBuilderService pageBuilderService;
 
-    public BitbucketAccessExtensionContextProvider(final ApplicationProperties applicationProperties,
+    public BaseBitbucketAccessExtensionContextProvider(final ApplicationProperties applicationProperties,
             final BitbucketTeamService bitbucketTeamService, final PageBuilderService pageBuilderService)
     {
         this.applicationProperties = checkNotNull(applicationProperties);

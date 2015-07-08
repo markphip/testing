@@ -10,13 +10,13 @@ import static java.util.Collections.emptyMap;
 import static org.mockito.Mockito.verify;
 
 @Listeners (MockitoTestNgListener.class)
-public class BitbucketInviteMessagePanelContextProviderTest extends BitbucketAccessExtensionContextProviderTest
+public class BitbucketInviteMessagePanelContextProviderTest extends BaseBitbucketAccessExtensionContextProviderTest
 {
     @InjectMocks
     private BitbucketInviteMessagePanelContextProvider bitbucketInviteMessagePanelContextProvider;
 
     @Override
-    protected BitbucketAccessExtensionContextProvider getInstanceUnderTest()
+    protected BaseBitbucketAccessExtensionContextProvider getInstanceUnderTest()
     {
         return bitbucketInviteMessagePanelContextProvider;
     }

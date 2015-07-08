@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
-public class AddUserBitbucketAccessExtensionContextProviderTest extends BitbucketAccessExtensionContextProviderTest
+public class AddUserBitbucketAccessExtensionContextProviderTest extends BaseBitbucketAccessExtensionContextProviderTest
 {
     @InjectMocks
     private AddUserBitbucketAccessExtensionContextProvider addUserBitbucketAccessExtensionContextProvider;
@@ -27,7 +27,7 @@ public class AddUserBitbucketAccessExtensionContextProviderTest extends Bitbucke
     }
 
     @Override
-    protected BitbucketAccessExtensionContextProvider getInstanceUnderTest()
+    protected BaseBitbucketAccessExtensionContextProvider getInstanceUnderTest()
     {
         return addUserBitbucketAccessExtensionContextProvider;
     }

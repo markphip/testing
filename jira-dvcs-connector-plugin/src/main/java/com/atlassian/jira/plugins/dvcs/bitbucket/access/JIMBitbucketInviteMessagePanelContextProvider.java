@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Context provider for the Bitbucket invite message panels in JIM import user access page
  */
-public class JIMBitbucketInviteMessagePanelContextProvider extends BitbucketAccessExtensionContextProvider
+public class JIMBitbucketInviteMessagePanelContextProvider extends BaseBitbucketAccessExtensionContextProvider
 {
     @VisibleForTesting
     static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:jim-bitbucket-invite-message-panel-resources";

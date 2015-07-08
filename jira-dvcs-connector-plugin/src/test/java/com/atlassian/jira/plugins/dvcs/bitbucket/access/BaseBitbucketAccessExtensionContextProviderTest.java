@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.atlassian.jira.config.properties.APKeys.JIRA_BASEURL;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProvider.CONTEXT_KEY_JIRA_BASE_URL;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_COUNT;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_TEAMS;
-import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProvider.CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BaseBitbucketAccessExtensionContextProvider.CONTEXT_KEY_JIRA_BASE_URL;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BaseBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_COUNT;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BaseBitbucketAccessExtensionContextProvider.CONTEXT_KEY_MORE_TEAMS;
+import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BaseBitbucketAccessExtensionContextProvider.CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProviderTestHelper.getOrganizationNames;
 import static com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketAccessExtensionContextProviderTestHelper.prepareBitbucketTeams;
 import static java.util.Arrays.asList;
@@ -31,11 +31,11 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @Listeners (MockitoTestNgListener.class)
-public class BitbucketAccessExtensionContextProviderTest
+public class BaseBitbucketAccessExtensionContextProviderTest
 {
     private static final String JIRA_BASE_URL = "http://example.com";
 
-    private BitbucketAccessExtensionContextProvider bitbucketAccessExtensionContextProvider;
+    private BaseBitbucketAccessExtensionContextProvider baseBitbucketAccessExtensionContextProvider;
 
     @Mock
     protected ApplicationProperties applicationProperties;
@@ -65,7 +65,7 @@ public class BitbucketAccessExtensionContextProviderTest
         when(pageBuilderService.assembler()).thenReturn(webResourceAssembler);
         when(webResourceAssembler.resources()).thenReturn(requiredResources);
 
-        bitbucketAccessExtensionContextProvider = getInstanceUnderTest();
+        baseBitbucketAccessExtensionContextProvider = getInstanceUnderTest();
     }
 
     @Test
@@ -97,7 +97,7 @@ public class BitbucketAccessExtensionContextProviderTest
     {
         when(bitbucketTeamService.getTeamsWithDefaultGroups()).thenReturn(emptyList());
 
-        bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+        baseBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         verifyZeroInteractions(requiredResources, requiredData);
     }
@@ -110,9 +110,9 @@ public class BitbucketAccessExtensionContextProviderTest
         assertThatContextMapHasEntry(CONTEXT_KEY_TEAMS_WITH_DEFAULT_GROUPS, emptyList());
     }
 
-    protected BitbucketAccessExtensionContextProvider getInstanceUnderTest()
+    protected BaseBitbucketAccessExtensionContextProvider getInstanceUnderTest()
     {
-        return new BitbucketAccessExtensionContextProvider(applicationProperties, bitbucketTeamService, pageBuilderService)
+        return new BaseBitbucketAccessExtensionContextProvider(applicationProperties, bitbucketTeamService, pageBuilderService)
         {
             @Override
             protected void requireResourcesAndData(final List<Organization> bitbucketTeamsWithDefaultGroups)
@@ -124,7 +124,7 @@ public class BitbucketAccessExtensionContextProviderTest
 
     private void assertThatContextMapHasEntry(final String key, final Object value)
     {
-        Map<String,Object> context = bitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
+        Map<String,Object> context = baseBitbucketAccessExtensionContextProvider.getContextMap(emptyMap());
 
         assertThat(context, hasEntry(key, value));
     }
