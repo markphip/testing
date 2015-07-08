@@ -333,6 +333,7 @@
     <web-panel key="jim-user-access-bitbucket-invite-message-panel" weight="2000" location="jim.webpanels.after.user.access.picker">
         <conditions type="AND">
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
+            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.ApplicationRoleEnabledCondition" />
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.BitbucketAccessExtensionCondition" />
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.IsBitbucketImporterCondition" invert="true" />
         </conditions>
