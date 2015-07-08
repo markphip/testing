@@ -9,19 +9,20 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 
 /**
- * Context provider for the Bitbucket invite message panels in application access defaults
+ * Context provider for the Bitbucket invite message panels in JIM import user access page
  */
-public class BitbucketInviteMessagePanelContextProvider extends BaseBitbucketAccessExtensionContextProvider
+public class JIMBitbucketInviteMessagePanelContextProvider extends BaseBitbucketAccessExtensionContextProvider
 {
     @VisibleForTesting
-    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:bitbucket-invite-message-panel-resources";
+    static final String REQUIRED_WEB_RESOURCE_COMPLETE_KEY = "com.atlassian.jira.plugins.jira-bitbucket-connector-plugin:jim-bitbucket-invite-message-panel-resources";
 
-    public BitbucketInviteMessagePanelContextProvider(@ComponentImport ApplicationProperties applicationProperties,
+    public JIMBitbucketInviteMessagePanelContextProvider(@ComponentImport ApplicationProperties applicationProperties,
             BitbucketTeamService bitbucketTeamService, @ComponentImport PageBuilderService pageBuilderService)
     {
         super(applicationProperties, bitbucketTeamService, pageBuilderService);
     }
 
+    @Override
     protected void requireResourcesAndData(List<Organization> bitbucketTeamsWithDefaultGroups)
     {
         if (!bitbucketTeamsWithDefaultGroups.isEmpty())

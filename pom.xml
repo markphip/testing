@@ -65,6 +65,7 @@
         <jira.compile.version>6.5-OD-07-005</jira.compile.version>
         <jira.data.path>${basedir}/target/test-classes/test-resources-gh-enabled-5.0.1.zip</jira.data.path>
         <jira.data.version>6.5-OD-07-005</jira.data.version>
+        <jim.version>7.0.16-D20150706T135108</jim.version>
         <jira.projects.version>2.5-D20150526T011810</jira.projects.version>
         <jira.software.version>0.32-D20150602T104750</jira.software.version>
         <jira.version>6.5-OD-07-005</jira.version>

@@ -446,6 +446,11 @@
                             <version>${jira.software.version}</version>
                         </pluginArtifact>
                         <pluginArtifact>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-importers-plugin</artifactId>
+                            <version>${jim.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
                             <groupId>com.atlassian.jira.tests</groupId>
                             <artifactId>jira-testkit-plugin</artifactId>
                             <version>${testkit.version}</version>

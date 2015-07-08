@@ -1,5 +1,6 @@
-package com.atlassian.jira.plugins.dvcs.bitbucket.access;
+package com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions;
 
+import com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketTeamService;
 import com.atlassian.plugin.web.Condition;
 
 import java.util.Map;

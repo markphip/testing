@@ -1,5 +1,7 @@
-package com.atlassian.jira.plugins.dvcs.bitbucket.access;
+package com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions;
 
+import com.atlassian.jira.plugins.dvcs.bitbucket.access.BitbucketTeamService;
+import com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.BitbucketAccessExtensionCondition;
 import com.atlassian.jira.plugins.dvcs.model.Organization;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import org.mockito.InjectMocks;
