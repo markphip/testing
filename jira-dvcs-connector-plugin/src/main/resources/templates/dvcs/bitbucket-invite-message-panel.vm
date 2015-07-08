@@ -1,0 +1,42 @@
+#disable_html_escaping()
+
+#if(!$teamsWithDefaultGroups.isEmpty())
+<div id="bitbucket-invite-message-panel">
+    <div class="field-group bitbucket-access-field-group">
+        <div class="aui-message-info">
+            <span class="aui-icon aui-icon-small aui-iconfont-info"></span>
+
+            #if($teamsWithDefaultGroups.size() == 1)
+                #set($label = $i18n.getText('application.access.bitbucket.access.extension.one.account',
+                    "<span>$teamsWithDefaultGroups.get(0)</span>"))
+            #elseif($teamsWithDefaultGroups.size() == 2)
+                #set($label = $i18n.getText('application.access.bitbucket.access.extension.two.accounts',
+                    "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>"))
+            #elseif($teamsWithDefaultGroups.size() == 3)
+                #set($label = $i18n.getText('application.access.bitbucket.access.extension.three.accounts',
+                    "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>",
+                    "<span>$teamsWithDefaultGroups.get(2)</span>"))
+            #else
+                #set($label = $i18n.getText('application.access.bitbucket.access.extension.more.than.three.accounts',
+                    "<span>$teamsWithDefaultGroups.get(0)</span>", "<span>$teamsWithDefaultGroups.get(1)</span>",
+                    "<span>$teamsWithDefaultGroups.get(2)</span>", $moreCount))
+            #end
+
+            <label for="should-invite-user">$label
+                <br><a class="change-settings" href="$jiraBaseUrl/secure/admin/ConfigureDvcsOrganizations!default.jspa" target="_blank">$i18n.getText(
+                    'application.access.bitbucket.access.extension.change.default.groups', $teamsWithDefaultGroups.size())</a></label>
+            #if(!$moreTeams.isEmpty())
+                <aui-inline-dialog2 id="bitbucket-access-inline-dialog-content" class="aui-layer aui-inline-dialog" data-aui-alignment="bottom left" data-aui-responds-to="toggle" aria-hidden="true" persistent="false">
+                    <div class="aui-inline-dialog-contents">
+                        <ul class="aui-nav">
+                            #foreach($team in $moreTeams)
+                                <li>$team</li>
+                            #end
+                        </ul>
+                    </div>
+                </aui-inline-dialog2>
+            #end
+        </div>
+    </div>
+</div>
+#end
