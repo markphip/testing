@@ -10,7 +10,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Checks whether JIM is importing users via bitbucket importer plugin.
  *
- * When this condition is satisfied, we should not show the Bitbucket invite message in JIM user access page.
+ * This condition was used to hide Bitbucket invite message in JIM user access page when users are imported using the bitbucket importer plugin
+ * But now it is not used any more
  */
 public class IsBitbucketImporterCondition implements Condition
 {

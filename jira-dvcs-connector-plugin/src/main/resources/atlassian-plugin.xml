@@ -335,7 +335,6 @@
             <condition class="com.atlassian.jira.software.api.conditions.SoftwareGlobalAdminCondition"/>
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.ApplicationRoleEnabledCondition" />
             <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.BitbucketAccessExtensionCondition" />
-            <condition class="com.atlassian.jira.plugins.dvcs.bitbucket.access.conditions.IsBitbucketImporterCondition" invert="true" />
         </conditions>
         <context-provider class="com.atlassian.jira.plugins.dvcs.bitbucket.access.JIMBitbucketInviteMessagePanelContextProvider" />
         <resource name="view" type="velocity" location="/templates/dvcs/bitbucket-invite-message-panel.vm"/>
