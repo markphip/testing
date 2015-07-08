@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -11,12 +12,13 @@ import java.util.Set;
 @EventName ("jira.dvcsconnector.smartcommit.success")
 public class SmartCommitSuccessEvent
 {
-    private boolean transition;
-    private boolean time;
-    private boolean comment;
+    final private boolean transition;
+    final private boolean time;
+    final private boolean comment;
 
     public SmartCommitSuccessEvent(Set<SmartCommitCommandType> smartCommitType)
     {
+        Preconditions.checkNotNull(smartCommitType);
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
         this.time = smartCommitType.contains(SmartCommitCommandType.LOG_WORK);
         this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);

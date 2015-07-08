@@ -9,7 +9,7 @@ import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitF
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailureEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOnMergeEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOperationFailedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRecieved;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitReceived;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitSuccessEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitTransitionStatusCategoryEvent;
 import com.google.common.base.Preconditions;
@@ -48,7 +48,7 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
     {
         Preconditions.checkNotNull(smartCommitCommandType);
         String failureReasonString = failureReason == null ? "" : failureReason.toString();
-        eventPublisher.publish(new SmartCommitOperationFailedEvent(smartCommitCommandType, failureReasonString));
+        eventPublisher.publish(new SmartCommitOperationFailedEvent(smartCommitCommandType, failureReason));
     }
 
     @Override
@@ -61,13 +61,13 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
     public void fireSmartCommitFailed(final SmartCommitFailure failureReason)
     {
         Preconditions.checkNotNull(failureReason);
-        eventPublisher.publish(new SmartCommitFailureEvent(failureReason.toString()));
+        eventPublisher.publish(new SmartCommitFailureEvent(failureReason));
     }
 
     @Override
     public void fireSmartCommitReceived(final Set<SmartCommitCommandType> smartCommitCommandTypesPresent)
     {   Preconditions.checkNotNull(smartCommitCommandTypesPresent);
-        eventPublisher.publish(new SmartCommitRecieved(smartCommitCommandTypesPresent));
+        eventPublisher.publish(new SmartCommitReceived(smartCommitCommandTypesPresent));
     }
 
     @Override
@@ -101,6 +101,5 @@ public class SmartCommitsAnalyticsServiceImpl implements SmartCommitsAnalyticsSe
                 eventPublisher.publish(new SmartCommitOnMergeEvent());
             }
         }
-
     }
 }

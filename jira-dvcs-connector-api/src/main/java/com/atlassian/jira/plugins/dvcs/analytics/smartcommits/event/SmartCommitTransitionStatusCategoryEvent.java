@@ -10,6 +10,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class SmartCommitTransitionStatusCategoryEvent
 {
     private final String key;
+    private final String TRANSITION_EVENT_NAME = "jira.dvcsconnector.smartcommit.transition.to.";
 
     public SmartCommitTransitionStatusCategoryEvent(String statusCategoryKey)
     {
@@ -19,7 +20,7 @@ public class SmartCommitTransitionStatusCategoryEvent
     @EventName
     public String determineEventName()
     {
-        return "jira.dvcsconnector.smartcommit.transition.to." + key;
+        return TRANSITION_EVENT_NAME + key;
     }
 
     @Override

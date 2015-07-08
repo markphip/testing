@@ -1,6 +1,8 @@
 package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import com.google.common.base.Preconditions;
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -8,17 +10,18 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.Set;
 
 @EventName ("jira.dvcsconnector.smartcommit.received")
-public class SmartCommitRecieved
+public class SmartCommitReceived
 {
-    private boolean transition;
-    private boolean time;
-    private boolean comment;
+    final private boolean transition;
+    final private boolean time;
+    final private boolean comment;
 
-    public SmartCommitRecieved(Set<SmartCommitCommandType> smartCommitType)
+    public SmartCommitReceived(final Set<SmartCommitCommandType> smartCommitType)
     {
+        Preconditions.checkNotNull(smartCommitType);
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
-        time = smartCommitType.contains(SmartCommitCommandType.LOG_WORK);
-        comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
+        this.time = smartCommitType.contains(SmartCommitCommandType.LOG_WORK);
+        this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
     public boolean isComment()

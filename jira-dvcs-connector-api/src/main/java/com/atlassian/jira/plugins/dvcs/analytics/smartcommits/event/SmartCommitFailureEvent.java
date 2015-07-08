@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -9,10 +10,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class SmartCommitFailureEvent
 {
 
-    private String failureReason;
+    private final String failureReason;
 
-    public SmartCommitFailureEvent(String failureReason)
+    public SmartCommitFailureEvent(SmartCommitFailure failureReason)
     {
+        Preconditions.checkNotNull(failureReason);
+        Preconditions.checkNotNull(failureReason);
         this.failureReason = failureReason.toString();
     }
 

@@ -9,10 +9,9 @@ import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitF
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailureEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOnMergeEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOperationFailedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRecieved;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitReceived;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitSuccessEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitTransitionStatusCategoryEvent;
-import com.atlassian.jira.plugins.dvcs.model.Changeset;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
 import com.google.common.collect.ImmutableSet;
 import org.mockito.InjectMocks;
@@ -30,19 +29,19 @@ import static org.mockito.Mockito.when;
 public class SmartCommitsAnalyticsServiceImplTest
 {
     @Mock
-    EventPublisher eventPublisher;
+    private EventPublisher eventPublisher;
 
     @Mock
-    MutableIssue issue;
+    private MutableIssue issue;
 
     @Mock
-    Status transitionStatus;
+    private Status transitionStatus;
 
     @Mock
-    StatusCategory transitionStatusCategory;
+    private StatusCategory transitionStatusCategory;
 
     @InjectMocks
-    SmartCommitsAnalyticsServiceImpl classUnderTest;
+    private SmartCommitsAnalyticsServiceImpl classUnderTest;
 
     @Test
     public void testFireSmartCommitSucceeded() throws Exception
@@ -57,7 +56,7 @@ public class SmartCommitsAnalyticsServiceImplTest
     {
         final SmartCommitCommandType operationType = SmartCommitCommandType.COMMENT;
         classUnderTest.fireSmartCommitOperationFailed(operationType);
-        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, ""));
+        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, SmartCommitFailure.NO_REASON));
     }
 
     @Test
@@ -68,21 +67,21 @@ public class SmartCommitsAnalyticsServiceImplTest
 
         classUnderTest.fireSmartCommitOperationFailed(operationType, failure);
 
-        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, failure.toString()));
+        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, failure));
     }
 
     @Test
     public void testFireSmartCommitFailed() throws Exception
     {
         classUnderTest.fireSmartCommitFailed();
-        verify(eventPublisher).publish(new SmartCommitFailureEvent(""));
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_REASON));
     }
 
     @Test
     public void testFireSmartCommitFailedWithReason() throws Exception
     {
         classUnderTest.fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
-        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_EMAIL.toString()));
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_EMAIL));
     }
 
     @Test
@@ -90,7 +89,7 @@ public class SmartCommitsAnalyticsServiceImplTest
     {
         final Set<SmartCommitCommandType> smartCommitTypes = ImmutableSet.of(SmartCommitCommandType.COMMENT);
         classUnderTest.fireSmartCommitReceived(smartCommitTypes);
-        verify(eventPublisher).publish(new SmartCommitRecieved(smartCommitTypes));
+        verify(eventPublisher).publish(new SmartCommitReceived(smartCommitTypes));
     }
 
     @Test
