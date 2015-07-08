@@ -48,9 +48,12 @@ public class AddUserBitbucketAccessExtensionContextProvider extends BitbucketAcc
 
     protected void requireResourcesAndData(final List<Organization> bitbucketTeamsWithDefaultGroups)
     {
-        String inviteToGroups = inviteToGroups(bitbucketTeamsWithDefaultGroups);
-        pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
-        pageBuilderService.assembler().data().requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY, inviteToGroups);
+        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
+        {
+            String inviteToGroups = inviteToGroups(bitbucketTeamsWithDefaultGroups);
+            pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
+            pageBuilderService.assembler().data().requireData(REQUIRED_DATA_BITBUCKET_INVITE_TO_GROUPS_KEY, inviteToGroups);
+        }
     }
 
     private String inviteToGroups(List<Organization> organizations)

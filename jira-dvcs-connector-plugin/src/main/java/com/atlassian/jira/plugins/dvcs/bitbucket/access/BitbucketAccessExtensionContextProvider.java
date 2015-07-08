@@ -79,11 +79,7 @@ public abstract class BitbucketAccessExtensionContextProvider implements Context
                 return organization.getName();
             }
         });
-
-        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
-        {
-            requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
-        }
+        requireResourcesAndData(bitbucketTeamsWithDefaultGroups);
 
         return ImmutableMap.of(
                 CONTEXT_KEY_JIRA_BASE_URL, applicationProperties.getString(JIRA_BASEURL),

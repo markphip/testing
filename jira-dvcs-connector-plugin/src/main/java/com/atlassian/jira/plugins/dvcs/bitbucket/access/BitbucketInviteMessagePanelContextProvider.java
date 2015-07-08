@@ -37,6 +37,9 @@ public class BitbucketInviteMessagePanelContextProvider extends BitbucketAccessE
 
     protected void requireResourcesAndData(List<Organization> bitbucketTeamsWithDefaultGroups)
     {
-        pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
+        if (!bitbucketTeamsWithDefaultGroups.isEmpty())
+        {
+            pageBuilderService.assembler().resources().requireWebResource(REQUIRED_WEB_RESOURCE_COMPLETE_KEY);
+        }
     }
 }
