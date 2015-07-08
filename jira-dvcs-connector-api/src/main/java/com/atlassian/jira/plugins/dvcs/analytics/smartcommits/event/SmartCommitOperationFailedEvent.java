@@ -1,49 +1,51 @@
 package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class SmartCommitOperationFailedEvent
 {
-    private SmartCommitCommandType commandType;
-    private String failureReason;
+    private final SmartCommitCommandType commandType;
+    private final String failureReason;
 
-    public SmartCommitOperationFailedEvent(SmartCommitCommandType commandType, String failureReason)
+    public SmartCommitOperationFailedEvent(SmartCommitCommandType commandType, SmartCommitFailure failureReason)
     {
+        Preconditions.checkNotNull(commandType);
+        Preconditions.checkNotNull(failureReason);
         this.commandType = commandType;
-        this.failureReason = failureReason;
-    }
-
-    @Override
-    public boolean equals(final Object o)
-    {
-        if (this == o) { return true; }
-        if (!(o instanceof SmartCommitOperationFailedEvent)) { return false; }
-
-        final SmartCommitOperationFailedEvent that = (SmartCommitOperationFailedEvent) o;
-
-        if (commandType != that.commandType) { return false; }
-
-        return failureReason.equals(that.failureReason);
-
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int result = commandType.hashCode();
-        result = 31 * result + failureReason.hashCode();
-        return result;
+        this.failureReason = failureReason.toString();
     }
 
     @EventName
     public String determineEventName()
     {
-        return "jira.dvcsconnector.smartcommit." + commandType + ".failed";
+        return  String.format("jira.dvcsconnector.smartcommit.%s.failed", commandType);
     }
 
     public String getfailureReason()
     {
         return failureReason;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 
 }

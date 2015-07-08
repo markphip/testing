@@ -2,21 +2,21 @@ package com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event;
 
 import com.atlassian.analytics.api.annotations.EventName;
 import com.google.common.base.Preconditions;
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.Set;
 
-
-@EventName ("jira.dvcsconnector.smartcommit.success")
-public class SmartCommitSuccessEvent
+@EventName ("jira.dvcsconnector.smartcommit.received")
+public class SmartCommitReceived
 {
     final private boolean transition;
     final private boolean time;
     final private boolean comment;
 
-    public SmartCommitSuccessEvent(Set<SmartCommitCommandType> smartCommitType)
+    public SmartCommitReceived(final Set<SmartCommitCommandType> smartCommitType)
     {
         Preconditions.checkNotNull(smartCommitType);
         this.transition = smartCommitType.contains(SmartCommitCommandType.TRANSITION);
@@ -24,9 +24,9 @@ public class SmartCommitSuccessEvent
         this.comment = smartCommitType.contains(SmartCommitCommandType.COMMENT);
     }
 
-    public boolean isTransition()
+    public boolean isComment()
     {
-        return transition;
+        return comment;
     }
 
     public boolean isTime()
@@ -34,9 +34,9 @@ public class SmartCommitSuccessEvent
         return time;
     }
 
-    public boolean isComment()
+    public boolean isTransition()
     {
-        return comment;
+        return transition;
     }
 
     @Override

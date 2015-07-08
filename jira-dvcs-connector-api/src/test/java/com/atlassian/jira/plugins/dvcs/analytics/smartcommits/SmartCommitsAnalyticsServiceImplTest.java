@@ -11,8 +11,8 @@ import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitF
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailureEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOnMergeEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitOperationFailedEvent;
-import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRecieved;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitRepoConfigChangedEvent;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitReceived;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitSuccessEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitTransitionStatusCategoryEvent;
 import com.atlassian.jira.plugins.dvcs.util.MockitoTestNgListener;
@@ -32,36 +32,34 @@ import static org.mockito.Mockito.when;
 public class SmartCommitsAnalyticsServiceImplTest
 {
     @Mock
-    EventPublisher eventPublisher;
+    private EventPublisher eventPublisher;
 
     @Mock
-    MutableIssue issue;
+    private MutableIssue issue;
 
     @Mock
-    Status transitionStatus;
+    private Status transitionStatus;
 
     @Mock
-    StatusCategory transitionStatusCategory;
+    private StatusCategory transitionStatusCategory;
 
     @InjectMocks
-    SmartCommitsAnalyticsServiceImpl classUnderTest;
+    private SmartCommitsAnalyticsServiceImpl classUnderTest;
 
     @Test
     public void testFireSmartCommitSucceeded() throws Exception
     {
-        Set<SmartCommitCommandType> smartCommitTypes = ImmutableSet.of(SmartCommitCommandType.COMMENT);
+        final Set<SmartCommitCommandType> smartCommitTypes = ImmutableSet.of(SmartCommitCommandType.COMMENT);
         classUnderTest.fireSmartCommitSucceeded(smartCommitTypes);
-
         verify(eventPublisher).publish(new SmartCommitSuccessEvent(smartCommitTypes));
     }
 
     @Test
     public void testFireSmartCommitOperationFailed() throws Exception
     {
-        SmartCommitCommandType operationType = SmartCommitCommandType.COMMENT;
+        final SmartCommitCommandType operationType = SmartCommitCommandType.COMMENT;
         classUnderTest.fireSmartCommitOperationFailed(operationType);
-        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, ""));
-
+        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, SmartCommitFailure.NO_REASON));
     }
 
     @Test
@@ -72,34 +70,29 @@ public class SmartCommitsAnalyticsServiceImplTest
 
         classUnderTest.fireSmartCommitOperationFailed(operationType, failure);
 
-        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, failure.toString()));
-
+        verify(eventPublisher).publish(new SmartCommitOperationFailedEvent(operationType, failure));
     }
 
     @Test
     public void testFireSmartCommitFailed() throws Exception
     {
         classUnderTest.fireSmartCommitFailed();
-
-        verify(eventPublisher).publish(new SmartCommitFailureEvent(""));
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_REASON));
     }
 
     @Test
     public void testFireSmartCommitFailedWithReason() throws Exception
     {
         classUnderTest.fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
-
-        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_EMAIL.toString()));
+        verify(eventPublisher).publish(new SmartCommitFailureEvent(SmartCommitFailure.NO_EMAIL));
     }
-
 
     @Test
     public void testFireSmartCommitReceived() throws Exception
     {
-        Set<SmartCommitCommandType> smartCommitTypes = ImmutableSet.of(SmartCommitCommandType.COMMENT);
+        final Set<SmartCommitCommandType> smartCommitTypes = ImmutableSet.of(SmartCommitCommandType.COMMENT);
         classUnderTest.fireSmartCommitReceived(smartCommitTypes);
-
-        verify(eventPublisher).publish(new SmartCommitRecieved(smartCommitTypes));
+        verify(eventPublisher).publish(new SmartCommitReceived(smartCommitTypes));
     }
 
     @Test
@@ -112,14 +105,12 @@ public class SmartCommitsAnalyticsServiceImplTest
         classUnderTest.fireSmartCommitTransitionReceived(issue);
 
         verify(eventPublisher).publish(new SmartCommitTransitionStatusCategoryEvent(StatusCategory.TO_DO));
-
     }
-
 
     @Test
     public void testFireMergeSmartCommitMergeTwoParents() throws Exception
     {
-        String parents = "[5750922bd07b525630f05e9fadc24b87c2015e7d,5750922bd07b525630f05e9fadc24b87c2015e7d]";
+        final String parents = "[5750922bd07b525630f05e9fadc24b87c2015e7d,5750922bd07b525630f05e9fadc24b87c2015e7d]";
         classUnderTest.fireMergeSmartCommitIfAppropriate(parents);
         verify(eventPublisher).publish(new SmartCommitOnMergeEvent());
     }
@@ -127,7 +118,7 @@ public class SmartCommitsAnalyticsServiceImplTest
     @Test
     public void testFireMergeSmartCommitOneParent() throws Exception
     {
-        String parents = "[5750922bd07b525630f05e9fadc24b87c2015e7d]";
+        final String parents = "[5750922bd07b525630f05e9fadc24b87c2015e7d]";
         classUnderTest.fireMergeSmartCommitIfAppropriate(parents);
         verifyNoMoreInteractions(eventPublisher);
     }
@@ -135,7 +126,10 @@ public class SmartCommitsAnalyticsServiceImplTest
     @Test
     public void testFireMergeSmartCommitTooMantParents() throws Exception
     {
-        String parents = "<TOO_MANY_PARENTS>";
+        //Should be using ChangesetMapping.TOO_MANY_PARENTS in this test
+        //but that would require adding a dependcy to the the plugin modue
+
+        final String parents = "<TOO_MANY_PARENTS>";
         classUnderTest.fireMergeSmartCommitIfAppropriate(parents);
         verify(eventPublisher).publish(new SmartCommitOnMergeEvent());
     }

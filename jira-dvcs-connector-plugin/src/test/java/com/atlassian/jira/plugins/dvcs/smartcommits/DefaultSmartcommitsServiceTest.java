@@ -42,49 +42,45 @@ import static org.mockito.Mockito.when;
 
 public class DefaultSmartcommitsServiceTest
 {
-
     @Rule
     public final MethodRule initMockito = MockitoJUnit.rule();
 
     @Mock
-    IssueManager issueManager;
+    private IssueManager issueManager;
 
     @Mock
-    TransitionHandler transitionHandler;
+    private TransitionHandler transitionHandler;
 
     @Mock
-    CommentHandler commentHandler;
+    private CommentHandler commentHandler;
 
     @Mock
-    WorkLogHandler workLogHandler;
+    private WorkLogHandler workLogHandler;
 
     @Mock
-    JiraAuthenticationContext jiraAuthenticationContext;
+    private JiraAuthenticationContext jiraAuthenticationContext;
 
     @Mock
-    CrowdService crowdService;
+    private CrowdService crowdService;
 
     @Mock
-    SmartCommitsAnalyticsService analyticsService;
+    private SmartCommitsAnalyticsService analyticsService;
 
     @Mock
-    CommitCommands commands;
+    private CommitCommands commands;
 
     @Mock
-    Either handleSuccess;
+    private Either handleSuccess;
 
     @Mock
-    Either handleFailure;
+    private Either handleFailure;
 
     private MockIssue issue;
 
     private List<CommitCommands.CommitCommand> commandList = new ArrayList<>();
 
     private final Set<SmartCommitCommandType> smartCommitCommandTypesPresent =
-            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.TIME, SmartCommitCommandType.TRANSITION);
-
-
-
+            ImmutableSet.of(SmartCommitCommandType.COMMENT, SmartCommitCommandType.LOG_WORK, SmartCommitCommandType.TRANSITION);
 
     @InjectMocks
     DefaultSmartcommitsService classUnderTest;
@@ -94,11 +90,12 @@ public class DefaultSmartcommitsServiceTest
     private static final String ISSUE_KEY = "Issue-1";
 
     @Before
-    public void setup(){
+    public void setup()
+    {
         MockComponentWorker worker = new MockComponentWorker();
         worker.registerMock(UserManager.class, new MockUserManager());
         ComponentAccessor.initialiseWorker(worker);
-        issue= new MockIssue(1,ISSUE_KEY);
+        issue = new MockIssue(1, ISSUE_KEY);
         setupMatchingUsers(AUTHOR_NAME);
         setupSuccessfulSmartCommit();
 
@@ -127,10 +124,9 @@ public class DefaultSmartcommitsServiceTest
         return new CommitCommands.CommitCommand(ISSUE_KEY, command, null);
     }
 
-
-
     @Test
-    public void successfulMulticommandSmartCommitFiresSuccessEvent(){
+    public void successfulMulticommandSmartCommitFiresSuccessEvent()
+    {
         classUnderTest.doCommands(commands);
 
         verify(analyticsService).fireSmartCommitReceived(smartCommitCommandTypesPresent);
@@ -139,19 +135,21 @@ public class DefaultSmartcommitsServiceTest
     }
 
     @Test
-    public void timeFailureMulticommandSmartCommitFiresFailureEvent(){
+    public void timeFailureMulticommandSmartCommitFiresFailureEvent()
+    {
         setupWorkLogHandler(false);
 
         classUnderTest.doCommands(commands);
 
         verify(analyticsService).fireSmartCommitReceived(smartCommitCommandTypesPresent);
-        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.TIME);
+        verify(analyticsService).fireSmartCommitOperationFailed(SmartCommitCommandType.LOG_WORK);
         verify(analyticsService).fireSmartCommitFailed();
         verifyNoMoreInteractions(analyticsService);
     }
 
     @Test
-    public void commentFailureMulticommandSmartCommitFiresFailureEvent(){
+    public void commentFailureMulticommandSmartCommitFiresFailureEvent()
+    {
         setupCommentHandler(false);
 
         classUnderTest.doCommands(commands);
@@ -163,7 +161,8 @@ public class DefaultSmartcommitsServiceTest
     }
 
     @Test
-    public void changesetWithNoEmailProvidedFailure(){
+    public void changesetWithNoEmailProvidedFailure()
+    {
         when(commands.getAuthorEmail()).thenReturn("");
 
         classUnderTest.doCommands(commands);
@@ -172,7 +171,8 @@ public class DefaultSmartcommitsServiceTest
     }
 
     @Test
-    public void emailWithNoUserMatchFailure(){
+    public void emailWithNoUserMatchFailure()
+    {
         when(crowdService.search(Matchers.<Query<User>>any())).thenReturn(new ArrayList<>());
 
         classUnderTest.doCommands(commands);
@@ -181,15 +181,17 @@ public class DefaultSmartcommitsServiceTest
     }
 
     @Test
-    public void emailWithMultipleUserMatchesFailure(){
-        setupMatchingUsers("FirstUser","SecondUser");
+    public void emailWithMultipleUserMatchesFailure()
+    {
+        setupMatchingUsers("FirstUser", "SecondUser");
 
         classUnderTest.doCommands(commands);
 
         verify(analyticsService).fireSmartCommitFailed(SmartCommitFailure.MULTIPLE_JIRA_USERS_FOR_EMAIL);
     }
 
-    private void setupTransitionHandler(Boolean successful){
+    private void setupTransitionHandler(Boolean successful)
+    {
         Either result = successful ? handleSuccess : handleFailure;
         when(transitionHandler.handle(Matchers.<ApplicationUser>any(),
                 Matchers.<MutableIssue>any(),
@@ -198,7 +200,8 @@ public class DefaultSmartcommitsServiceTest
                 Matchers.<Date>any())).thenReturn(result);
     }
 
-    private void setupWorkLogHandler(Boolean successful){
+    private void setupWorkLogHandler(Boolean successful)
+    {
         Either result = successful ? handleSuccess : handleFailure;
         when(workLogHandler.handle(Matchers.<ApplicationUser>any(),
                 Matchers.<MutableIssue>any(),
@@ -207,7 +210,8 @@ public class DefaultSmartcommitsServiceTest
                 Matchers.<Date>any())).thenReturn(result);
     }
 
-    private void setupCommentHandler(Boolean successful){
+    private void setupCommentHandler(Boolean successful)
+    {
         Either result = successful ? handleSuccess : handleFailure;
         when(commentHandler.handle(Matchers.<ApplicationUser>any(),
                 Matchers.<MutableIssue>any(),
@@ -216,12 +220,13 @@ public class DefaultSmartcommitsServiceTest
                 Matchers.<Date>any())).thenReturn(result);
     }
 
-    private void setupSuccessfulSmartCommit(){
-            setupCommentHandler(true);
-            commandList.add(buildCommand("comment"));
-            setupWorkLogHandler(true);
-            commandList.add(buildCommand("time"));
-            setupTransitionHandler(true);
-            commandList.add(buildCommand("transition"));
+    private void setupSuccessfulSmartCommit()
+    {
+        setupCommentHandler(true);
+        commandList.add(buildCommand("comment"));
+        setupWorkLogHandler(true);
+        commandList.add(buildCommand("time"));
+        setupTransitionHandler(true);
+        commandList.add(buildCommand("transition"));
     }
 }

@@ -46,31 +46,31 @@ public class TransitionHandlerTest
     private SmartCommitsAnalyticsService analyticsService;
 
     @Mock
-    ApplicationUser user;
+    private ApplicationUser user;
 
     @Mock
-    MutableIssue issue;
+    private MutableIssue issue;
 
     @Mock
-    I18nHelper i18nHelper;
+    private I18nHelper i18nHelper;
 
     @Mock
-    JiraWorkflow jiraWorkflow;
+    private JiraWorkflow jiraWorkflow;
 
     @Mock
-    ActionDescriptor firstActionDescriptor;
+    private ActionDescriptor firstActionDescriptor;
 
     @Mock
-    ActionDescriptor secondActionDescriptor;
+    private ActionDescriptor secondActionDescriptor;
 
     @Mock
-    IssueService.TransitionValidationResult transitionResult;
+    private IssueService.TransitionValidationResult transitionResult;
 
     @Mock
-    IssueService.IssueResult issueResult;
+    private IssueService.IssueResult issueResult;
 
     @Mock
-    com.atlassian.jira.util.ErrorCollection errorCollection;
+    private com.atlassian.jira.util.ErrorCollection errorCollection;
 
     private String commandName = "Done";
 
