@@ -4,14 +4,20 @@ import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsAddUserAnalyticsEvent;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsInviteGroupChanged;
 import com.atlassian.jira.plugins.dvcs.analytics.event.DvcsUserBitbucketInviteSent;
+import com.google.common.base.Preconditions;
 import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 
 @Component ("analyticsService")
 public class AnalyticsServiceImpl implements AnalyticsService
 {
-    @Inject
     private EventPublisher eventPublisher;
+
+    @Inject
+    public AnalyticsServiceImpl(final EventPublisher eventPublisher){
+        Preconditions.checkNotNull(eventPublisher);
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void publishInviteGroupChange(final int inviteGroupsEnabled)

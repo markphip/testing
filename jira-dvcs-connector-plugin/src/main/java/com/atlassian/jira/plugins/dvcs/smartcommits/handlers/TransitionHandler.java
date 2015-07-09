@@ -6,6 +6,9 @@ import com.atlassian.jira.issue.IssueInputParameters;
 import com.atlassian.jira.issue.IssueInputParametersImpl;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.status.Status;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitCommandType;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.event.SmartCommitFailure;
 import com.atlassian.jira.plugins.dvcs.smartcommits.CommandType;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.CommitHookHandlerError;
 import com.atlassian.jira.plugins.dvcs.smartcommits.model.Either;
@@ -15,6 +18,7 @@ import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.workflow.WorkflowManager;
 import com.atlassian.plugin.spring.scanner.annotation.export.ExportAsService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.opensymphony.workflow.loader.ActionDescriptor;
@@ -43,24 +47,31 @@ public class TransitionHandler implements CommandHandler<Issue>
 
     private static final String NO_STATUS = "fisheye.commithooks.transition.unknownstatus";
 
-    private static final String NO_COMMAND_PROVIDED_TEMPLATE = "fisheye.commithooks.transition.nocommand";
-    private static final String NO_ALLOWED_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.noactions";
-    private static final String NO_MATCHING_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.nomatch";
-    private static final String MULTIPLE_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.ambiguous";
+    @VisibleForTesting
+    public static final String NO_COMMAND_PROVIDED_TEMPLATE = "fisheye.commithooks.transition.nocommand";
+    @VisibleForTesting
+    public static final String NO_ALLOWED_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.noactions";
+    @VisibleForTesting
+    public static final String NO_MATCHING_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.nomatch";
+    @VisibleForTesting
+    public static final String MULTIPLE_ACTIONS_TEMPLATE = "fisheye.commithooks.transition.ambiguous";
 
     private final IssueService issueService;
     private final WorkflowManager workflowManager;
     private final JiraAuthenticationContext jiraAuthenticationContext;
+    private final SmartCommitsAnalyticsService analyticsService;
 
     @Autowired
     @SuppressWarnings("SpringJavaAutowiringInspection")
     public TransitionHandler(@ComponentImport IssueService issueService,
             @ComponentImport WorkflowManager workflowManager,
-            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext)
+            @ComponentImport JiraAuthenticationContext jiraAuthenticationContext,
+            SmartCommitsAnalyticsService analyticsService)
     {
         this.issueService = checkNotNull(issueService);
         this.workflowManager = checkNotNull(workflowManager);
         this.jiraAuthenticationContext = checkNotNull(jiraAuthenticationContext);
+        this.analyticsService = checkNotNull(analyticsService);
     }
 
     @Override
@@ -77,6 +88,7 @@ public class TransitionHandler implements CommandHandler<Issue>
     	String comment = (args != null && args.size() == 1) ? args.get(0) : null;
       
         if (cmd == null || cmd.equals("")) {
+            analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TRANSITION, SmartCommitFailure.NO_VALID_TRANSITION_COMMAND);
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_COMMAND_PROVIDED_TEMPLATE, issue.getKey())));
         }
@@ -87,6 +99,7 @@ public class TransitionHandler implements CommandHandler<Issue>
                 getValidActions(actions, user, issue, new IssueInputParametersImpl(), comment);
 
         if (validActions.isEmpty()) {
+            analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TRANSITION, SmartCommitFailure.NO_VALID_TRANSITION_STATUSES);
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_ALLOWED_ACTIONS_TEMPLATE, issue.getKey())));
         }
@@ -94,23 +107,25 @@ public class TransitionHandler implements CommandHandler<Issue>
         Collection<ValidatedAction> matchingValidActions = getMatchingActionsForCommand(cmd, validActions);
 
         if (matchingValidActions.isEmpty()) {
-
+            analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TRANSITION, SmartCommitFailure.NO_MATCHING_TRANSITION);
             String validActionNames = StringUtils.join(getActionNamesIterator(validActions), ", ");
 
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(NO_MATCHING_ACTIONS_TEMPLATE, issue.getKey(), getIssueState(issue), cmd, validActionNames)));
 
         } else if (matchingValidActions.size() > 1) {
-
+            analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TRANSITION, SmartCommitFailure.AMBIGIOUS_TRANSITION);
             String validActionNames = StringUtils.join(getActionNamesIterator(matchingValidActions), ", ");
 
             return Either.error(CommitHookHandlerError.fromSingleError(CMD_TYPE.getName(), issue.getKey(),
                     i18nHelper.getText(MULTIPLE_ACTIONS_TEMPLATE, cmd, issue.getKey(), getIssueState(issue), validActionNames)));
         } else {
-            
+
             IssueService.TransitionValidationResult validation = matchingValidActions.iterator().next().validation;
+            analyticsService.fireSmartCommitTransitionReceived(validation.getIssue());
             IssueService.IssueResult result = issueService.transition(user, validation);
             if (!result.isValid()) {
+                analyticsService.fireSmartCommitOperationFailed(SmartCommitCommandType.TRANSITION);
                 return Either.error(CommitHookHandlerError.fromErrorCollection(
                         CMD_TYPE.getName(), issue.getKey(), result.getErrorCollection()));
             }
@@ -179,8 +194,7 @@ public class TransitionHandler implements CommandHandler<Issue>
             IssueInputParameters parameters,
             String comment) {
 
-        Collection<ValidatedAction> validations =
-            new ArrayList<ValidatedAction>();
+        Collection<ValidatedAction> validations = new ArrayList<ValidatedAction>();
         for (ActionDescriptor ad : actionsToValidate) {
             IssueInputParametersImpl input = new IssueInputParametersImpl();
             if (comment != null) {

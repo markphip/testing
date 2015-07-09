@@ -1,6 +1,7 @@
 package com.atlassian.jira.plugins.dvcs.smartcommits;
 
 import com.atlassian.jira.plugins.dvcs.activeobjects.v3.ChangesetMapping;
+import com.atlassian.jira.plugins.dvcs.analytics.smartcommits.SmartCommitsAnalyticsService;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao;
 import com.atlassian.jira.plugins.dvcs.dao.ChangesetDao.ForEachChangesetClosure;
 import com.atlassian.jira.plugins.dvcs.model.Changeset;
@@ -40,6 +41,7 @@ public class SmartcommitOperation implements Callable<Void>
 
     private final Repository repository;
     private final ChangesetService changesetService;
+    private final SmartCommitsAnalyticsService analyticsService;
 
     private Progress progress;
 
@@ -47,7 +49,8 @@ public class SmartcommitOperation implements Callable<Void>
      * The Constructor.
      */
     public SmartcommitOperation(ChangesetDao changesetDao, CommitMessageParser commitMessageParser,
-                                SmartcommitsService smartcommitsService, Progress progress, Repository repository, ChangesetService changesetService)
+                                SmartcommitsService smartcommitsService, Progress progress, Repository repository,
+                                ChangesetService changesetService, SmartCommitsAnalyticsService analyticsService)
     {
         this.changesetDao = changesetDao;
         this.commitMessageParser = commitMessageParser;
@@ -55,6 +58,7 @@ public class SmartcommitOperation implements Callable<Void>
         this.progress = progress;
         this.repository = repository;
         this.changesetService = changesetService;
+        this.analyticsService = analyticsService;
     }
 
     @Override
@@ -85,10 +89,10 @@ public class SmartcommitOperation implements Callable<Void>
                     // do commands
                     if (CollectionUtils.isNotEmpty(commands.getCommands()))
                     {
+                        analyticsService.fireMergeSmartCommitIfAppropriate(changesetMapping.getParentsData());
                         final CommandsResults commandsResults = smartcommitsService.doCommands(commands);
                         if (commandsResults.hasErrors())
                         {
-
                             Changeset changeset = changesetDao.getByNode(repository.getId(), changesetMapping.getNode());
                             if (changeset != null)
                             {
