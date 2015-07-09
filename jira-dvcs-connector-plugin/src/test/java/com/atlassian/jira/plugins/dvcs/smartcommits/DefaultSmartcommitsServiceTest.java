@@ -21,6 +21,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.MockUserManager;
 import com.atlassian.jira.user.util.UserManager;
+import com.atlassian.jira.util.I18nHelper;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,6 +63,9 @@ public class DefaultSmartcommitsServiceTest
 
     @Mock
     private CrowdService crowdService;
+
+    @Mock
+    private I18nHelper i18nHelper;
 
     @Mock
     private SmartCommitsAnalyticsService analyticsService;

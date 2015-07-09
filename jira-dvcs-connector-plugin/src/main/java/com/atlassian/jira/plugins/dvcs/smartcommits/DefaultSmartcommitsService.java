@@ -112,8 +112,6 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         String authorName = commands.getAuthorName();
         if (StringUtils.isBlank(authorEmail))
         {
-
-
             results.addGlobalError(i18nHelper.getText(NO_EMAIL_IN_CHANGESET));
             analyticsService.fireSmartCommitFailed(SmartCommitFailure.NO_EMAIL);
             return results;
@@ -289,7 +287,7 @@ public class DefaultSmartcommitsService implements SmartcommitsService
         for (CommitCommands.CommitCommand command : commands)
         {
             String commandName = CommandType.getCommandType(command.getCommandName()).getName();
-            SmartCommitCommandType smartCommitCommandType = SmartCommitCommandType.valueOf(commandName.toUpperCase());
+            SmartCommitCommandType smartCommitCommandType = SmartCommitCommandType.fromString(commandName);
             commandTypesPresent.add(smartCommitCommandType);
         }
         return commandTypesPresent;

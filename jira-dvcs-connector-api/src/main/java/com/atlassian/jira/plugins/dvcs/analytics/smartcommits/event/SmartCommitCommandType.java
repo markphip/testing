@@ -19,4 +19,16 @@ public enum SmartCommitCommandType
     {
         return smartCommitCommandType;
     }
+
+    public static SmartCommitCommandType fromString(String text){
+        if (text != null)
+        {
+            for(SmartCommitCommandType smartCommitCommandType : SmartCommitCommandType.values()){
+                if(text.equalsIgnoreCase(smartCommitCommandType.toString())){
+                    return smartCommitCommandType;
+                }
+            }
+        }
+        return null;
+    }
 }
