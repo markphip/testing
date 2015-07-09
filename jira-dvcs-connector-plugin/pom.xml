@@ -77,10 +77,6 @@
             <artifactId>jira-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>jira-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.atlassian.jira.plugins</groupId>
             <artifactId>jira-software-api</artifactId>
             <scope>provided</scope>
@@ -405,6 +401,10 @@
                             <groupId>com.atlassian.jira.compat</groupId>
                             <artifactId>jira-cross-compatibility-lib-bridge-factory</artifactId>
                         </dependency>
+                        <dependency>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-software-conditions-factory</artifactId>
+                        </dependency>
                     </scannedDependencies>
                     <verbose>true</verbose>
                 </configuration>
@@ -444,6 +444,11 @@
                             <groupId>com.atlassian.jira.plugins</groupId>
                             <artifactId>jira-software-plugin</artifactId>
                             <version>${jira.software.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira.plugins</groupId>
+                            <artifactId>jira-importers-plugin</artifactId>
+                            <version>${jim.version}</version>
                         </pluginArtifact>
                         <pluginArtifact>
                             <groupId>com.atlassian.jira.tests</groupId>
